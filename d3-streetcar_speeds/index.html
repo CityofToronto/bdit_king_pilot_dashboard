@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+	// to fill in later
+	body {
+	  font: 10px sans-serif;
+	}
+</style>
+<body>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script>
+
+		var margin = {top: 20, right: 90, bottom: 30, left: 50};
+		var width = 960 - margin.left - margin.right;
+		var height = 400 - margin.top - margin.bottom;
+		
+		
+		var buffer = 10;
+		var headingHeight = 80;
+		var boxHeight = 80;
+		var textBuffer = 5;
+		var fontSpeedSize = 18;
+		var fontSegmentSize = 12;
+		var leftBuffer = 20;
+		var segmentBuffer = 10;
+
+		var tileWidth = (width - margin.left - margin.right - leftBuffer)/5;
+		var tileHeight = 15;
+		
+	var svg = d3.select("body").append("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom);
+	
+	var segments = ['Bathurst - Spadina','Spadina - University','University - Yonge','Yonge - Jarvis']
+	var dataset = [4,10,17,12,8,14,6,25];
+	
+	var speedColor = function(speed) {
+		if (speed < 5){ return "#670912";}
+		else if (speed < 10) { return "#FF5468";}
+		else if (speed < 15) {return "#FABE4D";}
+		else {return "#4DFA90";}
+	}
+	
+	// bars
+	svg.selectAll("rect")
+		.data(dataset)
+		.enter()
+		.append("rect")
+		.attr("x", function(d,i) { return margin.left + leftBuffer + (i%4) * tileWidth; })
+		.attr("y", function(d,i) { if (i<=3){ return margin.top + boxHeight - buffer/2 - tileHeight;} else {return margin.top + boxHeight + buffer/2;} })
+		.attr("width",tileWidth)
+		.attr("height",tileHeight)
+		.attr("fill",function(d) {return speedColor(d);})
+		.attr("stroke","black")
+		.attr("stroke-width",1)
+	
+	// km/h text
+	svg.selectAll("text.speeds")
+		.data(dataset)
+		.enter()
+		.append("text")
+		.text(function(d) { return d + " KM/H";})
+		.attr("x", function(d,i) { return margin.left + leftBuffer + (i%4) * tileWidth + tileWidth/2; })
+		.attr("y", function(d,i) { 	if (i<=3){ return margin.top + boxHeight - buffer/2 - tileHeight - textBuffer;} 
+									else {return margin.top + boxHeight + buffer/2 + tileHeight + textBuffer + fontSpeedSize*7/10;} 
+									})
+		.attr("fill", "black")
+		.attr("font-size", fontSpeedSize + "px")
+		.attr("text-anchor", "middle")
+		.attr("font-family","system-ui")
+		
+	// segment name
+	svg.selectAll("text.segments")
+		.data(segments)
+		.enter()
+		.append("text")
+		.text(function(d) { return d.toUpperCase();})
+		.attr("x", function(d,i) { return margin.left + leftBuffer + i * tileWidth + tileWidth/2; })
+		.attr("y", margin.top + boxHeight - buffer/2 - tileHeight - textBuffer - fontSpeedSize - segmentBuffer)
+		.attr("fill", "black")
+		.attr("font-size", fontSegmentSize + "px")
+		.attr("text-anchor", "middle")
+		.attr("font-family","system-ui")
+
+</script>
