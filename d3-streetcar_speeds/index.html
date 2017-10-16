@@ -18,14 +18,21 @@
 		var buffer = 10;
 		var headingHeight = 80;
 		var boxHeight = 80;
-		var textBuffer = 5;
-		var fontSpeedSize = 18;
-		var fontSegmentSize = 12;
+		
+		var textBuffer = 7;
 		var leftBuffer = 20;
 		var segmentBuffer = 10;
+		
+		var fontSpeedSize = 18;
+		var fontSegmentSize = 12;
+		var fontTTSize = 40;
+		
+
 
 		var tileWidth = (width - margin.left - margin.right - leftBuffer)/5;
 		var tileHeight = 15;
+		
+		var tt = [[16,"Westbound"],[12,"Eastbound"]];
 		
 	var svg = d3.select("body").append("svg")
 			.attr("width", width + margin.left + margin.right)
@@ -42,7 +49,7 @@
 	}
 	
 	// bars
-	svg.selectAll("rect")
+	svg.selectAll("tiles")
 		.data(dataset)
 		.enter()
 		.append("rect")
@@ -81,5 +88,59 @@
 		.attr("font-size", fontSegmentSize + "px")
 		.attr("text-anchor", "middle")
 		.attr("font-family","system-ui")
+	
+	// lines
+	svg.append("rect")
+		.attr("width",width - margin.left - margin.right - leftBuffer)
+		.attr("height", boxHeight * 2)
+		.attr("x", margin.left + leftBuffer)
+		.attr("y", margin.top)
+		.attr("fill-opacity",0)
+		.attr("stroke","black")
+		.attr("stroke-width",0.5)
+	
+	svg.append("line")
+		.attr("x1",margin.left + leftBuffer)
+		.attr("x2",margin.left + leftBuffer + tileWidth * 5)
+		.attr("y1",margin.top + boxHeight)
+		.attr("y2",margin.top + boxHeight)
+		.attr("stroke","black")
+		.attr("stroke-width",0.5)	
+	
+	// travel time summaries
+	var tt_texts = svg.selectAll("text.tt")
+			.data(tt)
+			.enter()
+	
+	tt_texts.append("text")
+		.text(function(d) {return d[0];})
+			.attr("x", function(d) {return margin.left + leftBuffer + tileWidth * 4.475;})
+			.attr("y", function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight);})
+			.attr("fill", "black")
+			.attr("font-size", fontTTSize + "px")
+			.attr("text-anchor", "end")
+			.attr("font-family","system-ui")
+			.attr("font-weight","bold")
+		
+	tt_texts.append("text")
+		.text("MIN")
+			.attr("x", function(d) {return margin.left + leftBuffer + tileWidth * 4.525;})
+			.attr("y", function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight);})
+			.attr("fill", "black")
+			.attr("font-size", (fontTTSize-14) + "px")
+			.attr("text-anchor", "start")
+			.attr("font-family","system-ui")
+	
+		tt_texts.append("text")
+			.text(function(d) {return d[1].toUpperCase();})
+			.attr("x", function(d) {return margin.left + leftBuffer + tileWidth * 4.525;})
+			.attr("y", function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight) + boxHeight*1/3;})
+			.attr("fill", "black")
+			.attr("font-size", (fontTTSize-22) + "px")
+			.attr("text-anchor", "middle")
+			.attr("font-family","system-ui")
 
+
+
+		
 </script>
