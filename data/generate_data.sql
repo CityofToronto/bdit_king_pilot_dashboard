@@ -13,7 +13,7 @@ time_periods AS(
 SELECT UNNEST(ARRAY['AM','PM']) AS time_period
 ),
 months AS(
-SELECT UNNEST(ARRAY['2017-10-01', '2017-11-01']) as mon
+SELECT '2017-09-01'::DATE + Interval '1 month' * generate_series(0,3) as mon
 )
 
 SELECT corridor_id, corridor, dir, mon, time_period, to_char(random() * 10 + 5, '99.9') as travel_time
@@ -40,7 +40,7 @@ time_periods AS(
 SELECT UNNEST(ARRAY['AM','PM']) AS time_period
 ),
 months AS(
-SELECT UNNEST(ARRAY['2017-10-01', '2017-11-01']) as mon
+SELECT '2017-09-01'::DATE + Interval '1 month' * generate_series(0,3) as mon
 )
 
 SELECT segment_id, segment, dir, mon, time_period, to_char(random() * 8 + 2, '99.9') as travel_time
@@ -50,19 +50,21 @@ CROSS JOIN time_periods
 CROSS JOIN months;
 
 
-CREATE VIEW king_pilot_dash.street_volumes_geojson AS
+-- CREATE VIEW king_pilot_dash.street_volumes_geojson AS
+-- 
+-- SELECT json_build_object('type','FeatureCollection', 'features', array_to_json(array_agg(f))) as geojson
+-- FROM(
+-- 
+-- 	SELECT 'Feature' AS type, ST_ASGeoJSON(geom)::json AS geometry, row_to_json((feature_code_desc, centreline_id, linear_name_full, linear_name_id, 
+-- 	       volume, year,  direction, oneway_dir_code, dir_bin, min_zoom, 
+-- 	       id, pct_change)) as properties
+-- 	  FROM king_pilot_dash.street_volumes
+-- 	) f
+-- 
+-- ;
 
-SELECT json_build_object('type','FeatureCollection', 'features', array_to_json(array_agg(f))) as geojson
-FROM(
 
-	SELECT 'Feature' AS type, ST_ASGeoJSON(geom)::json AS geometry, row_to_json((feature_code_desc, centreline_id, linear_name_full, linear_name_id, 
-	       volume, year,  direction, oneway_dir_code, dir_bin, min_zoom, 
-	       id, pct_change)) as properties
-	  FROM king_pilot_dash.street_volumes
-	) f
-
-;
-
+DROP MATERIALIZED VIEW IF EXISTS king_pilot_dash.streetcar_reliability;
 CREATE MATERIALIZED VIEW king_pilot_dash.streetcar_reliability AS
 WITH directions AS(
 SELECT UNNEST(ARRAY['EB','WB']) AS dir
@@ -71,7 +73,7 @@ time_periods AS(
 SELECT UNNEST(ARRAY['AM','PM']) AS time_period
 ),
 months AS(
-SELECT UNNEST(ARRAY['2017-10-01', '2017-11-01']) as mon
+SELECT '2017-09-01'::DATE + Interval '1 month' * generate_series(0,3) as mon
 )
 
 SELECT mon, dir, time_period, to_char(random() * 25 + 50, '99.9') as pct_reliable_headways
