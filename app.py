@@ -1,3 +1,5 @@
+import os
+
 import plotly.graph_objs as go
 import pandas
 
@@ -9,6 +11,9 @@ app = dash.Dash()
 # In case there are problems with react loading from unpkg, set to True
 app.css.config.serve_locally = False
 app.scripts.config.serve_locally = False
+
+server = app.server
+server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 
 streetcar_df = pandas.read_csv('data/streetcar_travel_times.csv')
 
