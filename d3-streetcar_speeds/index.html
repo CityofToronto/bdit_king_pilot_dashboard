@@ -40,7 +40,9 @@
 	
 	var segments = ['Bathurst - Spadina','Spadina - University','University - Yonge','Yonge - Jarvis']
 	
-	
+	var buttonHeight = 20;
+	var buttonWidth = 50;
+	var buttonBuffer = 5;
 	
 	var ds_oct_am = [4,10,17,12,8,14,6,25];
 	var ds_oct_pm = [15,12,3,20,16,12,22,4];
@@ -49,6 +51,11 @@
 	var ds_dec_am = [8,16,13,15,8,9,9,22];
 	var ds_dec_pm = [11,14,17,23,8,21,4,17];
 	
+	var months = ["Oct","Nov","Dec"];
+	var periods = ["AM","PM"];
+	
+	var current_month = "Oct";
+	var current_period = "AM";
 	var dataset = ds_oct_am;
 	
 	var speedColor = function(speed) {
@@ -86,7 +93,7 @@
 		.attr("text-anchor", "middle")
 		.attr("font-family","system-ui")
 		
-	// segment name
+	// segment name and line seperators
 	svg.selectAll("text.segments")
 		.data(segments)
 		.enter()
@@ -141,7 +148,7 @@
 			.attr("text-anchor", "end")
 			.attr("font-family","system-ui")
 			.attr("font-weight","bold")
-		
+			
 	tt_texts.append("text")
 		.text("MIN")
 			.attr("x", function(d) {return margin.left + leftBuffer + tileWidth * 4.525;})
@@ -159,8 +166,83 @@
 			.attr("font-size", (fontTTSize-22) + "px")
 			.attr("text-anchor", "middle")
 			.attr("font-family","system-ui")
+	
+	// animation boxes
+	function updateButtonColours(selButton, selText, val) {
+		d3.selectAll(selButton)
+			.attr("fill", function(d) {if (d==val) {return "black";} else {return "white";}})
+		d3.selectAll(selText)
+			.attr("fill", function(d) {if (d==val) {return "white";} else {return "black";}})
+	}
+	
+	svg.selectAll("buttons_month")
+		.data(months)
+		.enter()
+		.append("rect")
+		.attr("class","buttons_month")
+		.attr("x", function(d,i) { return margin.left + leftBuffer + (i) * (buttonWidth+buttonBuffer); })
+		.attr("y", margin.top + boxHeight*2 + 10)
+		.attr("width",buttonWidth)
+		.attr("height",buttonHeight)
+		.attr("fill", function(d) {if (d==current_month) {return "black";} else {return "white";}})
+		.attr("stroke","black")
+		.attr("stroke-width",1)
+		.on("click", function(d){
+			if (d != current_month) {
+				current_month = d;
+				updateButtonColours("rect.buttons_month","text.text_month",current_month)
+			}
+		})
+		
+	svg.selectAll("text_month")
+		.data(months)
+		.enter()
+		.append("text")
+		.text(function(d) { return d;})
+		.attr("class","text_month")
+		.attr("x", function(d,i) { return margin.left + leftBuffer + buttonWidth*0.5 + i*(buttonWidth+buttonBuffer); })
+		.attr("y", margin.top + boxHeight*2 + 10 + buttonHeight * 0.8)
+		.attr("width",buttonWidth)
+		.attr("height",buttonHeight)
+		.attr("fill", function(d) {if (d==current_month) {return "white";} else {return "black";}})
+		.attr("font-size", "15 px")
+		.attr("text-anchor", "middle")
+		.attr("font-family","system-ui")
+		
+	svg.selectAll("buttons_period")
+		.data(periods)
+		.enter()
+		.append("rect")
+		.attr("class","buttons_period")
+		.attr("x", function(d,i) { return margin.left + leftBuffer + (4+i) * (buttonWidth+buttonBuffer); })
+		.attr("y", margin.top + boxHeight*2 + 10)
+		.attr("width",buttonWidth)
+		.attr("height",buttonHeight)
+		.attr("fill", function(d) {if (d==current_period) {return "black";} else {return "white";}})
+		.attr("stroke","black")
+		.attr("stroke-width",1)
+		.on("click", function(d){
+			if (d != current_period) {
+				current_period = d;
+				updateButtonColours("rect.buttons_period","text.text_period",current_period)
+			}
+		})
+		
 
-
+	svg.selectAll("text_period")
+		.data(periods)
+		.enter()
+		.append("text")
+		.text(function(d) { return d;})
+		.attr("class","text_period")
+		.attr("x", function(d,i) { return margin.left + leftBuffer + buttonWidth*0.5 + (4+i)*(buttonWidth+buttonBuffer); })
+		.attr("y", margin.top + boxHeight*2 + 10 + buttonHeight * 0.8)
+		.attr("width",buttonWidth)
+		.attr("height",buttonHeight)
+		.attr("fill", function(d) {if (d==current_period) {return "white";} else {return "black";}})
+		.attr("font-size", "15 px")
+		.attr("text-anchor", "middle")
+		.attr("font-family","system-ui")
 
 		
 </script>
