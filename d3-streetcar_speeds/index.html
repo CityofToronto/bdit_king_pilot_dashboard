@@ -32,7 +32,9 @@
 		var tileWidth = (width - margin.left - margin.right - leftBuffer)/5;
 		var tileHeight = 15;
 		
-		var tt = [[16,"Westbound"],[12,"Eastbound"]];
+		var segmentLengths = [0.65,0.85,0.60,0.50]
+		var tt = [0,0];
+		var dataset = [];
 		
 	var svg = d3.select("body").append("svg")
 			.attr("width", width + margin.left + margin.right)
@@ -56,7 +58,7 @@
 	
 	var current_month = "Oct";
 	var current_period = "AM";
-	var dataset = ds_oct_am;
+	updateDatasets();
 	
 	var speedColor = function(speed) {
 		if (speed < 5){ return "#670912";}
@@ -65,11 +67,54 @@
 		else {return "#4DFA90";}
 	}
 	
+	function updateButtonColours(selButton, selText, val) {
+		d3.selectAll(selButton)
+			.attr("fill", function(d) {if (d==val) {return "black";} else {return "white";}})
+		d3.selectAll(selText)
+			.attr("fill", function(d) {if (d==val) {return "white";} else {return "black";}})
+	}
+	
+	function updateGraphics() {
+		updateDatasets()
+		d3.selectAll("rect.tiles")
+			.data(dataset)
+			.transition()
+			.duration(1000)
+			.attr("fill",function(d) {return speedColor(d);})
+		d3.selectAll("text.text_speeds")
+			.data(dataset)
+			.transition()
+			.duration(1000)
+			.text(function(d) { return d + " KM/H";})
+		d3.selectAll("text.text_tt")
+			.data(tt)
+			.transition()
+			.duration(1000)
+			.text(function(d) { return d[0];})
+	}
+	function dotProduct(array1, array2) {
+		sum = 0;
+		for (var i=0; i < array1.length; i++) {
+			sum += 60.0/array1[i] * array2[i];
+		}
+		return sum;
+	}
+	
+	function updateDatasets() {
+		dataset_name = "ds_" + current_month.toLowerCase() + "_" + current_period.toLowerCase();
+		dataset = window[dataset_name];
+		
+		var wb_tt = Math.round(dotProduct(dataset.slice(0,4),segmentLengths));
+		var eb_tt = Math.round(dotProduct(dataset.slice(4,8),segmentLengths));
+		
+		tt = [[wb_tt,"Westbound"],[eb_tt,"Eastbound"]];
+	}
 	// bars
 	svg.selectAll("tiles")
 		.data(dataset)
 		.enter()
 		.append("rect")
+		.attr("class","tiles")
 		.attr("x", function(d,i) { return margin.left + leftBuffer + (i%4) * tileWidth; })
 		.attr("y", function(d,i) { if (i<=3){ return margin.top + boxHeight - buffer/2 - tileHeight;} else {return margin.top + boxHeight + buffer/2;} })
 		.attr("width",tileWidth)
@@ -79,11 +124,12 @@
 		.attr("stroke-width",1)
 	
 	// km/h text
-	svg.selectAll("text.speeds")
+	svg.selectAll("text_speeds")
 		.data(dataset)
 		.enter()
 		.append("text")
 		.text(function(d) { return d + " KM/H";})
+		.attr("class","text_speeds")
 		.attr("x", function(d,i) { return margin.left + leftBuffer + (i%4) * tileWidth + tileWidth/2; })
 		.attr("y", function(d,i) { 	if (i<=3){ return margin.top + boxHeight - buffer/2 - tileHeight - textBuffer;} 
 									else {return margin.top + boxHeight + buffer/2 + tileHeight + textBuffer + fontSpeedSize*7/10;} 
@@ -94,21 +140,23 @@
 		.attr("font-family","system-ui")
 		
 	// segment name and line seperators
-	svg.selectAll("text.segments")
+	svg.selectAll("text_segments")
 		.data(segments)
 		.enter()
 		.append("text")
 		.text(function(d) { return d.toUpperCase();})
+		.attr("class","text_segments")
 		.attr("x", function(d,i) { return margin.left + leftBuffer + i * tileWidth + tileWidth/2; })
 		.attr("y", margin.top + boxHeight - buffer/2 - tileHeight - textBuffer - fontSpeedSize - segmentBuffer)
 		.attr("fill", "black")
 		.attr("font-size", fontSegmentSize + "px")
 		.attr("text-anchor", "middle")
 		.attr("font-family","system-ui")
-	svg.selectAll("line.segments")
+	svg.selectAll("line_segments")
 		.data(segments)
 		.enter()
 		.append("line")
+		.attr("class","line_segments")
 		.attr("x1",function(d,i) { return margin.left+leftBuffer+(i+1)*tileWidth;})
 		.attr("x2",function(d,i) { return margin.left+leftBuffer+(i+1)*tileWidth;})
 		.attr("y1",margin.top)
@@ -141,6 +189,7 @@
 	
 	tt_texts.append("text")
 		.text(function(d) {return d[0];})
+			.attr("class","text_tt")
 			.attr("x", function(d) {return margin.left + leftBuffer + tileWidth * 4.475;})
 			.attr("y", function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight);})
 			.attr("fill", "black")
@@ -168,13 +217,6 @@
 			.attr("font-family","system-ui")
 	
 	// animation boxes
-	function updateButtonColours(selButton, selText, val) {
-		d3.selectAll(selButton)
-			.attr("fill", function(d) {if (d==val) {return "black";} else {return "white";}})
-		d3.selectAll(selText)
-			.attr("fill", function(d) {if (d==val) {return "white";} else {return "black";}})
-	}
-	
 	svg.selectAll("buttons_month")
 		.data(months)
 		.enter()
@@ -191,6 +233,7 @@
 			if (d != current_month) {
 				current_month = d;
 				updateButtonColours("rect.buttons_month","text.text_month",current_month)
+				updateGraphics()
 			}
 		})
 		
@@ -225,6 +268,7 @@
 			if (d != current_period) {
 				current_period = d;
 				updateButtonColours("rect.buttons_period","text.text_period",current_period)
+				updateGraphics()
 			}
 		})
 		
