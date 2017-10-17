@@ -46,12 +46,12 @@
 	var buttonWidth = 50;
 	var buttonBuffer = 5;
 	
-	var ds_oct_am = [4,10,17,12,8,14,6,25];
-	var ds_oct_pm = [15,12,3,20,16,12,22,4];
-	var ds_nov_am = [6,3,12,16,21,13,7,5];
-	var ds_nov_pm = [12,21,12,13,4,16,14,23];
-	var ds_dec_am = [8,16,13,15,8,9,9,22];
-	var ds_dec_pm = [11,14,17,23,8,21,4,17];
+	var ds_oct_am = [4,10,17,12,8,14,21,25];
+	var ds_oct_pm = [15,12,3,20,16,12,12,4];
+	var ds_nov_am = [6,9,12,16,7,13,15,5];
+	var ds_nov_pm = [12,21,12,13,4,16,4,23];
+	var ds_dec_am = [8,16,13,15,8,9,16,22];
+	var ds_dec_pm = [11,14,17,23,8,21,12,17];
 	
 	var months = ["Oct","Nov","Dec"];
 	var periods = ["AM","PM"];
@@ -74,23 +74,35 @@
 			.attr("fill", function(d) {if (d==val) {return "white";} else {return "black";}})
 	}
 	
+	// all the transitions
 	function updateGraphics() {
 		updateDatasets()
 		d3.selectAll("rect.tiles")
 			.data(dataset)
 			.transition()
 			.duration(1000)
-			.attr("fill",function(d) {return speedColor(d);})
+			.attr("fill",function(d) {return speedColor(d);});
 		d3.selectAll("text.text_speeds")
 			.data(dataset)
 			.transition()
 			.duration(1000)
-			.text(function(d) { return d + " KM/H";})
+			.tween("text", function(d) {
+				var that = d3.select(this);
+				var currentValue = that.text().match(/\d+/);
+				var i =  d3.interpolateRound(currentValue, d);
+				return function(t) { that.text(i(t) + " KM/H");};
+			});
 		d3.selectAll("text.text_tt")
 			.data(tt)
 			.transition()
-			.duration(1000)
-			.text(function(d) { return d[0];})
+			.duration(500)
+			.delay(1000)
+			.tween("text", function(d) {
+				var that = d3.select(this);
+				var currentValue = that.text();
+				var i = d3.interpolateRound(currentValue, d[0]);
+				return function(t) { that.text(i(t));};					
+			});
 	}
 	function dotProduct(array1, array2) {
 		sum = 0;
