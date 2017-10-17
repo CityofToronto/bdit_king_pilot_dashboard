@@ -39,7 +39,17 @@
 			.attr("height", height + margin.top + margin.bottom);
 	
 	var segments = ['Bathurst - Spadina','Spadina - University','University - Yonge','Yonge - Jarvis']
-	var dataset = [4,10,17,12,8,14,6,25];
+	
+	
+	
+	var ds_oct_am = [4,10,17,12,8,14,6,25];
+	var ds_oct_pm = [15,12,3,20,16,12,22,4];
+	var ds_nov_am = [6,3,12,16,21,13,7,5];
+	var ds_nov_pm = [12,21,12,13,4,16,14,23];
+	var ds_dec_am = [8,16,13,15,8,9,9,22];
+	var ds_dec_pm = [11,14,17,23,8,21,4,17];
+	
+	var dataset = ds_oct_am;
 	
 	var speedColor = function(speed) {
 		if (speed < 5){ return "#670912";}
@@ -88,6 +98,16 @@
 		.attr("font-size", fontSegmentSize + "px")
 		.attr("text-anchor", "middle")
 		.attr("font-family","system-ui")
+	svg.selectAll("line.segments")
+		.data(segments)
+		.enter()
+		.append("line")
+		.attr("x1",function(d,i) { return margin.left+leftBuffer+(i+1)*tileWidth;})
+		.attr("x2",function(d,i) { return margin.left+leftBuffer+(i+1)*tileWidth;})
+		.attr("y1",margin.top)
+		.attr("y2",margin.top + boxHeight*2)
+		.attr("stroke","black")
+		.attr("stroke-width",0.5)
 	
 	// lines
 	svg.append("rect")
