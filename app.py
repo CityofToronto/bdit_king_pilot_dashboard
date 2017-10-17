@@ -23,8 +23,8 @@ agged = streetcar_am[['mon',
                       'travel_time']].groupby(['mon',
                                                'dir'],
                                               as_index=False).sum()
-agged_wb = agged[agged['dir']=='WB']
-agged_eb = agged[agged['dir']=='EB']
+agged_wb = agged[agged['dir'] == 'WB']
+agged_eb = agged[agged['dir'] == 'EB']
 
 data = [go.Scatter(x=agged_wb['mon'],
                    y=agged_wb['travel_time'],
@@ -34,11 +34,11 @@ data = [go.Scatter(x=agged_wb['mon'],
                    y=agged_eb['travel_time'],
                    mode='lines',
                    name='EB')
-        ]
-layout = dict(title = 'Average Streetcar Travel Times',
-              xaxis = dict(title="Month"),
-              yaxis = dict(title="Travel Time (min)"))
-    
+       ]
+layout = dict(title='Average Streetcar Travel Times',
+              xaxis=dict(title="Month"),
+              yaxis=dict(title="Travel Time (min)"))
+
 figure = {'layout': layout, 'data': data}
 app.layout = html.Div(children=[html.Div(children=[html.Div(dcc.Graph(id='travel-time-graph',
                                                                       figure=figure))])
