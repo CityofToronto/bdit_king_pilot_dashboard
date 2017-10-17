@@ -1,0 +1,85 @@
+postgresql:
+  host: host.url
+  port: 5432
+  # multiple databases can be specified, and these are iterated
+  # through to balance query loads. This is useful when connecting to
+  # pgbouncer, which can dispatch to different back end databases
+  # based on the name.
+  dbnames: [bigdata]
+  user: username
+  password: password
+queries:
+  config: queries.yaml
+  template-path: . #./vector-datasource/queries
+  # whether to reload the jinja query templates. This should be off in
+  # production.
+  reload-templates: true
+
+# format extensions to support
+# buffered Mapbox Vector Tiles are also possible by specifying mvtb
+formats: [json, topojson, mvt]
+# buffer configuration, see tilequeue sample config for details
+buffer: {}
+
+server:
+  host: localhost
+  port: 8080
+  debug: true
+  reload: true
+  threaded: false
+
+http:
+  # whether to include cors headers on responses
+  cors: true
+  # client cache time in seconds ("Cache-Control: max-age" header)
+  max-age: 300
+
+# optional for health checks. This can be useful for monitoring to
+# verify that the service is still running and can connect to the
+# database.
+health:
+  # request path to listen for health checks
+  url: /_health
+
+# to cache tiles locally, enable a cache. This can be useful when
+# experiencing timeouts for low or mid zoom ranges.
+# cache:
+#   type: <redis|file|null, default 'null'>
+#   redis:
+#     url: redis://localhost:6379
+#     options:
+#       # prefix added onto saved keys for namespace purposes
+#       key_prefix: tiles
+#       # time in seconds to keep key in cache
+#       expires: 900
+#   file:
+#     prefix: directory_prefix
+
+# to support requesting tiles for different metatile sizes
+# these should get prefixed to the beginning of the url path
+path_tile_size:
+  # NOTE: the keys should be strings
+  "256": 1
+  "512": 2
+
+# requests for zoom levels higher than this will 404
+max_interesting_zoom: 20
+
+# control how python code from yaml is used
+yaml:
+  # dotted name or runtime
+  type: parse
+  parse:
+    # this will parse the yaml files and compile them on startup
+    # useful when iterating on updating the yaml files themselves
+    path: ../vector-datasource/yaml
+  callable:
+    # this will call a function that should return a mapping from
+    # layer name to function that generates the output properties
+    # mapping returned should look like:
+    # layer-name -> function(shape, properties, feature_id)
+    # useful when the output functions have already been generated
+    # and it's simply a matter of pointing to them
+    dotted-name: path.to.function.returning.mapping
+    args:
+      - 'any-args-to-pass'
