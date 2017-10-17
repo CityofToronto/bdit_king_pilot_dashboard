@@ -50,18 +50,20 @@ CROSS JOIN time_periods
 CROSS JOIN months;
 
 
--- CREATE VIEW king_pilot_dash.street_volumes_geojson AS
--- 
--- SELECT json_build_object('type','FeatureCollection', 'features', array_to_json(array_agg(f))) as geojson
--- FROM(
--- 
--- 	SELECT 'Feature' AS type, ST_ASGeoJSON(geom)::json AS geometry, row_to_json((feature_code_desc, centreline_id, linear_name_full, linear_name_id, 
--- 	       volume, year,  direction, oneway_dir_code, dir_bin, min_zoom, 
--- 	       id, pct_change)) as properties
--- 	  FROM king_pilot_dash.street_volumes
--- 	) f
--- 
--- ;
+-- DROP VIEW king_pilot_dash.street_volumes_geojson;
+
+CREATE OR REPLACE VIEW king_pilot_dash.street_volumes_geojson AS 
+ SELECT json_build_object('type', 'FeatureCollection', 'features', array_to_json(array_agg(f.*))) AS geojson
+   FROM ( SELECT 'Feature' AS type,
+            st_asgeojson(street_volumes.geom)::json AS geometry,
+            json_build_object('feature_code_desc', street_volumes.feature_code_desc, 'centreline_id', street_volumes.centreline_id, 'linear_name_full', street_volumes.linear_name_full, 'linear_name_id', street_volumes.linear_name_id, 'volume', street_volumes.volume, 'year', street_volumes.year, 'direction', street_volumes.direction, 'oneway_dir_code', street_volumes.oneway_dir_code, 'dir_bin', street_volumes.dir_bin, 'min_zoom', street_volumes.min_zoom, 'id', street_volumes.id, 'pct_change', (random() * 50::double precision - 25::double precision)::integer) AS properties
+           FROM ryu4.streets_tiled_kingstreetpilot street_volumes) f;
+
+ALTER TABLE king_pilot_dash.street_volumes_geojson
+  OWNER TO rdumas;
+GRANT ALL ON TABLE king_pilot_dash.street_volumes_geojson TO rdumas;
+GRANT SELECT, REFERENCES ON TABLE king_pilot_dash.street_volumes_geojson TO bdit_humans;
+
 
 
 DROP MATERIALIZED VIEW IF EXISTS king_pilot_dash.streetcar_reliability;
