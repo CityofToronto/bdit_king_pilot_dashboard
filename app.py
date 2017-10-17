@@ -1,12 +1,7 @@
-import json
-import itertools
-import os
-
 import plotly.graph_objs as go
 import pandas
 
 import dash
-from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
 
@@ -15,7 +10,7 @@ app = dash.Dash()
 app.css.config.serve_locally = False
 app.scripts.config.serve_locally = False
 
-streetcar_df = pandas.read_csv('../data/streetcar_travel_times.csv')
+streetcar_df = pandas.read_csv('data/streetcar_travel_times.csv')
 
 streetcar_am = streetcar_df[streetcar_df['time_period'] == 'AM']
 agged = streetcar_am[['mon',
