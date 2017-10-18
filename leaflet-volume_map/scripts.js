@@ -17,6 +17,7 @@ var streetLayer = Tangram.leafletLayer({
     scene: 'scene.yaml',
     events: {
         click: onMapClick,
+//        hover: onMapHover,
     },
     selectionRadius: 25
 });
@@ -39,10 +40,15 @@ map.setView([43.6493, -79.3910], 15);
 // select road feature
 function onMapClick(selection) {
     if (selection.feature) {
-        highlightSelect(selection.feature.properties.__roads_properties__.geo_id);
+        highlightSelect(selection.feature.properties.geo_id);
     } else {
         highlightSelect(false);
     }
+}
+
+function onMapHover(selection) {
+    document.getElementById('map').style.cursor = selection.feature ? 'pointer' : '';
+    console.log(selection.feature.properties.feature_code_desc);
 }
 
 // highlight selection
