@@ -14,7 +14,8 @@ import dash_html_components as html
 import plotly.graph_objs as go
 
 
-times = pandas.read_csv('car_travel_times.csv')
+times = pandas.read_csv('C:\\Users\\rrodger\\Documents\\GitHub\\bdit_king_pilot_dashboard\\car_travel_times.csv')
+times['mon'] = [datetime.strptime(time, '%Y-%m-%d %H:%M:%S').date() for time in times['mon']] #strptime doesn't play well in pandas.loc
 
 middate = date(2017, 10, 2)
 
@@ -22,8 +23,10 @@ streets = ['Dundas', 'Queen']
 
 def getFig(street, midDate, times): #returns a graph_objs figure from a dataset.
 #can be stacked/grouped if data is appropriately formatted.
-    before = times.loc[(times['corridor'] == street) & (datetime.strptime(times['mon'], '%Y-%m-%d %H:%M:%S').date() <= middate)]
-    after = times.loc[(times['corridor'] == street) & (datetime.strptime(times['mon'], '%Y-%m-%d %H:%M:%S').date() >= middate)]
+    before = times.loc[(times['corridor'] == street) & (times['mon'] <= middate)]
+    after = times.loc[(times['corridor'] == street) & (times['mon'] >= middate)]
+    
+
     
     fig1 = go.Bar(x = before['dir'],
                   y = before['travel_time'],
@@ -52,18 +55,11 @@ server = app.server
 
 graphdivs = [html.Div(core.Graph(id = ('traveltime_' + street), figure = getFig(street, middate, times))) for street in streets] #, core.Graph(id = ('traveltime_' + streets[1]), figure = figures[1])]
 app.layout = html.Div([core.RadioItems(
-                id = 'streetname',
+                id = 'AMPM',
                 options=[{'label' : timebucket, 'value' : timebucket} for timebucket in ('AM','PM')],
                 value = 'AM'),
                 html.Div(graphdivs)])
-#interactivity
-#==============================================================================
-# @app.callback(
-#     [dash.dependencies.Output(['traveltime_' + street, 'figure' for street in streets])]
-#     dash.dependencies.input('Manager', 'value'))
-#
-#def update_graph()
-#==============================================================================
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
