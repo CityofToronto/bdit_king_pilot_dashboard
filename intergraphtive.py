@@ -5,26 +5,16 @@ Created on Mon Oct 16 09:39:25 2017
 @author: rrodger
 """
 
-from psycopg2 import connect
-import pandas.io.sql as pandasql
-import configparser
-from datetime import date, timedelta
+
+import pandas
+from datetime import date, datetime
 import dash
 import dash_core_components as core
 import dash_html_components as html
 import plotly.graph_objs as go
-#from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 
-CONFIG = configparser.ConfigParser()
-CONFIG.read('C:\\Users\\rrodger\\reed.cfg')
-dbset = CONFIG['DBSETTINGS']
-con = connect(**dbset)
 
-SQL = '''SELECT corridor, dir, mon, avg(tt.tavel_time) as travel_time
-FROM dbs_travel_times tt
-GROUP BY corridor, dir, mon'''
-
-times = pandasql.read_sql(SQL, con)
+times = pandas.read_csv('car_travel_times.csv')
 
 middate = date(2017, 10, 2)
 
@@ -32,8 +22,8 @@ streets = ['Dundas', 'Queen']
 
 def getFig(street, midDate, times): #returns a graph_objs figure from a dataset.
 #can be stacked/grouped if data is appropriately formatted.
-    before = times.loc[(times['corridor'] == street) & (times['mon'] <= middate)]
-    after = times.loc[(times['corridor'] == street) & (times['mon'] >= middate)]
+    before = times.loc[(times['corridor'] == street) & (datetime.strptime(times['mon'], '%Y-%m-%d %H:%M:%S').date() <= middate)]
+    after = times.loc[(times['corridor'] == street) & (datetime.strptime(times['mon'], '%Y-%m-%d %H:%M:%S').date() >= middate)]
     
     fig1 = go.Bar(x = before['dir'],
                   y = before['travel_time'],
@@ -55,6 +45,7 @@ def getFig(street, midDate, times): #returns a graph_objs figure from a dataset.
 
 
 app = dash.Dash()
+server = app.server
 
 
 #Generates a list of graphs in divs for each street in a list.
@@ -65,7 +56,14 @@ app.layout = html.Div([core.RadioItems(
                 options=[{'label' : timebucket, 'value' : timebucket} for timebucket in ('AM','PM')],
                 value = 'AM'),
                 html.Div(graphdivs)])
-
+#interactivity
+#==============================================================================
+# @app.callback(
+#     [dash.dependencies.Output(['traveltime_' + street, 'figure' for street in streets])]
+#     dash.dependencies.input('Manager', 'value'))
+#
+#def update_graph()
+#==============================================================================
 
 if __name__ == '__main__':
     app.run_server(debug=True)
