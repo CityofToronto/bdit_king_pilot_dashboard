@@ -54,11 +54,7 @@ server = app.server
 #Generates a list of graphs in divs for each street in a list.
 
 graphdivs = [html.Div(core.Graph(id = ('traveltime_' + street), figure = getFig(street, middate, times))) for street in streets] #, core.Graph(id = ('traveltime_' + streets[1]), figure = figures[1])]
-app.layout = html.Div([core.RadioItems(
-                id = 'AMPM',
-                options=[{'label' : timebucket, 'value' : timebucket} for timebucket in ('AM','PM')],
-                value = 'AM'),
-                html.Div(graphdivs)])
+app.layout = html.Div(graphdivs)
 
 
 if __name__ == '__main__':
