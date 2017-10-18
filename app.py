@@ -2,6 +2,7 @@ import os
 import struct
 
 import dash
+from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas
@@ -16,13 +17,18 @@ server = app.server
 server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 
 
-NORMAL_TRAVEL_TIMES = dict(AM=dict(WB=dict(min_tt=20,
+NORMAL_TRAVEL_TIMES = dict(AM=dict(WB=dict(min_tt=22,
+                                           max_tt=25),
+                                   EB=dict(min_tt=19,
+                                           max_tt=21)),
+                           PM=dict(WB=dict(min_tt=20,
                                            max_tt=23),
-                                   EB=dict(min_tt=22,
-                                           max_tt=25)))
+                                   EB=dict(min_tt=23,
+                                           max_tt=26)))
 streetcar_df = pandas.read_csv('data/streetcar_travel_times.csv')
 
 MIN_DATE, MAX_DATE = streetcar_df.mon.min(), streetcar_df.mon.max()
+MIN_TT, MAX_TT = 0, 35
 
 HEX_COLOURS = dict(WB='ff5b33',
                    EB='a97bc4')
@@ -81,16 +87,28 @@ def create_graph(agged_df, shapes_lst):
             ]
     layout = dict(title='Average Streetcar Travel Times',
                   xaxis=dict(title="Month"),
-                  yaxis=dict(title="Travel Time (min)"),
+                  yaxis=dict(title="Travel Time (min)", range=[MIN_TT, MAX_TT]),
                   shapes=shapes_lst)
     return {'layout': layout, 'data': data}
 
-agged = filter_aggregate_timeperiod('AM')
-shapes = create_shapes('AM')
 
-app.layout = html.Div(children=[html.Div(dcc.Graph(id='travel-time-graph',
-                                                   figure=create_graph(agged, shapes)))
-                               ])
+
+app.layout = html.Div(children=[dcc.RadioItems(id='radio_timeperiods',
+                                               options=[{'label': 'AM Peak', 'value': 'AM'}, 
+                                                        {'label': 'PM Peak', 'value': 'PM'}],
+                                               value='AM',
+                                               labelStyle={'display': 'inline-block'}),
+                                html.Div(dcc.Graph(id='travel-time-graph'))
+                                ])
+
+
+@app.callback(Output('travel-time-graph','figure'),
+              [Input('radio_timeperiods', 'value')])
+def button_click(peak):
+    agged = filter_aggregate_timeperiod(peak)
+    shapes = create_shapes(peak)
+    return create_graph(agged, shapes)
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
