@@ -4,13 +4,14 @@
 	<head>
 		<script src="https://d3js.org/d3.v4.min.js"></script>
 		<script src="https://d3js.org/d3-path.v1.min.js"></script>
+		<script src="https://d3js.org/d3-scale.v1.min.js"></script>
 	</head>
 	<body>
 		<h1>Hello World!</h1>
 		<script>
-		/* Import CSV Data
+		/* Load CSV Data
 		***********************************************************************/
-
+		var testarr = [{line: 1, x1: 100, y1: 100, x2: 100, y2: 200},{line: 2, x1: 100, y1: 100, x2: 200, y2: 100}];
 		// CSV column types for streets_lines.csv
 		var slConverter = function(d) {
 			return {
@@ -24,19 +25,20 @@
 			};
 		};
 		
+		/*
 		// Row conversion for streets_lines
 		var streets_lines = [];
 		d3.csv("streets_lines.csv", function(d) {
 			streets_lines = d.map(slConverter);
 			console.log(streets_lines);
 		});
-
+		*/
 		
 		
 		// CSV column types for streets_segments.csv
 		var ssConverter = function(d) {
 			return {
-				segment: +d.segment,
+				line: +d.segment,
 				streetname: d.streetname,
 				direction: d.direction,
 				segdesc: d.segdesc,
@@ -47,30 +49,80 @@
 			};
 		};
 		
+		/*
 		// Row conversion for streets_segments
-		var streets_segments;
+		var streets_segments = [];
 		d3.csv("streets_segments.csv", function(d) {
 			streets_segments = d.map(ssConverter);
 			console.log(streets_segments);
 		});
+		*/
 		
 		
-		/* Draw SVG streets_lines
+		/* Setup SVGs
 		***********************************************************************/
+		var svgW = 1200;
+		var svgH = 400;
 		var stroke = "black";
 		var strokeWidth = 5;
 		var fill = "none";
 		
 		// Create SVG container
-		const svgContainer = d3.select("body").append("svg")
-			.attr("width", 1200)
-			.attr("height", 400);
+		var svgContainer = d3.select("body").append("svg")
+			.attr("width", svgW)
+			.attr("height", svgH);
 		
+		
+		
+		/* Scale SVGs
+		***********************************************************************/
+		// Create arrays of streets_lines X and Y values
+		var xArr = [];
+		function xAccess(arr) {
+			xArr = [];
+			arr.forEach(function(obj) {
+				xArr.push(obj.x1);
+				xArr.push(obj.x2);
+			});
+			return xArr;
+		}
+		
+		var yArr = [];
+		function yAccess(arr) {
+			yArr = [];
+			arr.forEach(function(obj) {
+				yArr.push(obj.y1);
+				yArr.push(obj.y2);
+			});
+			return yArr;
+		}
+		
+		
+		var xMin, xMax, yMin, yMax, xScale, yScale;
+		function scaling() {
+			// Find x and y max/min of streets_lines
+			xMin = d3.min(xArr)
+			xMax = d3.max(xArr)
+			yMin = d3.min(yArr)
+			yMax = d3.max(yArr)
+			
+			// Create x and y Scales
+			xScale = d3.scaleLinear()
+				.domain([xMin, xMax])
+				.range([0, svgW])
+			yScale = d3.scaleLinear()
+				.domain([yMin, yMax])
+				.range([0, svgH])
+		}
+		
+		
+		/* Functions to draw SVGs
+		***********************************************************************/
 		// Create path generator
 		function pathFunc(obj) {
 			var path = d3.path();
-			path.moveTo(obj.x1,obj.y1);
-			path.lineTo(obj.x2,obj.y2);
+			path.moveTo(xScale(obj.x1),yScale(obj.y1));
+			path.lineTo(xScale(obj.x2),yScale(obj.y2));
 			return path;
 		}
 		
@@ -84,7 +136,7 @@
 		}
 		
 		function pathGen(arr) {
-				arr.forEach(drawPath)
+				arr.forEach(drawPath);
 		}
 		
 		
@@ -92,6 +144,23 @@
 		
 		
 		
+		/* Draw SVGs
+		***********************************************************************/
+		// Load data and execute functions requiring immediate access to data
+		var streets_lines = [];
+		var streets_segments = [];
+		d3.csv("streets_lines.csv", function(sl) {
+			streets_lines = sl.map(slConverter);
+			d3.csv("streets_segments.csv", function(ss) {
+				streets_segments = ss.map(ssConverter)
+				// console.log(streets_lines);
+				xAccess(streets_lines);
+				yAccess(streets_lines);
+				scaling()
+				pathGen(streets_lines);
+				pathGen(streets_segments);
+			});
+		});
 		
 		
 		
