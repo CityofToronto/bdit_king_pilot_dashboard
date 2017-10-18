@@ -14,7 +14,7 @@ import dash_html_components as html
 import plotly.graph_objs as go
 
 
-times = pandas.read_csv('C:\\Users\\rrodger\\Documents\\GitHub\\bdit_king_pilot_dashboard\\car_travel_times.csv')
+times = pandas.read_csv('car_travel_times.csv')
 times['mon'] = [datetime.strptime(time, '%Y-%m-%d %H:%M:%S').date() for time in times['mon']] #strptime doesn't play well in pandas.loc
 
 middate = date(2017, 10, 2)
