@@ -65,13 +65,13 @@ global:
 sources:
     mapzen:
         type: GeoJSON
-        url: http://localhost:8080/all/{z}/{x}/{y}.json
+        url: street_volumes.json
         max_zoom: 20
         min_zoom: 7
 
 #scene:
-#    backgbutt:
-#        color: black
+#    background:
+#        color: white
 
 layers:
     roads:
@@ -96,301 +96,322 @@ layers:
 #                    family: Trebuchet MS
 #                    fill: white
 #                    stroke: { color: black, width: 4 }
-        expressway:
-            filter: function () {
-                        if (global._expressway == false) {
-                            return (feature.__roads_properties__.functional_type == false); 
-                        } else {
-                            return (feature.__roads_properties__.functional_type == 'Expressway');
-                        }
-                    }
+        centreline:
             draw:
                 lines:
-                    order: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 20;
-                                } else {
-                                    return 19;
-                                }
-                            }
-                    color: global.set_colour
-                    width: global.set_width
+                    order: 21
+                    color: black
+                    width: 5px
                     cap: butt
                     interactive: true
                     outline:
                         width: 2px
                         color: '#FFA500' # orange
-                text:
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    priority: 1
-                    font:
-                        weight: butt
-                        size: 11pt
-                        family: Open Sans
-                        fill: '#663300'
-                        stroke: { color: white, width: 4 }
-                        anchor: center
-        expressway_ramp:
-            filter: function () {
-                        if (global._ramps == false) {
-                            return (feature.__roads_properties__.functional_type == false); 
-                        } else {
-                            return (feature.__roads_properties__.functional_type == 'Expressway Ramp');
-                        }
-                    }
-            draw:
-                lines:
-                    order: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 18;
-                                } else {
-                                    return 17;
-                                }
-                            }
-                    color: global.set_colour
-                    width: global.set_width
-                    cap: butt
-                    interactive: true
-                    outline:
-                        width: 2px
-                        color: '#A9A9A9' # light gray
-                text:
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    priority: 2
-                    font:
-                        weight: butt
-                        size: 11pt
-                        family: Open Sans
-                        fill: '#646464' # dark gray
-                        stroke: { color: white, width: 4 }
-        major_arterial:
-            filter: function () { return (feature.__roads_properties__.functional_type == 'Major Arterial'); }
-            draw:
-                lines:
-                    order: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 16;
-                                } else {
-                                    return 15;
-                                }
-                            }
-                    color: global.set_colour
-                    width: global.set_width
-                    cap: butt
-                    interactive: true
-                text:
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    priority: 2
-                    font:
-                        weight: butt
-                        size: 11pt
-                        family: Open Sans
-                        fill: '#646464' # dark gray
-                        stroke: { color: white, width: 4 }
-        major_arterial_ramp:
-            filter: function () {
-                        if (global._ramps == false) {
-                            return (feature.__roads_properties__.functional_type == false); 
-                        } else {
-                            return (feature.__roads_properties__.functional_type == 'Major Arterial Ramp');
-                        }
-                    }
-            draw:
-                lines:
-                    order: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 14;
-                                } else {
-                                    return 13;
-                                }
-                            }
-                    color: global.set_colour
-                    width: global.set_width
-                    cap: butt
-                    interactive: true
-                    outline:
-                        width: 2px
-                        color: '#A9A9A9' # light gray
-                text:
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    priority: 3
-                    font:
-                        weight: butt
-                        size: 11pt
-                        family: Open Sans
-                        fill: '#646464' # dark gray
-                        stroke: { color: white, width: 4 }
-        minor_arterial:
-            filter: function () { return (feature.__roads_properties__.functional_type == 'Minor Arterial'); }
-            draw:
-                lines:
-                    order: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 12;
-                                } else {
-                                    return 11;
-                                }
-                            }
-                    color: global.set_colour
-                    width: global.set_width
-                    cap: butt
-                    interactive: true
-                text:
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    font:
-                        weight: butt
-                        size: 11pt
-                        family: Open Sans
-                        fill: '#646464' # dark gray
-                        stroke: { color: white, width: 4 }
-        minor_arterial_ramp:
-            filter: function () {
-                        if (global._ramps == false) {
-                            return (feature.__roads_properties__.functional_type == false); 
-                        } else {
-                            return (feature.__roads_properties__.functional_type == 'Minor Arterial Ramp');
-                        }
-                    }
-            draw:
-                lines:
-                    order: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 10;
-                                } else {
-                                    return 9;
-                                }
-                            }
-                    color: global.set_colour
-                    width: global.set_width
-                    cap: butt
-                    interactive: true
-                    outline:
-                        width: 1px
-                        color: '#A9A9A9' # light gray
-                text:
-                    priority: 4
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    font:
-                        weight: butt
-                        size: 11pt
-                        family: Open Sans
-                        fill: '#646464' # dark gray
-                        stroke: { color: white, width: 4 }
-        collector:
-            filter: function () { return (feature.__roads_properties__.functional_type == 'Collector'); }
-            draw:
-                lines:
-                    order: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 8;
-                                } else {
-                                    return 7;
-                                }
-                            }
-                    color: global.set_colour
-                    width: global.set_width
-                    cap: butt
-                    interactive: true
-                text:
-                    priority: 5
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    font:
-                        weight: butt
-                        size: 10pt
-                        family: Open Sans
-                        fill: '#646464' # dark gray
-                        stroke: { color: white, width: 4 }
-        collector_ramp:
-            filter: function () {
-                        if (global._ramps == false) {
-                            return (feature.__roads_properties__.functional_type == false); 
-                        } else {
-                            return (feature.__roads_properties__.functional_type == 'Collector Ramp');
-                        }
-                    }
-            draw:
-                lines:
-                    order: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 6;
-                                } else {
-                                    return 5;
-                                }
-                            }
-                    color: global.set_colour
-                    width: global.set_width
-                    cap: butt
-                    interactive: true
-                    outline:
-                        width: 2px
-                        color: '#A9A9A9' # light gray
-                text:
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    priority: 5
-                    font:
-                        weight: butt
-                        size: 10pt
-                        family: Open Sans
-                        fill: '#646464' # dark gray
-                        stroke: { color: white, width: 4 }
-        local:
-            filter: function () { return (feature.__roads_properties__.functional_type == 'Local'); }
-            draw:
-                lines:
-                    order: 2
-                    color: white
-                    width: global.set_width
-                    cap: butt
-                    interactive: true
-                text:
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    priority: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 4;
-                                } else {
-                                    return 3;
-                                }
-                            }
-                    font:
-                        weight: butt
-                        size: 10pt
-                        family: Open Sans
-                        fill: '#646464' # dark gray
-                        stroke: { color: white, width: 4 }
-        pending:
-            filter: function () { return (feature.__roads_properties__.functional_type == 'Pending'); }
-            draw:
-                lines:
-                    order: 1
-                    color: global.set_colour
-                    width: global.set_width
-                    cap: butt
-                    interactive: true
-                text:
-                    text_source: function() { return feature.__roads_properties__.name; }
-                    priority: function() {
-                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
-                                    return 2;
-                                } else {
-                                    return 1;
-                                }
-                            }
-                    font:
-                        weight: butt
-                        size: 10pt
-                        family: Open Sans
-                        fill: '#646464' # dark gray
-                        stroke: { color: white, width: 4 }
-        road_highlightSelect:
-            filter: function () { return (feature.__roads_properties__.geo_id == global._highlightSelect); }
-            draw:
-                lines:
-                    order: 11
-                    color: white
-                    cap: butt
-                    outline:
-                        width: 3px
-                        color: '#0dd5fc' # highlighter blue
+#                text:
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    priority: 1
+#                    font:
+#                        weight: butt
+#                        size: 11pt
+#                        family: Open Sans
+#                        fill: '#663300'
+#                        stroke: { color: white, width: 4 }
+#                        anchor: center
+#        expressway:
+#            filter: function () {
+#                        if (global._expressway == false) {
+#                            return (feature.__roads_properties__.functional_type == false); 
+#                        } else {
+#                            return (feature.__roads_properties__.functional_type == 'Expressway');
+#                        }
+#                    }
+#            draw:
+#                lines:
+#                    order: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 20;
+#                                } else {
+#                                    return 19;
+#                                }
+#                            }
+#                    color: global.set_colour
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                    outline:
+#                        width: 2px
+#                        color: '#FFA500' # orange
+#                text:
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    priority: 1
+#                    font:
+#                        weight: butt
+#                        size: 11pt
+#                        family: Open Sans
+#                        fill: '#663300'
+#                        stroke: { color: white, width: 4 }
+#                        anchor: center
+#        expressway_ramp:
+#            filter: function () {
+#                        if (global._ramps == false) {
+#                            return (feature.__roads_properties__.functional_type == false); 
+#                        } else {
+#                            return (feature.__roads_properties__.functional_type == 'Expressway Ramp');
+#                        }
+#                    }
+#            draw:
+#                lines:
+#                    order: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 18;
+#                                } else {
+#                                    return 17;
+#                                }
+#                            }
+#                    color: global.set_colour
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                    outline:
+#                        width: 2px
+#                        color: '#A9A9A9' # light gray
+#                text:
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    priority: 2
+#                    font:
+#                        weight: butt
+#                        size: 11pt
+#                        family: Open Sans
+#                        fill: '#646464' # dark gray
+#                        stroke: { color: white, width: 4 }
+#        major_arterial:
+#            filter: function () { return (feature.__roads_properties__.functional_type == 'Major Arterial'); }
+#            draw:
+#                lines:
+#                    order: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 16;
+#                                } else {
+#                                    return 15;
+#                                }
+#                            }
+#                    color: global.set_colour
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                text:
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    priority: 2
+#                    font:
+#                        weight: butt
+#                        size: 11pt
+#                        family: Open Sans
+#                        fill: '#646464' # dark gray
+#                        stroke: { color: white, width: 4 }
+#        major_arterial_ramp:
+#            filter: function () {
+#                        if (global._ramps == false) {
+#                            return (feature.__roads_properties__.functional_type == false); 
+#                        } else {
+#                            return (feature.__roads_properties__.functional_type == 'Major Arterial Ramp');
+#                        }
+#                    }
+#            draw:
+#                lines:
+#                    order: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 14;
+#                                } else {
+#                                    return 13;
+#                                }
+#                            }
+#                    color: global.set_colour
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                    outline:
+#                        width: 2px
+#                        color: '#A9A9A9' # light gray
+#                text:
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    priority: 3
+#                    font:
+#                        weight: butt
+#                        size: 11pt
+#                        family: Open Sans
+#                        fill: '#646464' # dark gray
+#                        stroke: { color: white, width: 4 }
+#        minor_arterial:
+#            filter: function () { return (feature.__roads_properties__.functional_type == 'Minor Arterial'); }
+#            draw:
+#                lines:
+#                    order: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 12;
+#                                } else {
+#                                    return 11;
+#                                }
+#                            }
+#                    color: global.set_colour
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                text:
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    font:
+#                        weight: butt
+#                        size: 11pt
+#                        family: Open Sans
+#                        fill: '#646464' # dark gray
+#                        stroke: { color: white, width: 4 }
+#        minor_arterial_ramp:
+#            filter: function () {
+#                        if (global._ramps == false) {
+#                            return (feature.__roads_properties__.functional_type == false); 
+#                        } else {
+#                            return (feature.__roads_properties__.functional_type == 'Minor Arterial Ramp');
+#                        }
+#                    }
+#            draw:
+#                lines:
+#                    order: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 10;
+#                                } else {
+#                                    return 9;
+#                                }
+#                            }
+#                    color: global.set_colour
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                    outline:
+#                        width: 1px
+#                        color: '#A9A9A9' # light gray
+#                text:
+#                    priority: 4
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    font:
+#                        weight: butt
+#                        size: 11pt
+#                        family: Open Sans
+#                        fill: '#646464' # dark gray
+#                        stroke: { color: white, width: 4 }
+#        collector:
+#            filter: function () { return (feature.__roads_properties__.functional_type == 'Collector'); }
+#            draw:
+#                lines:
+#                    order: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 8;
+#                                } else {
+#                                    return 7;
+#                                }
+#                            }
+#                    color: global.set_colour
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                text:
+#                    priority: 5
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    font:
+#                        weight: butt
+#                        size: 10pt
+#                        family: Open Sans
+#                        fill: '#646464' # dark gray
+#                        stroke: { color: white, width: 4 }
+#        collector_ramp:
+#            filter: function () {
+#                        if (global._ramps == false) {
+#                            return (feature.__roads_properties__.functional_type == false); 
+#                        } else {
+#                            return (feature.__roads_properties__.functional_type == 'Collector Ramp');
+#                        }
+#                    }
+#            draw:
+#                lines:
+#                    order: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 6;
+#                                } else {
+#                                    return 5;
+#                                }
+#                            }
+#                    color: global.set_colour
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                    outline:
+#                        width: 2px
+#                        color: '#A9A9A9' # light gray
+#                text:
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    priority: 5
+#                    font:
+#                        weight: butt
+#                        size: 10pt
+#                        family: Open Sans
+#                        fill: '#646464' # dark gray
+#                        stroke: { color: white, width: 4 }
+#        local:
+#            filter: function () { return (feature.__roads_properties__.functional_type == 'Local'); }
+#            draw:
+#                lines:
+#                    order: 2
+#                    color: white
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                text:
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    priority: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 4;
+#                                } else {
+#                                    return 3;
+#                                }
+#                            }
+#                    font:
+#                        weight: butt
+#                        size: 10pt
+#                        family: Open Sans
+#                        fill: '#646464' # dark gray
+#                        stroke: { color: white, width: 4 }
+#        pending:
+#            filter: function () { return (feature.__roads_properties__.functional_type == 'Pending'); }
+#            draw:
+#                lines:
+#                    order: 1
+#                    color: global.set_colour
+#                    width: global.set_width
+#                    cap: butt
+#                    interactive: true
+#                text:
+#                    text_source: function() { return feature.__roads_properties__.name; }
+#                    priority: function() {
+#                                if (feature.__roads_properties__.direction == 'Northbound' || feature.__roads_properties__.direction == 'Southbound') {
+#                                    return 2;
+#                                } else {
+#                                    return 1;
+#                                }
+#                            }
+#                    font:
+#                        weight: butt
+#                        size: 10pt
+#                        family: Open Sans
+#                        fill: '#646464' # dark gray
+#                        stroke: { color: white, width: 4 }
+#        road_highlightSelect:
+#            filter: function () { return (feature.__roads_properties__.geo_id == global._highlightSelect); }
+#            draw:
+#                lines:
+#                    order: 11
+#                    color: white
+#                    cap: butt
+#                    outline:
+#                        width: 3px
+#                        color: '#0dd5fc' # highlighter blue
 #        road_highlightHover:
 #            filter: function () { return (feature.__roads_properties__.geo_id == global._highlightHover); }
 #            draw:
