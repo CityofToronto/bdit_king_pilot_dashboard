@@ -12,8 +12,6 @@ lights:
 global:
     _highlightSelect: false
 #    _highlightHover: false
-    _expressway: true
-    _ramps: true
     set_width: function () {
                     if (feature.volume == null) {
                         return 6
@@ -55,18 +53,11 @@ global:
                     } else if (feature.pct_change < -20) {
                         return '#F2FE8E';
                     }
-                    return '#FFFFFF';
-                }
-    set_label: function () {
-                    if (feature.volume == null) {
-                        return feature.linear_name_full;
-                    } else {
-                        return feature.linear_name_full + " " + feature.volume;
-                    }
+                    return '#000000';
                 }
 
 sources:
-    mapzen:
+    local:
         type: GeoJSON
         url: street_volumes.json
         max_zoom: 20
@@ -78,7 +69,7 @@ scene:
 
 layers:
     roads:
-        data: { source: mapzen }
+        data: { source: local }
         # default draw group, un-assigned features will follow this
         draw:
             text:
@@ -259,7 +250,7 @@ layers:
             draw:
                 lines:
                     order: 2
-                    color: white
+                    color: global.set_colour
                     width: global.set_width
                     cap: butt
                     interactive: true

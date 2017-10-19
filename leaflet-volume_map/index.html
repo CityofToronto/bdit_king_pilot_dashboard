@@ -11,9 +11,13 @@
         <link rel="stylesheet"  type="text/css" href="style.css" />
     </head>
     <body>
-
+        <h1>Leaflet Volume Map</h1>
         <div id="map" style="height:300px; width:1200px;"></div>
-
+        <form action="">
+            <input type="radio" name="range" onclick="onRangeChange(1)"> DAY
+            <input type="radio" name="range" onclick="onRangeChange(2)"> MONTH
+            <input type="radio" name="range" onclick="onRangeChange(3)"> YEAR
+        </form>
         <!-- leaflet -->
         <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
 

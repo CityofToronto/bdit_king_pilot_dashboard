@@ -1,28 +1,14 @@
 // Setting map properties
 var map = L.map("map", { zoomControl:false });
 
-//var bounds = new L.LatLngBounds(new L.LatLng(43.6473, -79.4044), new L.LatLng(43.64702, -79.3702));
-
-//var street_volumes;
-
-//$.getJSON("/street_volumes.geojson", function(json) {
-//    L.geoJSON(json).addTo(map); // this will show the info it in firebug console
-//    //console.log(street_volumes);
-//    console.log(json);
-//});
-
-//L.geoJSON(street_volumes).addTo(map);
-
 var streetLayer = Tangram.leafletLayer({
     scene: 'scene.yaml',
     events: {
         click: onMapClick,
-//        hover: onMapHover,
+        hover: onMapHover,
     },
     selectionRadius: 25
 });
-
-//map.setMaxBounds(bounds);
 
 // Disable dragging when user's cursor enters the element
 //map.dragging.disable();
@@ -46,13 +32,30 @@ function onMapClick(selection) {
     }
 }
 
+
 function onMapHover(selection) {
     document.getElementById('map').style.cursor = selection.feature ? 'pointer' : '';
-    console.log(selection.feature.properties.feature_code_desc);
 }
 
 // highlight selection
 function highlightSelect(symbol) {
     streetLayer.scene.config.global._highlightSelect = symbol;
     streetLayer.scene.updateConfig();
+}
+
+function onRangeChange(value) {
+    if (value == 1) {
+        streetLayer.scene.config.sources.local.url = "http://localhost:8000/street_volumes.json";
+        streetLayer.scene.updateConfig();
+    } else if (value == 2) {
+        streetLayer.scene.config.sources.local.url = "http://localhost:8000/street_volumes2.json";
+        streetLayer.scene.updateConfig();
+    } else if (value == 3) {
+        streetLayer.scene.config.sources.local.url = "http://localhost:8000/street_volumes3.json";
+        streetLayer.scene.updateConfig();
+    } else {
+        streetLayer.scene.config.sources.local.url = "http://localhost:8000/street_volumes.json";
+        streetLayer.scene.updateConfig();
+    }
+
 }
