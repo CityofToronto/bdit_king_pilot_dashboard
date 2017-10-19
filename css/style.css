@@ -6,9 +6,21 @@ input[type="radio"] {
 
 input[type="radio"]:active ~ label {
   opacity: 1;
+  line-height: 30px;
+  margin: 2px;
+  border: 2px solid black;
 }
 
 input[type="radio"]:checked ~ label {
   opacity: 1;
   border: 1px solid black;
+}
+
+label {
+    opacity: 1;
+    line-height: 40px;
+    text-align: center;
+    padding: 5px;
+    margin: 2px;
+    border: 2px solid black;
 }
