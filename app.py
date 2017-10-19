@@ -10,6 +10,7 @@ import plotly.graph_objs as go
 
 app = dash.Dash()
 # In case there are problems with react loading from unpkg, set to True
+app.css.append_css({"external_url": "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/style.css"})
 app.css.config.serve_locally = False
 app.scripts.config.serve_locally = False
 
@@ -91,13 +92,10 @@ def create_graph(agged_df, shapes_lst):
                   shapes=shapes_lst)
     return {'layout': layout, 'data': data}
 
-
-
 app.layout = html.Div(children=[dcc.RadioItems(id='radio_timeperiods',
                                                options=[{'label': 'AM Peak', 'value': 'AM'}, 
                                                         {'label': 'PM Peak', 'value': 'PM'}],
-                                               value='AM',
-                                               labelStyle={'display': 'inline-block'}),
+                                               value='AM'),
                                 html.Div(dcc.Graph(id='travel-time-graph'))
                                 ])
 
