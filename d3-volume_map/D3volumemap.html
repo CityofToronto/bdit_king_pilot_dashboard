@@ -34,7 +34,6 @@
 		});
 		*/
 		
-		
 		// CSV column types for streets_segments.csv
 		var ssConverter = function(d) {
 			return {
@@ -63,10 +62,6 @@
 		***********************************************************************/
 		var svgW = 1200;
 		var svgH = 500;
-		var stroke = "black";
-		var strokeWidth = 5;
-		var pathfill = "none";
-		
 		
 		// Create SVG container
 		var svgContainer = d3.select("body").append("svg")
@@ -121,7 +116,6 @@
 			return yArr;
 		}
 		
-		
 		var xMin, xMax, yMin, yMax, xScale, yScale;
 		function scaling() {
 			// Find x and y max/min of streets_lines
@@ -140,16 +134,33 @@
 		}
 		
 		
+		
 		/* Functions to draw SVGs
 		***********************************************************************/
+		var stroke = "black";
+		var strokeWidth = 5;
+		var pathfill = "none";
+		
 		// Create path generator
+		var path;
 		function pathFunc(obj) {
-			var path = d3.path();
+			path = d3.path();
 			path.moveTo(xScale(obj.x1),yScale(obj.y1));
 			path.lineTo(xScale(obj.x2),yScale(obj.y2));
 			return path;
 		}
 		
+		/*
+		// bind data to stroke width; return numerical width
+		function setStrokeW(obj) {
+			strokeWidth = 5;
+			return strokeWidth;
+		}
+		*/
+		
+		
+		
+		// draw a path
 		function drawPath(obj) {
 			svgContainer.append("path")
 				.attr("id", obj.line)
@@ -159,8 +170,11 @@
 				.attr("fill", pathfill);
 		}
 		
+		// draw all street objects in an array
 		function pathGen(arr) {
-				arr.forEach(drawPath);
+			arr.forEach(function(obj) {
+			drawPath(obj)
+			});
 		}
 		
 		
@@ -178,7 +192,6 @@
 		var dyEW = ".35em"; // add half the text's height to its y attribute
 		var dyNS = ".35em"; // add half the text's height to its y attribute
 		
-		
 		// label a street object
 		var text;
 		function labelStreet(obj) {
@@ -190,11 +203,9 @@
 				.attr("font-family", fontfam)
 				.attr("font_size", fontsize)
 				.attr("fill", fontfill);
-			// console.log(obj);
 		}
 		
-		
-		// label many street objects in an array
+		// label all street objects in an array
 		function labelMany(arr) {
 			arr.forEach(function(obj) {
 				if (obj.streetname == "Front1") { // treating Front1 exactly like other EW streets
@@ -238,19 +249,23 @@
 			streets_lines = sl.map(slConverter);
 			d3.csv("streets_segments.csv", function(ss) {
 				streets_segments = ss.map(ssConverter)
-				// console.log(streets_lines);
 				xAccess(streets_lines);
 				yAccess(streets_lines);
 				scaling()
 				labelMany(streets_lines);
 				pathGen(streets_lines);
-				pathGen(streets_segments);
+				// pathGen(streets_segments);
 			});
 		});
 		
 		
-		
-
+		/* Load json data
+		***********************************************************************/
+		var json_data;
+		d3.json("smallsample.json", function(file) {
+			json_data = file
+			console.log(json_data);
+		});
 		
 
 		
