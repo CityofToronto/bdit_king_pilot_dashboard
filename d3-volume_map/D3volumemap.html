@@ -65,12 +65,36 @@
 		var svgH = 400;
 		var stroke = "black";
 		var strokeWidth = 5;
-		var fill = "none";
+		var pathfill = "none";
+		
 		
 		// Create SVG container
 		var svgContainer = d3.select("body").append("svg")
 			.attr("width", svgW)
 			.attr("height", svgH);
+		
+		
+		
+		// function to get attributes from all objects in an array
+		function getArrObjAtt(arr, att) {
+			var attr;
+			var fieldname = att.toString()
+			arr.forEach(function(obj) {
+				attr = obj[fieldname];
+				// console.log(attr);
+				return attr;
+				})
+			return attr;
+		}
+		
+		// function to get specified attribute from an object
+		function getObjAtt(obj, att) {
+			var attr;
+			var fieldname = att.toString()
+			attr = obj[fieldname];
+			// console.log(attr);
+			return attr;
+		}
 		
 		
 		
@@ -109,10 +133,10 @@
 			// Create x and y Scales
 			xScale = d3.scaleLinear()
 				.domain([xMin, xMax])
-				.range([0, svgW])
+				.range([100, svgW-100])
 			yScale = d3.scaleLinear()
 				.domain([yMin, yMax])
-				.range([0, svgH])
+				.range([100, svgH-100])
 		}
 		
 		
@@ -132,7 +156,7 @@
 				.attr("d", pathFunc(obj))
 				.attr("stroke", stroke)
 				.attr("stroke_width", strokeWidth)
-				.attr("fill", fill);
+				.attr("fill", pathfill);
 		}
 		
 		function pathGen(arr) {
@@ -141,6 +165,56 @@
 		
 		
 		
+		/* Functions to label SVGs
+		***********************************************************************/
+		var fontfam = "san-serif";
+		var fontsize = "12px";
+		var fontfill = "red";
+		
+		var anchEW = "end";
+		var anchNS = "start";
+		// var rotEW = "rotate(0)";
+		// var rotNS = "rotate(270 ";
+		
+		
+		// label a street object
+		var text;
+		function labelStreet(obj) {
+			text = d3.select("svg")
+				.append("text")
+				.text(obj.streetname)
+				.attr("x", xScale(obj.x1))
+				.attr("y", yScale(obj.y1))
+				.attr("font-family", fontfam)
+				.attr("font_size", fontsize)
+				.attr("fill", fontfill);
+			// console.log(obj);
+		}
+		
+		
+		// label many street objects in an array
+		function labelMany(arr) {
+			arr.forEach(function(obj) {
+				if (obj.streetname == "Front1") {
+				obj.streetname = "Front";
+				labelStreet(obj);
+				text.attr("text-anchor", anchEW);
+				}
+				else if (obj.streetname == "Front2") {
+				return;
+				}
+				else if (obj.directions == "NS") {
+				var rotNS = "rotate(270 " + xScale(obj.x1) + "," + yScale(obj.y1) + ")";
+				labelStreet(obj);
+				text.attr("text-anchor", anchNS)
+					.attr("transform", rotNS);
+				}
+				else { // obj.directions == "EW" || obj.directions == "E" || obj.directions == "W"
+				labelStreet(obj);
+				text.attr("text-anchor", anchEW);
+				};
+			});
+		}
 		
 		
 		
@@ -157,6 +231,7 @@
 				xAccess(streets_lines);
 				yAccess(streets_lines);
 				scaling()
+				labelMany(streets_lines);
 				pathGen(streets_lines);
 				pathGen(streets_segments);
 			});
@@ -164,6 +239,9 @@
 		
 		
 		
+
+		
+
 		
 		
 		</script>
