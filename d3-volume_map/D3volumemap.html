@@ -62,7 +62,7 @@
 		/* Setup SVGs
 		***********************************************************************/
 		var svgW = 1200;
-		var svgH = 400;
+		var svgH = 500;
 		var stroke = "black";
 		var strokeWidth = 5;
 		var pathfill = "none";
@@ -173,8 +173,10 @@
 		
 		var anchEW = "end";
 		var anchNS = "start";
-		// var rotEW = "rotate(0)";
-		// var rotNS = "rotate(270 ";
+		var dxEW = -20;
+		var dxNS = 20;
+		var dyEW = ".35em"; // add half the text's height to its y attribute
+		var dyNS = ".35em"; // add half the text's height to its y attribute
 		
 		
 		// label a street object
@@ -195,23 +197,32 @@
 		// label many street objects in an array
 		function labelMany(arr) {
 			arr.forEach(function(obj) {
-				if (obj.streetname == "Front1") {
-				obj.streetname = "Front";
+				if (obj.streetname == "Front1") { // treating Front1 exactly like other EW streets
+				obj.streetname = "Front"; // reassigning streetname
 				labelStreet(obj);
-				text.attr("text-anchor", anchEW);
+				text.attr("text-anchor", anchEW)
+					.attr("dx", dxEW)
+					.attr("dy", dyEW);
 				}
-				else if (obj.streetname == "Front2") {
+				else if (obj.streetname == "Front2") { // don't want to label Front2
 				return;
 				}
 				else if (obj.directions == "NS") {
-				var rotNS = "rotate(270 " + xScale(obj.x1) + "," + yScale(obj.y1) + ")";
+				var rotNS = "rotate(270 " + xScale(obj.x1) + "," + yScale(obj.y1) + ")"; // local rotate variable
 				labelStreet(obj);
 				text.attr("text-anchor", anchNS)
-					.attr("transform", rotNS);
+					.attr("transform", rotNS) // Coordinate system is also rotated, affecting dx and dy
+					.attr("dx", dxNS)
+					.attr("dy", dyNS);
 				}
-				else { // obj.directions == "EW" || obj.directions == "E" || obj.directions == "W"
+				else if (obj.directions == "EW" || obj.directions == "E" || obj.directions == "W") {
 				labelStreet(obj);
-				text.attr("text-anchor", anchEW);
+				text.attr("text-anchor", anchEW)
+					.attr("dx", dxEW)
+					.attr("dy", dyEW);
+				}
+				else {
+				labelStreet(obj);
 				};
 			});
 		}
