@@ -31,6 +31,22 @@ legend.onAdd = function (map) {
 
 legend.addTo(map);
 
+var myIcon = L.divIcon({className: 'label'});
+
+
+L.marker([43.65263, -79.40645], {icon: myIcon}).bindTooltip("Queen", {direction: "center", permanent: true, direction: "left", className: 'label'}).addTo(map);
+L.marker([43.65195, -79.40645], {icon: myIcon}).bindTooltip("Richmond", {direction: "center", permanent: true, direction: "left", className: 'label'}).addTo(map);
+L.marker([43.65053, -79.40645], {icon: myIcon}).bindTooltip("Adelaide", {direction: "center", permanent: true, direction: "left", className: 'label'}).addTo(map);
+L.marker([43.64924, -79.40645], {icon: myIcon}).bindTooltip("King", {direction: "center", permanent: true, direction: "left", className: 'label'}).addTo(map);
+L.marker([43.64777, -79.40645], {icon: myIcon}).bindTooltip("Wellington", {direction: "center", permanent: true, direction: "left", className: 'label'}).addTo(map);
+L.marker([43.64596, -79.40645], {icon: myIcon}).bindTooltip("Front", {direction: "center", permanent: true, direction: "left", className: 'label'}).addTo(map);
+
+L.marker([43.65300, -79.40602], {icon: myIcon}).bindTooltip("Bathurst", {direction: "center", permanent: true, className: 'label'}).addTo(map);
+L.marker([43.65300, -79.39808], {icon: myIcon}).bindTooltip("Spadina", {direction: "center", permanent: true, className: 'label'}).addTo(map);
+L.marker([43.65300, -79.38791], {icon: myIcon}).bindTooltip("University", {direction: "center", permanent: true, className: 'label'}).addTo(map);
+L.marker([43.65300, -79.38022], {icon: myIcon}).bindTooltip("Yonge", {direction: "center", permanent: true, className: 'label'}).addTo(map);
+L.marker([43.65300, -79.37394], {icon: myIcon}).bindTooltip("Jarvis", {direction: "center", permanent: true, className: 'label'}).addTo(map);
+
 // Disable dragging when user's cursor enters the element
 //map.dragging.disable();
 //map.touchZoom.disable();
@@ -42,7 +58,7 @@ legend.addTo(map);
 
 streetLayer.addTo(map);
 
-map.setView([43.6493, -79.3910], 15);
+map.setView([43.6495, -79.3910], 15);
 
 // select road feature
 function onMapClick(selection) {
