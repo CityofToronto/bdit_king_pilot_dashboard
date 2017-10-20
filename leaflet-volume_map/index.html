@@ -7,8 +7,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title>Interactive - Toronto</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://use.fontawesome.com/e610f8435a.js"></script>
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
         <style>
+            html, body {
+                font-family: "Verdana", Geneva, sans-serif;
+            }
             .legend {
                 line-height: 18px;
                 color: #555;
@@ -34,12 +38,9 @@
                 font-size: 80%
             }
             .label {
-                all: revert;
                 color: gray;
                 font-size:14px;
                 font-weight: 500;
-                fillColor: none;
-                fillOpacity: 0;
                 background-color: none;
                 border-color: none;
                 background: none;
@@ -48,18 +49,27 @@
                 margin: 0px;
                 cursor: none;
                 direction: 'left';
-                interactive: false;
                 fill: false;
             }
         </style>
     </head>
     <body>
         <h1>Leaflet Volume Map</h1>
+        <div class="info legend">
+            <span style="background:#FB998E"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>20%</label>
+            <span style="background:#FBA3BB"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>20%&ndash;15%</label>
+            <span style="background:#E2B9E1"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>15%&ndash;10%</label>
+            <span style="background:#B7D1F4"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>10%&ndash;0%</label>
+            <span style="background:#8FE7EE"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>0%&ndash;10%</label>
+            <span style="background:#8EF6D2"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>10%&ndash;15%</label>
+            <span style="background:#B7FEAC"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>15%&ndash;20%</label>
+            <span style="background:#F2FE8E"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>20%</label>
+        </div><br>
         <div id="map" style="height:300px; width:1200px;"></div>
         <form action="">
-            <input type="radio" name="range" checked onclick="onRangeChange(1)"> DAY
-            <input type="radio" name="range" onclick="onRangeChange(2)"> MONTH
-            <input type="radio" name="range" onclick="onRangeChange(3)"> YEAR
+            <input type="radio" name="range" checked onclick="onRangeChange(1)"> Day
+            <input type="radio" name="range" onclick="onRangeChange(2)"> Month
+            <input type="radio" name="range" onclick="onRangeChange(3)"> Year
         </form>
         <!-- leaflet -->
         <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
