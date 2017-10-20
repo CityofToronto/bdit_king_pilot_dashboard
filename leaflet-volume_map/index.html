@@ -8,13 +8,38 @@
         <title>Interactive - Toronto</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
-        <link rel="stylesheet"  type="text/css" href="style.css" />
+        <style>
+            .legend {
+                line-height: 18px;
+                color: #555;
+            }
+            .legend span {
+                display: block;
+                width: 20px;
+                height: 3px;
+                float: left;
+                opacity: 0.7;
+                margin-top:7px;
+                margin-right: 3px;
+                text-align: center;
+                font-size: 80%
+            }
+            .legend label {
+                display: block;
+                margin-right: 3px;
+                height: 18px;
+                float: left;
+                opacity: 0.7;
+                text-align: left;
+                font-size: 80%
+            }
+        </style>
     </head>
     <body>
         <h1>Leaflet Volume Map</h1>
         <div id="map" style="height:300px; width:1200px;"></div>
         <form action="">
-            <input type="radio" name="range" onclick="onRangeChange(1)"> DAY
+            <input type="radio" name="range" checked onclick="onRangeChange(1)"> DAY
             <input type="radio" name="range" onclick="onRangeChange(2)"> MONTH
             <input type="radio" name="range" onclick="onRangeChange(3)"> YEAR
         </form>

@@ -10,6 +10,27 @@ var streetLayer = Tangram.leafletLayer({
     selectionRadius: 25
 });
 
+var legend = L.control({position: 'topleft'});
+
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend');
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    div.innerHTML +=
+        '<span style="background:#FB998E"></span><label>↑20%</label>' +
+        '<span style="background:#FBA3BB"></span><label>↑20%&ndash;15%</label>' +
+        '<span style="background:#E2B9E1"></span><label>↑15%&ndash;10%</label>' +
+        '<span style="background:#B7D1F4"></span><label>↑10%&ndash;0%</label>' +
+        '<span style="background:#8FE7EE"></span><label>↓0%&ndash;10%</label>' +
+        '<span style="background:#8EF6D2"></span><label>↓10%&ndash;15%</label>' +
+        '<span style="background:#B7FEAC"></span><label>↓15%&ndash;20%</label>' +
+        '<span style="background:#F2FE8E"></span><label>↓20%</label>';
+    return div;
+};
+
+legend.addTo(map);
+
 // Disable dragging when user's cursor enters the element
 //map.dragging.disable();
 //map.touchZoom.disable();
@@ -57,5 +78,4 @@ function onRangeChange(value) {
         streetLayer.scene.config.sources.local.url = "http://localhost:8000/street_volumes.json";
         streetLayer.scene.updateConfig();
     }
-
 }
