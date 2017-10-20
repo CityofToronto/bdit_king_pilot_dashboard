@@ -15,8 +15,8 @@ import plotly.graph_objs as go
 from plotly.grid_objs import Grid, Column
 
 
-#times = pandas.read_csv('car_travel_times.csv')
-times = pandas.read_csv('C:\\users\\rrodger\\car_travel_times.csv')
+times = pandas.read_csv('car_travel_times.csv')
+
 times['mon'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S').date() for i in times['mon']]
 
 middate = date(2017, 10, 2)
@@ -58,7 +58,7 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
                        margin = sizemg,
                        hovermode = False)
     
-    frames = go.Frames
+    #frames = go.Frames
     
     return {'data' : [fig1, fig2],
             'layout' : layout}
