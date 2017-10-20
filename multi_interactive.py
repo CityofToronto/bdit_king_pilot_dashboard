@@ -12,9 +12,11 @@ import dash
 import dash_core_components as core
 import dash_html_components as html
 import plotly.graph_objs as go
+from plotly.grid_objs import Grid, Column
 
 
-times = pandas.read_csv('car_travel_times.csv')
+#times = pandas.read_csv('car_travel_times.csv')
+times = pandas.read_csv('C:\\users\\rrodger\\car_travel_times.csv')
 times['mon'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S').date() for i in times['mon']]
 
 middate = date(2017, 10, 2)
@@ -32,7 +34,10 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
     befAP = before[street].loc[(before[street]['time_period'] == AMPM)]
     aftAP = after[street].loc[(after[street]['time_period'] == AMPM)]
     
-
+    befPA = before[street].loc[(before[street]['time_period'] != AMPM)] #previous graph state, for animation
+    aftPA = after[street].loc[(after[street]['time_period'] != AMPM)]
+    
+    grid = Grid[befAP, aftAP, befPA, aftPA]
     
     fig1 = go.Bar(x = befAP['dir'],
                   y = befAP['travel_time'],
@@ -47,10 +52,13 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
                        xaxis = dict(title = 'Before/After'),
                        yaxis = dict(title = 'Travel Time',
                                     range = yrng),
-                           autosize=False,
-                           width=w,
-                           height=h,
-                           margin=sizemg)
+                       autosize = False,
+                       width = w,
+                       height = h,
+                       margin = sizemg,
+                       hovermode = False)
+    
+    frames = go.Frames
     
     return {'data' : [fig1, fig2],
             'layout' : layout}
@@ -62,6 +70,7 @@ server = app.server
 
 before = {street : times.loc[(times['corridor'] == street) & (times['mon'] <= middate)] for street in streets}
 after = {street : times.loc[(times['corridor'] == street) & (times['mon'] >= middate)] for street in streets}
+
 
 
 app.layout = html.Div([core.RadioItems(
