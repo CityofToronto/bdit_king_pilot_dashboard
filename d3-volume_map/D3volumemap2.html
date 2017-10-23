@@ -146,7 +146,7 @@
 		function setColour(obj) {
 			// returns a colour string
 			var colour = "";
-			if ((-10 < obj.pct_change) && (obj.pct_change < 10)) {
+			if (-10 < obj.pct_change && obj.pct_change < 10) {
 			colour = "green";
 			return colour;
 			}
@@ -154,12 +154,16 @@
 			colour = "yellow";
 			return colour;
 			}
-			else if (-20 < obj.pct_change <= -15 || 15 <= obj.pct_change < 20) {
+			else if ((-20 < obj.pct_change && obj.pct_change <= -15) || (15 <= obj.pct_change && obj.pct_change < 20)) {
 			colour = "orange";
 			return colour;
 			}
-			else {
+			else if ((obj.pct_change <= -20) || (20 <= obj.pct_change)) {
 			colour = "red";
+			return colour;
+			}
+			else {
+			colour = "gray";
 			return colour;
 			}
 		}
