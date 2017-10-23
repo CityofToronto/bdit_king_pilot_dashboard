@@ -84,17 +84,20 @@ function highlightSelect(symbol) {
 }
 
 function onRangeChange(value) {
+    
     if (value == 1) {
-        streetLayer.scene.config.sources.local.url = "http://localhost:8000/street_volumes.json";
+        streetLayer.scene.config.layers.roads.data.source = "local";
+        console.log(streetLayer.scene.config.layers.roads.data);
         streetLayer.scene.updateConfig();
     } else if (value == 2) {
-        streetLayer.scene.config.sources.local.url = "http://localhost:8000/street_volumes2.json";
+        streetLayer.scene.config.layers.roads.data.source = "local2";
+        console.log(streetLayer.scene.config.layers.roads.data);
         streetLayer.scene.updateConfig();
     } else if (value == 3) {
-        streetLayer.scene.config.sources.local.url = "http://localhost:8000/street_volumes3.json";
+        streetLayer.scene.config.layers.roads.data.source = "local3";
         streetLayer.scene.updateConfig();
     } else {
-        streetLayer.scene.config.sources.local.url = "http://localhost:8000/street_volumes.json";
+        streetLayer.scene.config.layers.roads.data.source = "local";
         streetLayer.scene.updateConfig();
     }
 }

@@ -62,6 +62,16 @@ sources:
         url: street_volumes.json
         max_zoom: 20
         min_zoom: 7
+    local2:
+        type: GeoJSON
+        url: street_volumes2.json
+        max_zoom: 20
+        min_zoom: 7
+    local3:
+        type: GeoJSON
+        url: street_volumes3.json
+        max_zoom: 20
+        min_zoom: 7
 
 scene:
     background:
