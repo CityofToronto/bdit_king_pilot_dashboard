@@ -11,7 +11,7 @@ lights:
 
 global:
     _highlightSelect: false
-#    _highlightHover: false
+    _range: "day"
     set_width: function () {
                     if (feature.volume == null) {
                         return 6
@@ -36,21 +36,29 @@ global:
                     if (feature.has_data == 0) {
                         return '#B1A38E'
                     }
-                    if (feature.pct_change > 20) {
+                    var data;
+                    if (global._range == "day") {
+                        data = feature.pct_change_day;
+                    } else if (global._range == "month") {
+                        data = feature.pct_change_month;
+                    } else if (global._range == "year") {
+                        data = feature.pct_change_year;
+                    }
+                    if (data > 20) {
                         return '#FB998E';
-                    } else if (feature.pct_change > 15) {
+                    } else if (data > 15) {
                         return '#FBA3BB';
-                    } else if (feature.pct_change > 10) {
+                    } else if (data > 10) {
                         return '#E2B9E1';
-                    } else if (feature.pct_change > 0) {
+                    } else if (data > 0) {
                         return '#B7D1F4';
-                    } else if (feature.pct_change >= -10) {
+                    } else if (data >= -10) {
                         return '#8FE7EE';
-                    } else if (feature.pct_change >= -15) {
+                    } else if (data >= -15) {
                         return '#8EF6D2';
-                    } else if (feature.pct_change >= -20) {
+                    } else if (data >= -20) {
                         return '#B7FEAC';
-                    } else if (feature.pct_change < -20) {
+                    } else if (data < -20) {
                         return '#F2FE8E';
                     }
                     return '#000000';
@@ -60,16 +68,6 @@ sources:
     local:
         type: GeoJSON
         url: street_volumes.json
-        max_zoom: 20
-        min_zoom: 7
-    local2:
-        type: GeoJSON
-        url: street_volumes2.json
-        max_zoom: 20
-        min_zoom: 7
-    local3:
-        type: GeoJSON
-        url: street_volumes3.json
         max_zoom: 20
         min_zoom: 7
 

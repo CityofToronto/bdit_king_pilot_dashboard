@@ -32,9 +32,10 @@ var streetLayer = Tangram.leafletLayer({
 //
 //legend.addTo(map);
 
+// Used to override L.marker icon
 var myIcon = L.divIcon({className: 'label'});
-
-var vertLabel = [{coord:[43.65263, -79.40645], name:"Queen", dir:"left"},
+// To be displayed as labels
+var labelData = [{coord:[43.65263, -79.40645], name:"Queen", dir:"left"},
                  {coord:[43.65195, -79.40645], name:"Richmond", dir:"left"},
                  {coord:[43.65053, -79.40645], name:"Adelaide", dir:"left"},
                  {coord:[43.64924, -79.40645], name:"King", dir:"left"},
@@ -45,9 +46,9 @@ var vertLabel = [{coord:[43.65263, -79.40645], name:"Queen", dir:"left"},
                  {coord:[43.65325, -79.38791], name:"University", dir:"center"},
                  {coord:[43.65325, -79.38022], name:"Yonge", dir:"center"},
                  {coord:[43.65325, -79.37394], name:"Jarvis", dir:"center"}];
-
-for(var i = 0; i < vertLabel.length; i++) {
-    L.marker(vertLabel[i].coord, {icon: myIcon}).bindTooltip(vertLabel[i].name, {direction: vertLabel[i].dir, permanent: true, className: 'label'}).addTo(map);
+// Adds labels to map
+for(var i = 0; i < labelData.length; i++) {
+    L.marker(labelData[i].coord, {icon: myIcon}).bindTooltip(labelData[i].name, {direction: labelData[i].dir, permanent: true, className: 'label'}).addTo(map);
 }
 
 // Disable dragging when user's cursor enters the element
@@ -57,7 +58,6 @@ for(var i = 0; i < vertLabel.length; i++) {
 //map.scrollWheelZoom.disable();
 //map.boxZoom.disable();
 //map.keyboard.disable();
-
 
 streetLayer.addTo(map);
 
@@ -72,7 +72,6 @@ function onMapClick(selection) {
     }
 }
 
-
 function onMapHover(selection) {
     document.getElementById('map').style.cursor = selection.feature ? 'pointer' : '';
 }
@@ -83,21 +82,20 @@ function highlightSelect(symbol) {
     streetLayer.scene.updateConfig();
 }
 
+// changes datasource
 function onRangeChange(value) {
-    
     if (value == 1) {
-        streetLayer.scene.config.layers.roads.data.source = "local";
-        console.log(streetLayer.scene.config.layers.roads.data);
+        streetLayer.scene.config.global._range = "day";
         streetLayer.scene.updateConfig();
     } else if (value == 2) {
-        streetLayer.scene.config.layers.roads.data.source = "local2";
+        streetLayer.scene.config.global._range = "month";
         console.log(streetLayer.scene.config.layers.roads.data);
         streetLayer.scene.updateConfig();
     } else if (value == 3) {
-        streetLayer.scene.config.layers.roads.data.source = "local3";
+        streetLayer.scene.config.global._range = "year";
         streetLayer.scene.updateConfig();
     } else {
-        streetLayer.scene.config.layers.roads.data.source = "local";
+        streetLayer.scene.config.global._range = "day";
         streetLayer.scene.updateConfig();
     }
 }
