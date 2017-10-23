@@ -12,27 +12,6 @@
 		/* Load CSV Data
 		***********************************************************************/
 		var testarr = [{line: 1, x1: 100, y1: 100, x2: 100, y2: 200},{line: 2, x1: 100, y1: 100, x2: 200, y2: 100}];
-		// CSV column types for streets_lines.csv
-		var slConverter = function(d) {
-			return {
-				id: +d.line,
-				streetname: d.streetname,
-				directions: d.directions,
-				x1: +d.x1,
-				y1: +d.y1,
-				x2: +d.x2,
-				y2: +d.y2
-			};
-		};
-		
-		/*
-		// Row conversion for streets_lines
-		var streets_lines = [];
-		d3.csv("streets_lines.csv", function(d) {
-			streets_lines = d.map(slConverter);
-			console.log(streets_lines);
-		});
-		*/
 		
 		// CSV column types for streets_segments.csv
 		var ssConverter = function(d) {
@@ -56,6 +35,19 @@
 			console.log(streets_segments);
 		});
 		*/
+		
+		var parseDate = d3.timeParse("%m/%d/%Y %I:%M");
+		
+		var dataConverter = function(d) {
+			return {
+				id: +d.segment,
+				direction: d.direction,
+				month: parseDate(d.mon),
+				time_period: d.time_period,
+				volume: +d.volume,
+				pct_change: +d.pct_change
+			};
+		};
 		
 		
 		/* Setup SVGs
@@ -150,13 +142,27 @@
 			return path;
 		}
 		
-		/*
-		// bind data to stroke width; return numerical width
-		function setStrokeW(obj) {
-			strokeWidth = 5;
-			return strokeWidth;
+		// colour path based on segment volume percent change
+		function setColour(obj) {
+			// returns a colour string
+			var colour = "";
+			if ((-10 < obj.pct_change) && (obj.pct_change < 10)) {
+			colour = "green";
+			return colour;
+			}
+			else if ((-15 < obj.pct_change && obj.pct_change <= -10) || (10 <= obj.pct_change && obj.pct_change < 15)) {
+			colour = "yellow";
+			return colour;
+			}
+			else if (-20 < obj.pct_change <= -15 || 15 <= obj.pct_change < 20) {
+			colour = "orange";
+			return colour;
+			}
+			else {
+			colour = "red";
+			return colour;
+			}
 		}
-		*/
 		
 		
 		
@@ -165,7 +171,7 @@
 			svgContainer.append("path")
 				.attr("id", obj.id)
 				.attr("d", pathFunc(obj))
-				.attr("stroke", stroke)
+				.attr("stroke", setColour(obj))
 				.attr("stroke_width", strokeWidth)
 				.attr("fill", pathfill);
 		}
@@ -179,109 +185,26 @@
 		
 		
 		
-		/* Functions to label SVGs
-		***********************************************************************/
-		var fontfam = "san-serif";
-		var fontsize = "12px";
-		var fontfill = "red";
-		
-		var anchEW = "end";
-		var anchNS = "start";
-		var dxEW = -20;
-		var dxNS = 20;
-		var dyEW = ".35em"; // add half the text's height to its y attribute
-		var dyNS = ".35em"; // add half the text's height to its y attribute
-		
-		// label a street object
-		var text;
-		function labelStreet(obj) {
-			text = d3.select("svg")
-				.append("text")
-				.text(obj.streetname)
-				.attr("x", xScale(obj.x1))
-				.attr("y", yScale(obj.y1))
-				.attr("font-family", fontfam)
-				.attr("font_size", fontsize)
-				.attr("fill", fontfill);
-		}
-		
-		// label all street objects in an array
-		function labelMany(arr) {
-			arr.forEach(function(obj) {
-				if (obj.streetname == "Front1") { // treating Front1 exactly like other EW streets
-				obj.streetname = "Front"; // reassigning streetname
-				labelStreet(obj);
-				text.attr("text-anchor", anchEW)
-					.attr("dx", dxEW)
-					.attr("dy", dyEW);
-				}
-				else if (obj.streetname == "Front2") { // don't want to label Front2
-				return;
-				}
-				else if (obj.directions == "NS") {
-				var rotNS = "rotate(270 " + xScale(obj.x1) + "," + yScale(obj.y1) + ")"; // local rotate variable
-				labelStreet(obj);
-				text.attr("text-anchor", anchNS)
-					.attr("transform", rotNS) // Coordinate system is also rotated, affecting dx and dy
-					.attr("dx", dxNS)
-					.attr("dy", dyNS);
-				}
-				else if (obj.directions == "EW" || obj.directions == "E" || obj.directions == "W") {
-				labelStreet(obj);
-				text.attr("text-anchor", anchEW)
-					.attr("dx", dxEW)
-					.attr("dy", dyEW);
-				}
-				else {
-				labelStreet(obj);
-				};
-			});
-		}
-		
 		
 		
 		/* Draw SVGs
 		***********************************************************************/
 		// Load data and execute functions requiring immediate access to data
-		var streets_lines = [];
-		var streets_segments = [];
-		d3.csv("streets_lines.csv", function(sl) {
-			streets_lines = sl.map(slConverter);
-			d3.csv("streets_segments.csv", function(ss) {
-				streets_segments = ss.map(ssConverter)
-				xAccess(streets_lines);
-				yAccess(streets_lines);
-				scaling()
-				labelMany(streets_lines);
-				pathGen(streets_lines);
-				// pathGen(streets_segments);
-			});
-		});
-		
-		
-		/* Load csv data
-		***********************************************************************/
-		var parseDate = d3.timeParse("%m/%d/%Y %I:%M");
-		
-		var dataConverter = function(d) {
-			return {
-				id: +d.segment,
-				direction: d.direction,
-				month: parseDate(d.mon),
-				time_period: d.time_period,
-				volume: +d.volume,
-				pct_change: +d.pct_change
-			};
-		};
-		
 		var absURL = "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/data/street_volumes.csv";
 		var vol_data;
-		d3.csv(absURL, function(file) {
-			vol_data = file.map(dataConverter)
-			console.log(vol_data);
+		var streets_segments = [];
+		d3.csv("streets_segments.csv", function(ss) {
+			streets_segments = ss.map(ssConverter);
+			xAccess(streets_segments);
+			yAccess(streets_segments);
+			scaling();
+			d3.csv(absURL, function(file) {
+				vol_data = file.map(dataConverter);
+				console.log(vol_data);
+			})
+			pathGen(streets_segments);
 		});
 		
-
 		
 		
 		</script>
