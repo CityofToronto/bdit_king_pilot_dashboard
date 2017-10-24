@@ -25,8 +25,8 @@ d3.csv("streets_segments.csv", function(d) {
 });
 */
 
+// CSV column types for volume data
 var parseDate = d3.timeParse("%m/%d/%Y %I:%M");
-
 var dataConverter = function(d) {
 	return {
 		id: +d.segment,
@@ -40,25 +40,24 @@ var dataConverter = function(d) {
 
 
 
+/* Setup SVGs
+***********************************************************************/
+// Create streets_segments Group
+var ssGroup = svgContainer.append("g")
+	.attr("id", "ssgroup");
+
+
+
 /* Functions to draw SVGs
 ***********************************************************************/
-var stroke = "black";
+var stroke = "grey";
 var strokeWidth = 5;
 var pathfill = "none";
 
-// Create path generator
-var path;
-function pathFunc(obj) {
-	path = d3.path();
-	path.moveTo(xScale(obj.x1),yScale(obj.y1));
-	path.lineTo(xScale(obj.x2),yScale(obj.y2));
-	return path;
-}
-
 // draw a path
-function drawPath(obj) {
-	svgContainer.append("path")
-		.attr("id", obj.id)
+function ssdrawPath(obj) {
+	ssGroup.append("path")
+		.attr("id", obj.direction + obj.id)
 		.attr("d", pathFunc(obj))
 		.attr("stroke", stroke)
 		.attr("stroke_width", strokeWidth)
@@ -66,27 +65,100 @@ function drawPath(obj) {
 }
 
 // draw all street objects in an array
-function pathGen(arr) {
+function sspathGen(arr) {
 	arr.forEach(function(obj) {
-	drawPath(obj)
+	ssdrawPath(obj)
 	});
 }
 
 
 
+/* Data filter functions
+***********************************************************************/
+// loop through radio button values
+var periodIDs = ["AM", "PM"];
+var monthIDs = ["Sep","Oct","Nov","Dec"];
+var current_period = document.getElementById("AM").value;
+var current_month = document.getElementById("Sep").value;
+
+// check which buttons are selected, update and return current period and month
+function periodLoop(arr) {
+	arr.forEach(function(buttonID) {
+		if (document.getElementById(buttonID).checked == true) {
+			current_period = document.getElementById(buttonID).value;
+			//console.log(current_period);
+		};
+	});
+	return current_period;
+}
+
+function monthLoop(arr) {
+	arr.forEach(function(buttonID) {
+		if (document.getElementById(buttonID).checked == true) {
+			current_month = document.getElementById(buttonID).value;
+			//console.log(current_month);
+		};
+	});
+	return current_month;
+}
 
 
+// time period filter
+var periodArr = [];
+function periodFilter(arr, period) {
+	periodArr = [];
+	if (period == "AM") {
+		periodArr = arr.filter(obj => obj.time_period == "AM");
+		//console.log(periodArr);
+		return periodArr;
+	}
+	else if (period == "PM") {
+		periodArr = arr.filter(obj => obj.time_period == "PM");
+		//console.log(periodArr);
+		return periodArr;
+	}
+	else {
+		return;
+	}
+}
 
+// month filter
+var monthArr = [];
+function monthFilter(arr, month) {
+	monthArr = [];
+	if (month == 9) {
+		monthArr = arr.filter(obj => (obj.month.getMonth() + 1) == 9);
+		//console.log(monthArr);
+		return monthArr;
+	}
+	else if (month == 10) {
+		monthArr = arr.filter(obj => (obj.month.getMonth() + 1) == 10);
+		//console.log(monthArr);
+		return monthArr;
+	}
+	else if (month == 11) {
+		monthArr = arr.filter(obj => (obj.month.getMonth() + 1) == 11);
+		//console.log(monthArr);
+		return monthArr;
+	}
+	else if (month == 12) {
+		monthArr = arr.filter(obj => (obj.month.getMonth() + 1) == 12);
+		//console.log(monthArr);
+		return monthArr;
+	}
+	else {
+		return;
+	}
+}
 
-
-
-
-
-
-
-
-
-
+// filter array for given month and string time period; master filter
+var filteredData = [];
+function dataFilter(arr, month, period) {
+	filteredData = [];
+	filteredData = monthFilter(periodFilter(arr, period), month);
+	console.log(filteredData);
+	return filteredData;
+}
 
 
 
@@ -111,7 +183,8 @@ d3.csv("streets_segments.csv", function(ss) {
 	d3.csv(absURL, function(file) {
 		vol_data = file.map(dataConverter);
 		console.log(vol_data);
+		dataFilter(vol_data, monthLoop(monthIDs), periodLoop(periodIDs));
 	})
-	pathGen(streets_segments);
+	sspathGen(streets_segments);
 });
 
