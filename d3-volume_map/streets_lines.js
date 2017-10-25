@@ -90,7 +90,7 @@ function scaling() {
 /* Functions to draw SVGs
 ***********************************************************************/
 var slstroke = "black";
-var slstrokeWidth = 5;
+var slstrokeWidth = 2;
 var slpathfill = "none";
 
 // Create path generator
@@ -108,7 +108,7 @@ function sldrawPath(obj) {
 		.attr("id", obj.streetname)
 		.attr("d", pathFunc(obj))
 		.attr("stroke", slstroke)
-		.attr("stroke_width", slstrokeWidth)
+		.attr("stroke-width", slstrokeWidth)
 		.attr("fill", slpathfill);
 }
 
@@ -194,4 +194,6 @@ d3.csv("streets_lines.csv", function(sl) {
 	labelMany(streets_lines);
 	slpathGen(streets_lines);
 });
+
+
 

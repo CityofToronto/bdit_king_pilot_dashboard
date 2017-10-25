@@ -140,7 +140,7 @@ function dataFilter(arr, month, period) {
 /* Colouring segments
 ***********************************************************************/
 var stroke = "grey";
-var strokeWidth = 10;
+var strokeWidth = 3;
 var pathfill = "none";
 
 // colour path based on segment volume percent change
@@ -169,7 +169,6 @@ function pctColour(obj) {
 	}
 }
 
-
 function setColour(filtdata, segid) {
 	stroke = "grey";
 	filtdata.forEach(function(filtobj) {
@@ -182,17 +181,23 @@ function setColour(filtdata, segid) {
 
 
 
-
 /* Functions to draw SVGs
 ***********************************************************************/
+var offsetVal = (slstrokeWidth / 2) + (strokeWidth / 2);
+var offsetXN = "translate(" + offsetVal + ",0)";
+var offsetXS = "translate(-" + offsetVal + ",0)";
+var offsetYE = "translate(0," + offsetVal + ")";
+var offsetYW = "translate(0,-" + offsetVal + ")";
+
 // draw a path
+var path;
 function ssdrawPath(obj) {
 	setColour(filteredData, obj.id);
-	ssGroup.append("path")
+	path = ssGroup.append("path")
 		.attr("id", obj.direction + obj.id)
 		.attr("d", pathFunc(obj))
 		.attr("stroke", stroke)
-		.attr("stroke_width", strokeWidth)
+		.attr("stroke-width", strokeWidth)
 		.attr("fill", pathfill);
 }
 
@@ -200,7 +205,25 @@ function ssdrawPath(obj) {
 function sspathGen(arr) {
 	dataFilter(vol_data, monthLoop(monthIDs), periodLoop(periodIDs));
 	arr.forEach(function(obj) {
-		ssdrawPath(obj)
+		if (obj.direction == "N") {
+			ssdrawPath(obj);
+			path.attr("transform", offsetXN);
+		}
+		else if (obj.direction == "S") {
+			ssdrawPath(obj);
+			path.attr("transform", offsetXS);
+		}
+		else if (obj.direction == "E") {
+			ssdrawPath(obj);
+			path.attr("transform", offsetYE);
+		}
+		else if (obj.direction == "W") {
+			ssdrawPath(obj);
+			path.attr("transform", offsetYW);
+		}
+		else {
+			return;
+		};
 	});
 }
 
@@ -209,7 +232,7 @@ function sspathGen(arr) {
 /* Draw SVGs
 ***********************************************************************/
 // Load data and execute functions requiring immediate access to data
-var absURL = "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/data/street_volumes.csv";
+var dataURL = "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/data/street_volumes.csv";
 var vol_data;
 var streets_segments = [];
 d3.csv("streets_segments.csv", function(ss) {
@@ -217,7 +240,8 @@ d3.csv("streets_segments.csv", function(ss) {
 	xAccess(streets_segments);
 	yAccess(streets_segments);
 	scaling();
-	d3.csv(absURL, function(file) {
+	
+	d3.csv(dataURL, function(file) {
 		vol_data = file.map(dataConverter);
 		console.log(vol_data);
 		sspathGen(streets_segments);
