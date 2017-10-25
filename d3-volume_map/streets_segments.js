@@ -41,11 +41,11 @@ var dataConverter = function(d) {
 
 
 /* Setup SVGs
-***********************************************************************/
+**********************************************************************
 // Create streets_segments Group
 var ssGroup = svgContainer.append("g")
 	.attr("id", "ssgroup");
-
+*/
 
 
 /* Data filter functions
@@ -140,8 +140,6 @@ function dataFilter(arr, month, period) {
 /* Colouring segments
 ***********************************************************************/
 var stroke = "grey";
-var strokeWidth = 3;
-var pathfill = "none";
 
 // colour path based on segment volume percent change
 function pctColour(obj) {
@@ -172,7 +170,6 @@ function pctColour(obj) {
 function setColour(filtdata, segid) {
 	stroke = "grey";
 	filtdata.forEach(function(filtobj) {
-		//console.log(filtobj);
 		if (filtobj.id == segid) {
 			stroke = pctColour(filtobj);
 		};
@@ -181,44 +178,77 @@ function setColour(filtdata, segid) {
 
 
 
+/* Widening segments
+***********************************************************************/
+var strokeWidth = 3;
+var offsetVal = (slstrokeWidth / 2) + (strokeWidth / 2);
+
+// scale width function
+var widthScale = d3.scaleLinear()
+	.domain([0, 10000]) // input's min and arbitrary max
+	.range([3, 13]); // output width
+
+// determine width of path based on segment volume
+function volWidth(obj) {
+	var width = 3;
+	width = widthScale(obj.volume); // width as scaled down volume
+	return width;
+}
+
+function setWidth(filtdata, segid) {
+	strokeWidth = 3;
+	filtdata.forEach(function(filtobj) {
+		if (filtobj.id == segid) {
+			strokeWidth = volWidth(filtobj);
+			offsetVal = (slstrokeWidth / 2) + (strokeWidth / 2);
+			// console.log(offsetVal);
+		};
+	});
+}
+
+
+
 /* Functions to draw SVGs
 ***********************************************************************/
-var offsetVal = (slstrokeWidth / 2) + (strokeWidth / 2);
-var offsetXN = "translate(" + offsetVal + ",0)";
-var offsetXS = "translate(-" + offsetVal + ",0)";
-var offsetYE = "translate(0," + offsetVal + ")";
-var offsetYW = "translate(0,-" + offsetVal + ")";
+var pathfill = "none";
 
 // draw a path
 var path;
 function ssdrawPath(obj) {
 	setColour(filteredData, obj.id);
+	setWidth(filteredData, obj.id);
 	path = ssGroup.append("path")
 		.attr("id", obj.direction + obj.id)
 		.attr("d", pathFunc(obj))
 		.attr("stroke", stroke)
 		.attr("stroke-width", strokeWidth)
+		.attr("stroke-linecap", "butt")
 		.attr("fill", pathfill);
 }
 
 // draw all street objects in an array
 function sspathGen(arr) {
-	dataFilter(vol_data, monthLoop(monthIDs), periodLoop(periodIDs));
+	dataFilter(vol_data, monthLoop(monthIDs), periodLoop(periodIDs)); // update filtered data
+	d3.select("#ssgroup").selectAll("path").remove(); // remove any existing paths in ss group
 	arr.forEach(function(obj) {
 		if (obj.direction == "N") {
 			ssdrawPath(obj);
+			var offsetXN = "translate(" + offsetVal + ",0)";
 			path.attr("transform", offsetXN);
 		}
 		else if (obj.direction == "S") {
 			ssdrawPath(obj);
+			var offsetXS = "translate(-" + offsetVal + ",0)";
 			path.attr("transform", offsetXS);
 		}
 		else if (obj.direction == "E") {
 			ssdrawPath(obj);
+			var offsetYE = "translate(0," + offsetVal + ")";
 			path.attr("transform", offsetYE);
 		}
 		else if (obj.direction == "W") {
 			ssdrawPath(obj);
+			var offsetYW = "translate(0,-" + offsetVal + ")";
 			path.attr("transform", offsetYW);
 		}
 		else {
@@ -247,4 +277,6 @@ d3.csv("streets_segments.csv", function(ss) {
 		sspathGen(streets_segments);
 	})
 });
+
+
 
