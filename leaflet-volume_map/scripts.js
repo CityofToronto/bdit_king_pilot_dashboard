@@ -82,20 +82,19 @@ function highlightSelect(symbol) {
     streetLayer.scene.updateConfig();
 }
 
-// changes datasource
-function onRangeChange(value) {
-    if (value == 1) {
-        streetLayer.scene.config.global._range = "day";
-        streetLayer.scene.updateConfig();
-    } else if (value == 2) {
-        streetLayer.scene.config.global._range = "month";
-        console.log(streetLayer.scene.config.layers.roads.data);
-        streetLayer.scene.updateConfig();
-    } else if (value == 3) {
-        streetLayer.scene.config.global._range = "year";
-        streetLayer.scene.updateConfig();
-    } else {
-        streetLayer.scene.config.global._range = "day";
-        streetLayer.scene.updateConfig();
+var radio = document.getElementsByName('range');
+
+for (var i = radio.length; i--;) {
+    radio[i].onchange = function() {
+        if (this.value == 1) {
+            streetLayer.scene.config.global._range = "day";
+            streetLayer.scene.updateConfig();
+        } else if (this.value == 2) {
+            streetLayer.scene.config.global._range = "month";
+            streetLayer.scene.updateConfig();
+        } else if (this.value == 3) {
+            streetLayer.scene.config.global._range = "year";
+            streetLayer.scene.updateConfig();
+        }
     }
 }
