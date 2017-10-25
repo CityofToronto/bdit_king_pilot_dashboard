@@ -113,6 +113,7 @@ function sldrawPath(obj) {
 		.attr("d", pathFunc(obj))
 		.attr("stroke", slstroke)
 		.attr("stroke-width", slstrokeWidth)
+		.attr("stroke-linecap", "round")
 		.attr("fill", slpathfill);
 }
 

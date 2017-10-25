@@ -145,26 +145,46 @@ var stroke = "grey";
 function pctColour(obj) {
 	// given obj, returns a colour string
 	var colour = "";
-	if (-10 < obj.pct_change && obj.pct_change < 10) {
-		colour = "green";
-		return colour;
+	if (obj.pct_change >= 0) { // zero or positive change is increase in volume compared to base; bad
+		if (0 <= obj.pct_change && obj.pct_change < 10) {
+			colour = "#fde0ef";
+			return colour;
+		}
+		else if (10 <= obj.pct_change && obj.pct_change < 15) {
+			colour = "#f1b6da";
+			return colour;
+		}
+		else if (15 <= obj.pct_change && obj.pct_change < 20) {
+			colour = "#de77ae";
+			return colour;
+		}
+		else if (20 <= obj.pct_change) {
+			colour = "#c51b7d";
+			return colour;
+		}
 	}
-	else if ((-15 < obj.pct_change && obj.pct_change <= -10) || (10 <= obj.pct_change && obj.pct_change < 15)) {
-		colour = "yellow";
-		return colour;
-	}
-	else if ((-20 < obj.pct_change && obj.pct_change <= -15) || (15 <= obj.pct_change && obj.pct_change < 20)) {
-		colour = "orange";
-		return colour;
-	}
-	else if ((obj.pct_change <= -20) || (20 <= obj.pct_change)) {
-		colour = "red";
-		return colour;
+	else if (obj.pct_change < 0) { // negative change is decrease in volume compared to base; good
+		if (-10 < obj.pct_change && obj.pct_change < 0) {
+			colour = "#e6f5d0";
+			return colour;
+		}
+		else if (-15 < obj.pct_change && obj.pct_change <= -10) {
+			colour = "#b8e186";
+			return colour;
+		}
+		else if (-20 < obj.pct_change && obj.pct_change <= -15) {
+			colour = "#7fbc41";
+			return colour;
+		}
+		else if (obj.pct_change <= -20) {
+			colour = "#4d9221";
+			return colour;
+		}
 	}
 	else {
-		colour = "grey";
+		colour = "grey"
 		return colour;
-	}
+	};
 }
 
 function setColour(filtdata, segid) {
@@ -186,7 +206,7 @@ var offsetVal = (slstrokeWidth / 2) + (strokeWidth / 2);
 // scale width function
 var widthScale = d3.scaleLinear()
 	.domain([0, 10000]) // input's min and arbitrary max
-	.range([3, 13]); // output width
+	.range([3, 18]); // output width
 
 // determine width of path based on segment volume
 function volWidth(obj) {
@@ -230,6 +250,7 @@ function ssdrawPath(obj) {
 function sspathGen(arr) {
 	dataFilter(vol_data, monthLoop(monthIDs), periodLoop(periodIDs)); // update filtered data
 	d3.select("#ssgroup").selectAll("path").remove(); // remove any existing paths in ss group
+	
 	arr.forEach(function(obj) {
 		if (obj.direction == "N") {
 			ssdrawPath(obj);
