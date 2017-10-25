@@ -35,6 +35,14 @@ var svgContainer = d3.select("body").append("svg")
 	.attr("width", svgW)
 	.attr("height", svgH);
 
+// Create Label Group
+var labelGroup = svgContainer.append("g")
+	.attr("id", "labelgroup");
+
+// Create streets_lines Group
+var slGroup = svgContainer.append("g")
+	.attr("id", "slgroup");
+
 
 
 /* Scale SVGs
@@ -81,9 +89,9 @@ function scaling() {
 
 /* Functions to draw SVGs
 ***********************************************************************/
-var stroke = "black";
-var strokeWidth = 5;
-var pathfill = "none";
+var slstroke = "black";
+var slstrokeWidth = 5;
+var slpathfill = "none";
 
 // Create path generator
 var path;
@@ -94,20 +102,20 @@ function pathFunc(obj) {
 	return path;
 }
 
-// draw a path
-function drawPath(obj) {
-	svgContainer.append("path")
-		.attr("id", obj.id)
+// draw path to slGroup
+function sldrawPath(obj) {
+	slGroup.append("path")
+		.attr("id", obj.streetname)
 		.attr("d", pathFunc(obj))
-		.attr("stroke", stroke)
-		.attr("stroke_width", strokeWidth)
-		.attr("fill", pathfill);
+		.attr("stroke", slstroke)
+		.attr("stroke_width", slstrokeWidth)
+		.attr("fill", slpathfill);
 }
 
 // draw all street objects in an array
-function pathGen(arr) {
+function slpathGen(arr) {
 	arr.forEach(function(obj) {
-	drawPath(obj)
+	sldrawPath(obj)
 	});
 }
 
@@ -129,7 +137,7 @@ var dyNS = ".35em"; // add half the text's height to its y attribute
 // label a street object
 var text;
 function labelStreet(obj) {
-	text = d3.select("svg")
+	text = d3.select("#labelgroup")
 		.append("text")
 		.text(obj.streetname)
 		.attr("x", xScale(obj.x1))
@@ -184,6 +192,6 @@ d3.csv("streets_lines.csv", function(sl) {
 	yAccess(streets_lines);
 	scaling()
 	labelMany(streets_lines);
-	pathGen(streets_lines);
+	slpathGen(streets_lines);
 });
 
