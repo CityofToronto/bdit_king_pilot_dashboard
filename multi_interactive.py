@@ -12,17 +12,17 @@ import dash
 import dash_core_components as core
 import dash_html_components as html
 import plotly.graph_objs as go
-from plotly.grid_objs import Grid, Column
+#from plotly.grid_objs import Grid, Column
 
 
-times = pandas.read_csv('car_travel_times.csv')
+times = pandas.read_csv('C:\\Users\\rrodger\\Documents\\GitHub\\bdit_king_pilot_dashboard\\car_travel_times.csv')
 
 times['mon'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S').date() for i in times['mon']]
 
 middate = date(2017, 10, 2)
 streets = ['Dundas', 'Queen', 'Adelaide', 'Front', 'Richmond', 'Wellington']
-h = 200
-w = 300 #graph width and height
+h = 500
+w = 1000 #graph width and height
 sizemg = go.Margin(l = 20, #graph margins
               r = 20,
               b = 50,
@@ -31,36 +31,74 @@ yrng = [0, times['travel_time'].max()] #All graphs have the same y axis
 
 def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
 #can be stacked/grouped if data is appropriately formatted.
-    befAP = before[street].loc[(before[street]['time_period'] == AMPM)]
-    aftAP = after[street].loc[(after[street]['time_period'] == AMPM)]
+
+#Attempt at animating AM\PM transition. Make a grind with AM and PM graphs. When one is selected transition from other.
+#==============================================================================
+#     befPA = before[street].loc[(before[street]['time_period'] != AMPM)] #previous graph state, for animation
+#     aftPA = after[street].loc[(after[street]['time_period'] != AMPM)]
+#     
+#     grid = Grid[befAP, aftAP, befPA, aftPA]
+#==============================================================================
     
-    befPA = before[street].loc[(before[street]['time_period'] != AMPM)] #previous graph state, for animation
-    aftPA = after[street].loc[(after[street]['time_period'] != AMPM)]
-    
-    grid = Grid[befAP, aftAP, befPA, aftPA]
-    
-    fig1 = go.Bar(x = befAP['dir'],
-                  y = befAP['travel_time'],
-                  name = 'Before')
-    
-    fig2 = go.Bar(x = aftAP['dir'],
-                  y = aftAP['travel_time'],
-                  name = 'After')
+#original approach by defining figures in the function
+#==============================================================================
+#     fig1 = go.Bar(x = data['b' + AMPM][street]['dir'],
+#                   y = data['b' + AMPM][street]['travel_time'],
+#                   name = 'Before',
+#                   marker = dict(color = 'rgb(0,58,114)', #bar color. Also accepts list of colors corresponding to each column
+#                                  line = dict(
+#                                          color = 'rgb(0,29,57)', #line color
+#                                          width = 2))
+#                   width = 1.5,# Also accepts list corresponding to each bar
+#                   opacity = 0.5,
+#                   text = "This will appear on hover and can also be a list for each column")
+#==============================================================================
+
     
     layout = go.Layout(barmode = 'group',
                        title = street,
-                       xaxis = dict(title = 'Before/After'),
+                       xaxis = dict(title = 'Before/After',
+#                                    ,tickangle = 30,
+#                                   tickfont = dict(size = 14
+#                                                   color = 'rgb(204, 204, 204)'),
+#                                    titlefont=dict(
+#                                                   size=16,
+#                                                    color='rgb(107, 107, 107)')
+                                    ),
                        yaxis = dict(title = 'Travel Time',
                                     range = yrng),
-                       autosize = False,
-                       width = w,
-                       height = h,
-                       margin = sizemg,
-                       hovermode = False)
+#                        legend=dict(
+#                                x=0,
+#                                y=1.0,
+#                                bgcolor='rgba(255, 255, 255, 0)',
+#                                bordercolor='rgba(255, 255, 255, 0)'
+#    ),
+                       autosize = True,
+                       annotations = ([dict(
+                                       x = 'EB',
+                                       y = yrng[1],
+                                       text = 'this is an EB test',
+                                       xanchor = 'centre',
+                                       yanchor = 'top',
+                                       showarrow = False),
+                                        dict(
+                                        x = 'WB',
+                                        y = yrng[1],
+                                        text = 'this is a WB test',
+                                        xanchor = 'centre',
+                                        yref = 'top',
+                                        showarrow = False)])
+               #        width = w,
+               #        height = h,
+               #        margin = sizemg,
+                      # hovermode = False
+                 #      bargap=-1,
+                 #      bargroupgap=-2
+                       )
     
     #frames = go.Frames
     
-    return {'data' : [fig1, fig2],
+    return {'data' : [before_figs[AMPM][street], after_figs[AMPM][street]],
             'layout' : layout}
     
 
@@ -68,24 +106,50 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
 app = dash.Dash()
 server = app.server
 
-before = {street : times.loc[(times['corridor'] == street) & (times['mon'] <= middate)] for street in streets}
-after = {street : times.loc[(times['corridor'] == street) & (times['mon'] >= middate)] for street in streets}
+#Issue with group by. Line runs fine with dummy street and APM value. 
+#print ({APM : {street : street + APM for street in streets} for APM in ('AM', 'PM')})
+before_figs = {APM : {street : go.Bar(
+                                x = times.loc[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean().index,
+                                y = times.loc[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean(),
+                                name = 'Before',
+                                marker = dict(color = 'rgb(0,58,114)'), #bar color. Also accepts list of colors corresponding to each column
+                                width = .3)
+    
+                                for street in streets} for APM in ('AM', 'PM')}
+
+after_figs = {APM : {street :go.Bar(
+                                x = times.loc[(times['corridor'] == street) & (times['mon'] >= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean().index,
+                                y = times.loc[(times['corridor'] == street) & (times['mon'] >= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean(),
+                                name = 'After',
+                                marker = dict(color = 'rgb(200,114,58)'), #bar color. Also accepts list of colors corresponding to each column
+                                width = .3)
+
+                                for street in streets} for APM in ('AM', 'PM')}
 
 
-
-app.layout = html.Div([core.RadioItems(
-                id = 'AMPM',
-                options=[{'label' : timebucket, 'value' : timebucket} for timebucket in times['time_period'].unique()],
-                value = 'AM'),
+app.layout = html.Div([
+                core.RadioItems(
+                    id = 'AMPM',
+                    options=[{'label' : timebucket, 'value' : timebucket} for timebucket in times['time_period'].unique()],
+                    value = 'AM'
+                    ),
                 
-            html.Span(
-                    [core.Graph(id = streets[0]),
-                     core.Graph(id = streets[1]),
-                     core.Graph(id = streets[2])]),
-            html.Span(
-                    [core.Graph(id = streets[3]),
-                     core.Graph(id = streets[4]),
-                     core.Graph(id = streets[5])])])
+                html.Span(
+                        [core.Graph(id = streets[0]),
+                         core.Graph(id = streets[1]),
+                         core.Graph(id = streets[2])],
+                         className = 'four columns'
+                         ),
+                html.Span(
+                        [core.Graph(id = streets[3]),
+                         core.Graph(id = streets[4]),
+                         core.Graph(id = streets[5])],
+                         className = 'four columns'
+                         )
+                ])
+app.css.append_css({
+    "external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"
+})
 #interactivity
 @app.callback(
 
