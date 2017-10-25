@@ -89,9 +89,9 @@ function scaling() {
 
 /* Functions to draw SVGs
 ***********************************************************************/
-var stroke = "black";
-var strokeWidth = 5;
-var pathfill = "none";
+var slstroke = "black";
+var slstrokeWidth = 5;
+var slpathfill = "none";
 
 // Create path generator
 var path;
@@ -107,9 +107,9 @@ function sldrawPath(obj) {
 	slGroup.append("path")
 		.attr("id", obj.streetname)
 		.attr("d", pathFunc(obj))
-		.attr("stroke", stroke)
-		.attr("stroke_width", strokeWidth)
-		.attr("fill", pathfill);
+		.attr("stroke", slstroke)
+		.attr("stroke_width", slstrokeWidth)
+		.attr("fill", slpathfill);
 }
 
 // draw all street objects in an array

@@ -48,31 +48,6 @@ var ssGroup = svgContainer.append("g")
 
 
 
-/* Functions to draw SVGs
-***********************************************************************/
-var stroke = "grey";
-var strokeWidth = 5;
-var pathfill = "none";
-
-// draw a path
-function ssdrawPath(obj) {
-	ssGroup.append("path")
-		.attr("id", obj.direction + obj.id)
-		.attr("d", pathFunc(obj))
-		.attr("stroke", stroke)
-		.attr("stroke_width", strokeWidth)
-		.attr("fill", pathfill);
-}
-
-// draw all street objects in an array
-function sspathGen(arr) {
-	arr.forEach(function(obj) {
-	ssdrawPath(obj)
-	});
-}
-
-
-
 /* Data filter functions
 ***********************************************************************/
 // loop through radio button values
@@ -162,10 +137,72 @@ function dataFilter(arr, month, period) {
 
 
 
+/* Colouring segments
+***********************************************************************/
+var stroke = "grey";
+var strokeWidth = 10;
+var pathfill = "none";
+
+// colour path based on segment volume percent change
+function pctColour(obj) {
+	// given obj, returns a colour string
+	var colour = "";
+	if (-10 < obj.pct_change && obj.pct_change < 10) {
+		colour = "green";
+		return colour;
+	}
+	else if ((-15 < obj.pct_change && obj.pct_change <= -10) || (10 <= obj.pct_change && obj.pct_change < 15)) {
+		colour = "yellow";
+		return colour;
+	}
+	else if ((-20 < obj.pct_change && obj.pct_change <= -15) || (15 <= obj.pct_change && obj.pct_change < 20)) {
+		colour = "orange";
+		return colour;
+	}
+	else if ((obj.pct_change <= -20) || (20 <= obj.pct_change)) {
+		colour = "red";
+		return colour;
+	}
+	else {
+		colour = "grey";
+		return colour;
+	}
+}
+
+
+function setColour(filtdata, segid) {
+	stroke = "grey";
+	filtdata.forEach(function(filtobj) {
+		//console.log(filtobj);
+		if (filtobj.id == segid) {
+			stroke = pctColour(filtobj);
+		};
+	});
+}
 
 
 
 
+/* Functions to draw SVGs
+***********************************************************************/
+// draw a path
+function ssdrawPath(obj) {
+	setColour(filteredData, obj.id);
+	ssGroup.append("path")
+		.attr("id", obj.direction + obj.id)
+		.attr("d", pathFunc(obj))
+		.attr("stroke", stroke)
+		.attr("stroke_width", strokeWidth)
+		.attr("fill", pathfill);
+}
+
+// draw all street objects in an array
+function sspathGen(arr) {
+	dataFilter(vol_data, monthLoop(monthIDs), periodLoop(periodIDs));
+	arr.forEach(function(obj) {
+		ssdrawPath(obj)
+	});
+}
 
 
 
@@ -183,8 +220,7 @@ d3.csv("streets_segments.csv", function(ss) {
 	d3.csv(absURL, function(file) {
 		vol_data = file.map(dataConverter);
 		console.log(vol_data);
-		dataFilter(vol_data, monthLoop(monthIDs), periodLoop(periodIDs));
+		sspathGen(streets_segments);
 	})
-	sspathGen(streets_segments);
 });
 
