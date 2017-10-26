@@ -39,6 +39,10 @@ var svgContainer = d3.select("body").append("svg")
 var labelGroup = svgContainer.append("g")
 	.attr("id", "labelgroup");
 
+// Create streets_segments Group
+var ssGroup = svgContainer.append("g")
+	.attr("id", "ssgroup");
+
 // Create streets_lines Group
 var slGroup = svgContainer.append("g")
 	.attr("id", "slgroup");
@@ -109,6 +113,7 @@ function sldrawPath(obj) {
 		.attr("d", pathFunc(obj))
 		.attr("stroke", slstroke)
 		.attr("stroke-width", slstrokeWidth)
+		.attr("stroke-linecap", "round")
 		.attr("fill", slpathfill);
 }
 
@@ -125,7 +130,7 @@ function slpathGen(arr) {
 ***********************************************************************/
 var fontfam = "san-serif";
 var fontsize = "12px";
-var fontfill = "red";
+var fontfill = "black";
 
 var anchEW = "end";
 var anchNS = "start";
