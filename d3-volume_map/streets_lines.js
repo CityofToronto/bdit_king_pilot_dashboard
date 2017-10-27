@@ -120,7 +120,7 @@ function sldrawPath(obj) {
 // draw all street objects in an array
 function slpathGen(arr) {
 	arr.forEach(function(obj) {
-	sldrawPath(obj)
+		sldrawPath(obj)
 	});
 }
 
