@@ -9,208 +9,164 @@
 	<body>
 		<h1>Hello World!</h1>
 		<script>
-		/* Load CSV Data
-		***********************************************************************/
-		var testarr = [{line: 1, x1: 100, y1: 100, x2: 100, y2: 200},{line: 2, x1: 100, y1: 100, x2: 200, y2: 100}];
-		
-		// CSV column types for streets_segments.csv
-		var ssConverter = function(d) {
-			return {
-				id: +d.segment,
-				streetname: d.streetname,
-				direction: d.direction,
-				segdesc: d.segdesc,
-				x1: +d.x1,
-				y1: +d.y1,
-				x2: +d.x2,
-				y2: +d.y2
-			};
-		};
-		
-		/*
-		// Row conversion for streets_segments
-		var streets_segments = [];
-		d3.csv("streets_segments.csv", function(d) {
-			streets_segments = d.map(ssConverter);
-			console.log(streets_segments);
-		});
-		*/
-		
-		var parseDate = d3.timeParse("%m/%d/%Y %I:%M");
-		
-		var dataConverter = function(d) {
-			return {
-				id: +d.segment,
-				direction: d.direction,
-				month: parseDate(d.mon),
-				time_period: d.time_period,
-				volume: +d.volume,
-				pct_change: +d.pct_change
-			};
-		};
-		
-		
-		/* Setup SVGs
-		***********************************************************************/
-		var svgW = 1200;
-		var svgH = 500;
-		
-		// Create SVG container
-		var svgContainer = d3.select("body").append("svg")
-			.attr("width", svgW)
-			.attr("height", svgH);
-		
-		
-		
-		// function to get attributes from all objects in an array
-		function getArrObjAtt(arr, att) {
-			var attr;
-			var fieldname = att.toString()
-			arr.forEach(function(obj) {
-				attr = obj[fieldname];
-				// console.log(attr);
-				return attr;
-				})
-			return attr;
-		}
-		
-		// function to get specified attribute from an object
-		function getObjAtt(obj, att) {
-			var attr;
-			var fieldname = att.toString()
-			attr = obj[fieldname];
-			// console.log(attr);
-			return attr;
-		}
-		
-		
-		
-		/* Scale SVGs
-		***********************************************************************/
-		// Create arrays of streets_lines X and Y values
-		var xArr = [];
-		function xAccess(arr) {
-			xArr = [];
-			arr.forEach(function(obj) {
-				xArr.push(obj.x1);
-				xArr.push(obj.x2);
-			});
-			return xArr;
-		}
-		
-		var yArr = [];
-		function yAccess(arr) {
-			yArr = [];
-			arr.forEach(function(obj) {
-				yArr.push(obj.y1);
-				yArr.push(obj.y2);
-			});
-			return yArr;
-		}
-		
-		var xMin, xMax, yMin, yMax, xScale, yScale;
-		function scaling() {
-			// Find x and y max/min of streets_lines
-			xMin = d3.min(xArr)
-			xMax = d3.max(xArr)
-			yMin = d3.min(yArr)
-			yMax = d3.max(yArr)
+/* Prepare CSV Data
+***********************************************************************/
+// CSV column types for streets_lines.csv
+var slConverter = function(d) {
+	return {
+		id: +d.line,
+		streetname: d.streetname,
+		directions: d.directions,
+		x1: +d.x1,
+		y1: +d.y1,
+		x2: +d.x2,
+		y2: +d.y2
+	};
+};
+
+
+
+/* Setup SVGs
+***********************************************************************/
+var svgW = 1200;
+var svgH = 500;
+
+// Create SVG container
+var svgContainer = d3.select("body").append("svg")
+	.attr("width", svgW)
+	.attr("height", svgH);
+
+// Create Label Group
+var labelGroup = svgContainer.append("g")
+	.attr("id", "labelgroup");
+
+// Create streets_segments Group
+var ssGroup = svgContainer.append("g")
+	.attr("id", "ssgroup");
+
+// Create streets_lines Group
+var slGroup = svgContainer.append("g")
+	.attr("id", "slgroup");
+
+
+
+/* Scale SVGs
+***********************************************************************/
+var xArr, yArr, xMin, xMax, yMin, yMax, xScale, yScale;
+function scaling(arr) {
+	xArr = [(d3.max(arr, function(obj) {return obj.x1;})),
+			(d3.max(arr, function(obj) {return obj.x2;})),
+			(d3.min(arr, function(obj) {return obj.x1;})),
+			(d3.min(arr, function(obj) {return obj.x2;}))];
 			
-			// Create x and y Scales
-			xScale = d3.scaleLinear()
-				.domain([xMin, xMax])
-				.range([100, svgW-100])
-			yScale = d3.scaleLinear()
-				.domain([yMin, yMax])
-				.range([100, svgH-100])
-		}
-		
-		
-		
-		/* Functions to draw SVGs
-		***********************************************************************/
-		var stroke = "black";
-		var strokeWidth = 5;
-		var pathfill = "none";
-		
-		// Create path generator
-		var path;
-		function pathFunc(obj) {
-			path = d3.path();
-			path.moveTo(xScale(obj.x1),yScale(obj.y1));
-			path.lineTo(xScale(obj.x2),yScale(obj.y2));
-			return path;
-		}
-		
-		// colour path based on segment volume percent change
-		function setColour(obj) {
-			// returns a colour string
-			var colour = "";
-			if (-10 < obj.pct_change && obj.pct_change < 10) {
-			colour = "green";
-			return colour;
-			}
-			else if ((-15 < obj.pct_change && obj.pct_change <= -10) || (10 <= obj.pct_change && obj.pct_change < 15)) {
-			colour = "yellow";
-			return colour;
-			}
-			else if ((-20 < obj.pct_change && obj.pct_change <= -15) || (15 <= obj.pct_change && obj.pct_change < 20)) {
-			colour = "orange";
-			return colour;
-			}
-			else if ((obj.pct_change <= -20) || (20 <= obj.pct_change)) {
-			colour = "red";
-			return colour;
-			}
-			else {
-			colour = "gray";
-			return colour;
-			}
-		}
-		
-		
-		
-		// draw a path
-		function drawPath(obj) {
-			svgContainer.append("path")
-				.attr("id", obj.id)
-				.attr("d", pathFunc(obj))
-				.attr("stroke", setColour(obj))
-				.attr("stroke_width", strokeWidth)
-				.attr("fill", pathfill);
-		}
-		
-		// draw all street objects in an array
-		function pathGen(arr) {
-			arr.forEach(function(obj) {
-			drawPath(obj)
-			});
-		}
-		
-		
-		
-		
-		
-		/* Draw SVGs
-		***********************************************************************/
-		// Load data and execute functions requiring immediate access to data
-		var absURL = "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/data/street_volumes.csv";
-		var vol_data;
-		var streets_segments = [];
-		d3.csv("streets_segments.csv", function(ss) {
-			streets_segments = ss.map(ssConverter);
-			xAccess(streets_segments);
-			yAccess(streets_segments);
-			scaling();
-			d3.csv(absURL, function(file) {
-				vol_data = file.map(dataConverter);
-				console.log(vol_data);
-			})
-			pathGen(streets_segments);
-		});
-		
-		
-		
+	yArr = [(d3.max(arr, function(obj) {return obj.y1;})),
+			(d3.max(arr, function(obj) {return obj.y2;})),
+			(d3.min(arr, function(obj) {return obj.y1;})),
+			(d3.min(arr, function(obj) {return obj.y2;}))];
+	
+	xMin = d3.min(xArr);
+	xMax = d3.max(xArr);
+	yMin = d3.min(yArr);
+	yMax = d3.max(yArr);
+
+	xScale = d3.scaleLinear()
+		.domain([xMin, xMax])
+		.range([100, svgW-100]); // 100px SVG whitespace buffer
+	yScale = d3.scaleLinear()
+		.domain([yMin, yMax])
+		.range([100, svgH-100]); // 100px SVG whitespace buffer
+}
+
+
+
+/* Functions to draw SVGs
+***********************************************************************/
+var slstroke = "black";
+var slstrokeWidth = 2;
+var sllinecap = "round";
+var slpathfill = "none";
+
+// Create path generator
+var path;
+function pathFunc(obj) {
+	path = d3.path();
+	path.moveTo(xScale(obj.x1),yScale(obj.y1));
+	path.lineTo(xScale(obj.x2),yScale(obj.y2));
+	return path;
+}
+
+// draw all street objects in data array
+function slpathGen(arr) {
+	d3.select("#slgroup")
+		.selectAll("path")
+		.data(arr)
+		.enter()
+		.append("path")
+		.attr("id", function(obj) {return obj.streetname;})
+		.attr("d", function(obj) {return pathFunc(obj);})
+		.attr("stroke", slstroke)
+		.attr("stroke-width", slstrokeWidth)
+		.attr("stroke-linecap", sllinecap)
+		.attr("fill", slpathfill);
+}
+
+
+
+/* Functions to label SVGs
+***********************************************************************/
+var fontsize = "12px";
+var fontfill = "black";
+
+var anchEW = "end";
+var anchNS = "start";
+var dxEW = -20;
+var dxNS = 20;
+var dyEW = ".35em"; // add half the text's height to its y attribute
+var dyNS = ".35em"; // add half the text's height to its y attribute
+
+function labelStreets(arr) {
+	d3.select("#labelgroup")
+		.selectAll("text")
+		.data(arr)
+		.enter()
+		.append("text")
+		.text(function(obj) {if (obj.streetname == "Front1") {return "Front";}
+							else if (obj.streetname == "Front2") {return "";}
+							else {return obj.streetname;};})
+		.attr("x", function(obj) {return xScale(obj.x1);})
+		.attr("y", function(obj) {return yScale(obj.y1);})
+		.attr("font_size", fontsize)
+		.attr("fill", fontfill)
+		.attr("text-anchor", function(obj) {if (obj.directions == "NS") {return anchNS;}
+											else {return anchEW;};})
+		.attr("transform", function(obj) {if (obj.directions == "NS")
+											 {return "rotate(270 " 
+											 + xScale(obj.x1) + "," + yScale(obj.y1) + ")";}
+										else {return "";};})
+		.attr("dx", function(obj) {if (obj.directions == "NS") {return dxNS;}
+									else {return dxEW;};})
+		.attr("dy", function(obj) {if (obj.directions == "NS") {return dyNS;}
+									else {return dyEW;};});
+}
+
+
+
+/* Draw SVGs
+***********************************************************************/
+// Load data and execute functions requiring immediate access to data
+var streets_lines = [];
+d3.csv("streets_lines.csv", function(sl) {
+	streets_lines = sl.map(slConverter);
+	scaling(streets_lines);
+	labelStreets(streets_lines);
+	slpathGen(streets_lines);
+});
+
+
+
+
+
+
 		</script>
 	</body>
 </html>
