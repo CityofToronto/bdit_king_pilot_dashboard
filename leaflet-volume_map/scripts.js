@@ -10,28 +10,6 @@ var streetLayer = Tangram.leafletLayer({
     selectionRadius: 25
 });
 
-// replaced by HTML hardcode
-//var legend = L.control({position: 'topleft'});
-//
-//legend.onAdd = function (map) {
-//
-//    var div = L.DomUtil.create('div', 'info legend');
-//
-//    // loop through our density intervals and generate a label with a colored square for each interval
-//    div.innerHTML +=
-//        '<span style="background:#FB998E"></span><label>↑20%</label>' +
-//        '<span style="background:#FBA3BB"></span><label>↑20%&ndash;15%</label>' +
-//        '<span style="background:#E2B9E1"></span><label>↑15%&ndash;10%</label>' +
-//        '<span style="background:#B7D1F4"></span><label>↑10%&ndash;0%</label>' +
-//        '<span style="background:#8FE7EE"></span><label>↓0%&ndash;10%</label>' +
-//        '<span style="background:#8EF6D2"></span><label>↓10%&ndash;15%</label>' +
-//        '<span style="background:#B7FEAC"></span><label>↓15%&ndash;20%</label>' +
-//        '<span style="background:#F2FE8E"></span><label>↓20%</label>';
-//    return div;
-//};
-//
-//legend.addTo(map);
-
 // Used to override L.marker icon
 var myIcon = L.divIcon({className: 'label'});
 // To be displayed as labels
@@ -48,7 +26,11 @@ var labelData = [{coord:[43.65263, -79.40645], name:"Queen", dir:"left"},
                  {coord:[43.65325, -79.37394], name:"Jarvis", dir:"center"}];
 // Adds labels to map
 for(var i = 0; i < labelData.length; i++) {
-    L.marker(labelData[i].coord, {icon: myIcon}).bindTooltip(labelData[i].name, {direction: labelData[i].dir, permanent: true, className: 'label'}).addTo(map);
+    L.marker(labelData[i].coord, {icon: myIcon})
+        .bindTooltip(labelData[i].name, {direction: labelData[i].dir,
+                                         permanent: true,
+                                         className: 'label'})
+        .addTo(map);
 }
 
 // Disable dragging when user's cursor enters the element
@@ -62,6 +44,21 @@ map.keyboard.disable();
 streetLayer.addTo(map);
 
 map.setView([43.6495, -79.3910], 15);
+
+// Changes layer when user changes radio button selection
+var radio = document.getElementsByName('range');
+for (var i = radio.length; i--;) {
+    radio[i].onchange = function() {
+        if (this.value == 1) {
+            streetLayer.scene.config.global._range = "day";
+        } else if (this.value == 2) {
+            streetLayer.scene.config.global._range = "month";
+        } else if (this.value == 3) {
+            streetLayer.scene.config.global._range = "year";
+        }
+        streetLayer.scene.updateConfig();
+    }
+}
 
 // for use in future
 // select road feature
@@ -83,19 +80,4 @@ map.setView([43.6495, -79.3910], 15);
 //    streetLayer.scene.updateConfig();
 //}
 
-var radio = document.getElementsByName('range');
 
-for (var i = radio.length; i--;) {
-    radio[i].onchange = function() {
-        if (this.value == 1) {
-            streetLayer.scene.config.global._range = "day";
-            streetLayer.scene.updateConfig();
-        } else if (this.value == 2) {
-            streetLayer.scene.config.global._range = "month";
-            streetLayer.scene.updateConfig();
-        } else if (this.value == 3) {
-            streetLayer.scene.config.global._range = "year";
-            streetLayer.scene.updateConfig();
-        }
-    }
-}

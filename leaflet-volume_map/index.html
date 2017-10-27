@@ -5,8 +5,7 @@
         <meta charset="utf-8">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>Interactive - Toronto</title>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <title>King Street Pilot</title>
         <script src="https://use.fontawesome.com/e610f8435a.js"></script>
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
         <style>
@@ -56,14 +55,15 @@
     <body>
         <h1>Leaflet Volume Map</h1>
         <div class="info legend">
-            <span style="background:#FB998E"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>20%</label>
-            <span style="background:#FBA3BB"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>20%&ndash;15%</label>
-            <span style="background:#E2B9E1"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>15%&ndash;10%</label>
-            <span style="background:#B7D1F4"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>10%&ndash;0%</label>
-            <span style="background:#8FE7EE"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>0%&ndash;10%</label>
-            <span style="background:#8EF6D2"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>10%&ndash;15%</label>
-            <span style="background:#B7FEAC"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>15%&ndash;20%</label>
-            <span style="background:#F2FE8E"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>20%</label>
+            <span style="background:#FF0000"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>20%</label>
+            <span style="background:#FF4400"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>20%&ndash;15%</label>
+            <span style="background:#FF8800"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>15%&ndash;10%</label>
+            <span style="background:#FFCC00"></span><label><i class="fa fa-arrow-up" aria-hidden="true"></i>10%&ndash;0%</label>
+            <span style="background:#FFFF00"></span><label>0%</label>
+            <span style="background:#CCFF00"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>0%&ndash;10%</label>
+            <span style="background:#88FF00"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>10%&ndash;15%</label>
+            <span style="background:#44FF00"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>15%&ndash;20%</label>
+            <span style="background:#00FF00"></span><label><i class="fa fa-arrow-down" aria-hidden="true"></i>20%</label>
         </div><br>
         <div id="map" style="height:300px; width:1200px;"></div>
         <form>
@@ -71,6 +71,10 @@
             <input type="radio" name="range" value="2"> Month
             <input type="radio" name="range" value="3"> Year
         </form>
+        
+        <!--jQuery-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        
         <!-- leaflet -->
         <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
 

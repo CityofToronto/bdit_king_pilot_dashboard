@@ -15,20 +15,16 @@ global:
     set_width: function () {
                     if (feature.volume == null) {
                         return 6
-                    } else if (feature.volume < 2500) {
+                    } else if (feature.volume < 1000) {
                         return 10;
-                    } else if (feature.volume < 5000) {
+                    } else if (feature.volume < 2500) {
                         return 14;
-                    } else if (feature.volume < 10000) {
+                    } else if (feature.volume < 5000) {
                         return 18;
-                    } else if (feature.volume < 25000) {
+                    } else if (feature.volume < 10000) {
                         return 22;
-                    } else if (feature.volume < 50000) {
+                    } else if (feature.volume < 25000) {
                         return 26;
-                    } else if (feature.volume < 75000) {
-                        return 30;
-                    } else if (feature.volume > 75000) {
-                        return 34;
                     }
                     return 5;
                 }
@@ -45,21 +41,23 @@ global:
                         data = feature.pct_change_year;
                     }
                     if (data > 20) {
-                        return '#FB998E';
+                        return '#FF0000';
                     } else if (data > 15) {
-                        return '#FBA3BB';
+                        return '#FF4400';
                     } else if (data > 10) {
-                        return '#E2B9E1';
+                        return '#FF8800';
                     } else if (data > 0) {
-                        return '#B7D1F4';
+                        return '#FFCC00';
+                    } else if (data == 0) {
+                        return '#FFFF00'
                     } else if (data >= -10) {
-                        return '#8FE7EE';
+                        return '#CCFF00';
                     } else if (data >= -15) {
-                        return '#8EF6D2';
+                        return '#88FF00';
                     } else if (data >= -20) {
-                        return '#B7FEAC';
+                        return '#44FF00';
                     } else if (data < -20) {
-                        return '#F2FE8E';
+                        return '#00FF00';
                     }
                     return '#000000';
                 }
@@ -98,15 +96,6 @@ layers:
                     width: global.set_width
                     cap: butt
                     interactive: true
-#                text:
-#                    text_source: function() { return feature.linear_name_full; }
-#                    priority: 2
-#                    font:
-#                        weight: butt
-#                        size: 11pt
-#                        family: Open Sans
-#                        fill: '#646464' # dark gray
-#                        stroke: { color: white, width: 4 }
         major_arterial_ramp:
             filter: function () {
                         if (global._ramps == false) {
@@ -131,15 +120,6 @@ layers:
                     outline:
                         width: 2px
                         color: '#A9A9A9' # light gray
-#                text:
-#                    text_source: function() { return feature.linear_name_full; }
-#                    priority: 3
-#                    font:
-#                        weight: butt
-#                        size: 11pt
-#                        family: Open Sans
-#                        fill: '#646464' # dark gray
-#                        stroke: { color: white, width: 4 }
         minor_arterial:
             filter: function () { return (feature.feature_code_desc == 'Minor Arterial'); }
             draw:
@@ -155,14 +135,6 @@ layers:
                     width: global.set_width
                     cap: butt
                     interactive: true
-#                text:
-#                    text_source: function() { return feature.linear_name_full; }
-#                    font:
-#                        weight: butt
-#                        size: 11pt
-#                        family: Open Sans
-#                        fill: '#646464' # dark gray
-#                        stroke: { color: white, width: 4 }
         minor_arterial_ramp:
             filter: function () {
                         if (global._ramps == false) {
@@ -187,15 +159,6 @@ layers:
                     outline:
                         width: 1px
                         color: '#A9A9A9' # light gray
-#                text:
-#                    priority: 4
-#                    text_source: function() { return feature.linear_name_full; }
-#                    font:
-#                        weight: butt
-#                        size: 11pt
-#                        family: Open Sans
-#                        fill: '#646464' # dark gray
-#                        stroke: { color: white, width: 4 }
         collector:
             filter: function () { return (feature.feature_code_desc == 'Collector'); }
             draw:
@@ -211,15 +174,6 @@ layers:
                     width: global.set_width
                     cap: butt
                     interactive: true
-#                text:
-#                    priority: 5
-#                    text_source: function() { return feature.linear_name_full; }
-#                    font:
-#                        weight: butt
-#                        size: 10pt
-#                        family: Open Sans
-#                        fill: '#646464' # dark gray
-#                        stroke: { color: white, width: 4 }
         collector_ramp:
             filter: function () {
                         if (global._ramps == false) {
@@ -244,15 +198,6 @@ layers:
                     outline:
                         width: 2px
                         color: '#A9A9A9' # light gray
-#                text:
-#                    text_source: function() { return feature.linear_name_full; }
-#                    priority: 5
-#                    font:
-#                        weight: butt
-#                        size: 10pt
-#                        family: Open Sans
-#                        fill: '#646464' # dark gray
-#                        stroke: { color: white, width: 4 }
         local:
             filter: function () { return (feature.feature_code_desc == 'Local'); }
             draw:
@@ -262,21 +207,6 @@ layers:
                     width: global.set_width
                     cap: butt
                     interactive: true
-#                text:
-#                    text_source: function() { return feature.linear_name_full; }
-#                    priority: function() {
-#                                if (feature.direction == 'Northbound' || feature.direction == 'Southbound') {
-#                                    return 4;
-#                                } else {
-#                                    return 3;
-#                                }
-#                            }
-#                    font:
-#                        weight: butt
-#                        size: 10pt
-#                        family: Open Sans
-#                        fill: '#646464' # dark gray
-#                        stroke: { color: white, width: 4 }
         pending:
             filter: function () { return (feature.feature_code_desc == 'Pending'); }
             draw:
@@ -286,21 +216,6 @@ layers:
                     width: global.set_width
                     cap: butt
                     interactive: true
-#                text:
-#                    text_source: function() { return feature.linear_name_full; }
-#                    priority: function() {
-#                                if (feature.direction == 'Northbound' || feature.direction == 'Southbound') {
-#                                    return 2;
-#                                } else {
-#                                    return 1;
-#                                }
-#                            }
-#                    font:
-#                        weight: butt
-#                        size: 10pt
-#                        family: Open Sans
-#                        fill: '#646464' # dark gray
-#                        stroke: { color: white, width: 4 }
         road_highlight:
             filter: function () { return (feature.centreline_id == global._highlightSelect); }
             draw:
