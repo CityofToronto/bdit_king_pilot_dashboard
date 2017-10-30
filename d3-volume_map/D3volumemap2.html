@@ -324,21 +324,25 @@ function sspathGen(ssarr) {
 function sspathUpdate(dataset) {
 	buttonChecker(); // update variables current_period and current_month
 	
-	d3.select("#ssgroup") // create the ss path elements
+	var segments = d3.select("#ssgroup") // create the ss path elements
 		.selectAll("path")
 		.data(dataset.filter(function(obj) // filter for current period and month
 					{return (obj.time_period == current_period) 
 						&& ((obj.month.getMonth() + 1) == current_month);}), 
 				function(obj) {return obj.direction + obj.id;}) // key for binding
+	
+	segments.transition() // data transition
+		.duration(1000)
 		.attr("stroke", function(obj) {return pctColour(obj);})
 		.attr("stroke-width", function(obj) {return volWidth(obj);})
 		.attr("stroke-linecap", sslinecap)
-		.attr("transform", function(obj) {return offsetSeg(obj);})
-		.on("mouseover", function(obj) {
+		.attr("transform", function(obj) {return offsetSeg(obj);});
+	
+	segments.on("mouseover", function(obj) { // tooltip
 			divtip.transition()
 				.duration(200)
 				.style("opacity", .9);
-			divtip.html("%Change: " + obj.pct_change + "<br/>" + "Volume: " + obj.volume)
+			divtip.html("%Change: " + obj.pct_change + "<br>" + "Volume: " + obj.volume)
 				.style("left", (d3.event.pageX) + "px")
 				.style("top", (d3.event.pageY - 30) + "px");})
 		.on("mouseout", function(obj) {
