@@ -206,7 +206,7 @@ var offsetVal = (slstrokeWidth / 2) + (strokeWidth / 2);
 // scale width function
 var widthScale = d3.scaleLinear()
 	.domain([0, 10000]) // input's min and arbitrary max
-	.range([3, 50]); // output width
+	.range([3, 30]); // output width
 
 // determine width of path based on segment volume
 function volWidth(obj) {
