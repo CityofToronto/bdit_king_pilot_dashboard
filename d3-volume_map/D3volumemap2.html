@@ -8,6 +8,34 @@
 	</head>
 	<body>
 		<h1>Hello World!</h1>
+		
+		<div id="periods" class="btn-group" data-toggle="buttons">
+			<label class="btn btn-secondary active">
+				<input id="AM" value="AM" type="radio" name="period" autocomplete="off" checked onclick="sspathUpdate(vol_data);"> AM
+			</label>
+			<label class="btn btn-secondary">
+				<input id="PM" value="PM" type="radio" name="period" autocomplete="off" onclick="sspathUpdate(vol_data);"> PM
+			</label>
+		</div>
+		
+		<div id="months" class="btn-group" data-toggle="buttons">
+			<label class="btn btn-secondary active">
+				<input id="Sep" value="9" type="radio" name="month" autocomplete="off" checked onclick="sspathUpdate(vol_data);"> September
+			</label>
+			<label class="btn btn-secondary">
+				<input id="Oct" value="10" type="radio" name="month" autocomplete="off" onclick="sspathUpdate(vol_data);"> October
+			</label>
+			<label class="btn btn-secondary">
+				<input id="Nov" value="11" type="radio" name="month" autocomplete="off" onclick="sspathUpdate(vol_data);"> November
+			</label>
+			<label class="btn btn-secondary">
+				<input id="Dec" value="12" type="radio" name="month" autocomplete="off" onclick="sspathUpdate(vol_data);"> December
+			</label>
+		</div>
+		
+		
+		
+		
 		<script>
 /* Prepare CSV Data
 ***********************************************************************/
@@ -21,6 +49,31 @@ var slConverter = function(d) {
 		y1: +d.y1,
 		x2: +d.x2,
 		y2: +d.y2
+	};
+};
+
+var ssConverter = function(d) {
+	return {
+		id: +d.segment,
+		streetname: d.streetname,
+		direction: d.direction,
+		segdesc: d.segdesc,
+		x1: +d.x1,
+		y1: +d.y1,
+		x2: +d.x2,
+		y2: +d.y2
+	};
+};
+
+var parseDate = d3.timeParse("%m/%d/%Y %I:%M");
+var dataConverter = function(d) {
+	return {
+		id: +d.segment,
+		direction: d.direction,
+		month: parseDate(d.mon),
+		time_period: d.time_period,
+		volume: +d.volume,
+		pct_change: +d.pct_change
 	};
 };
 
@@ -79,12 +132,135 @@ function scaling(arr) {
 
 
 
+/* Data filter functions
+***********************************************************************/
+// loop through radio button values
+var periodIDs = ["AM", "PM"];
+var monthIDs = ["Sep","Oct","Nov","Dec"];
+var current_period = document.getElementById("AM").value;
+var current_month = document.getElementById("Sep").value;
+
+// check which buttons are selected, update and return current period and month
+function buttonChecker() {
+	periodIDs.forEach(function(buttonID) {
+		if (document.getElementById(buttonID).checked == true) {
+			current_period = document.getElementById(buttonID).value;
+			//console.log(current_period);
+		};
+	});
+	monthIDs.forEach(function(buttonID) {
+		if (document.getElementById(buttonID).checked == true) {
+			current_month = document.getElementById(buttonID).value;
+			//console.log(current_month);
+		};
+	});
+	//console.log([current_period,current_month])
+	//return [current_period,current_month];
+}
+
+
+
+/* Colouring segments
+***********************************************************************/
+// colour path based on segment volume percent change
+function pctColour(obj) {
+	// given obj, returns a colour string
+	var colour = "";
+	if (obj.pct_change >= 0) { // zero or positive change is increase in volume compared to base; bad
+		if (0 <= obj.pct_change && obj.pct_change < 10) {
+			colour = "#fde0ef";
+			return colour;
+		}
+		else if (10 <= obj.pct_change && obj.pct_change < 15) {
+			colour = "#f1b6da";
+			return colour;
+		}
+		else if (15 <= obj.pct_change && obj.pct_change < 20) {
+			colour = "#de77ae";
+			return colour;
+		}
+		else if (20 <= obj.pct_change) {
+			colour = "#c51b7d";
+			return colour;
+		}
+	}
+	else if (obj.pct_change < 0) { // negative change is decrease in volume compared to base; good
+		if (-10 < obj.pct_change && obj.pct_change < 0) {
+			colour = "#e6f5d0";
+			return colour;
+		}
+		else if (-15 < obj.pct_change && obj.pct_change <= -10) {
+			colour = "#b8e186";
+			return colour;
+		}
+		else if (-20 < obj.pct_change && obj.pct_change <= -15) {
+			colour = "#7fbc41";
+			return colour;
+		}
+		else if (obj.pct_change <= -20) {
+			colour = "#4d9221";
+			return colour;
+		}
+	}
+	else {
+		colour = "grey"
+		return colour;
+	};
+}
+
+
+
+/* Widening segments
+***********************************************************************/
+var offsetVal = (slstrokeWidth / 2) + (ssstrokeWidth / 2);
+
+// scale width function
+var widthScale = d3.scaleLinear()
+	.domain([0, 10000]) // input's min and arbitrary max
+	.range([3, 30]); // output width
+
+// determine width of path based on segment volume
+function volWidth(obj) {
+	var width = 3;
+	width = widthScale(obj.volume); // width as scaled down volume
+	return width;
+}
+
+function offsetSeg(obj) {
+	ssstrokeWidth = volWidth(obj);
+	offsetVal = (slstrokeWidth / 2) + (ssstrokeWidth / 2);
+	if (obj.direction == "N") {
+		var offsetXN = "translate(" + offsetVal + ",0)";
+		return offsetXN;
+	}
+	else if (obj.direction == "S") {
+		var offsetXS = "translate(-" + offsetVal + ",0)";
+		return offsetXS;
+	}
+	else if (obj.direction == "E") {
+		var offsetYE = "translate(0," + offsetVal + ")";
+		return offsetYE;
+	}
+	else if (obj.direction == "W") {
+		var offsetYW = "translate(0,-" + offsetVal + ")";
+		return offsetYW;
+	}
+	else {
+		return;
+	};
+}
+
+
+
 /* Functions to draw SVGs
 ***********************************************************************/
 var slstroke = "black";
 var slstrokeWidth = 2;
 var sllinecap = "round";
-var slpathfill = "none";
+
+var ssstroke = "grey";
+var ssstrokeWidth = 3;
+var sslinecap = "butt";
 
 // Create path generator
 var path;
@@ -95,7 +271,7 @@ function pathFunc(obj) {
 	return path;
 }
 
-// draw all street objects in data array
+// draw all objects in streets_lines
 function slpathGen(arr) {
 	d3.select("#slgroup")
 		.selectAll("path")
@@ -106,8 +282,36 @@ function slpathGen(arr) {
 		.attr("d", function(obj) {return pathFunc(obj);})
 		.attr("stroke", slstroke)
 		.attr("stroke-width", slstrokeWidth)
-		.attr("stroke-linecap", sllinecap)
-		.attr("fill", slpathfill);
+		.attr("stroke-linecap", sllinecap);
+}
+
+// draw all objects in streets_segments
+function sspathGen(ssarr) {
+	d3.select("#ssgroup") // create the ss path elements
+		.selectAll("path")
+		.data(ssarr, function(obj) {return obj.direction + obj.id;}) // key for binding
+		.enter()
+		.append("path")
+		.attr("id", function(obj) {return obj.direction + obj.id;})
+		.attr("d", function(obj) {return pathFunc(obj);})
+		.attr("stroke", ssstroke)
+		.attr("stroke-width", ssstrokeWidth)
+		.attr("stroke-linecap", sslinecap);
+}
+
+function sspathUpdate(dataset) {
+	buttonChecker(); // update variables current_period and current_month
+	
+	d3.select("#ssgroup") // create the ss path elements
+		.selectAll("path")
+		.data(dataset.filter(function(obj) // filter for current period and month
+					{return (obj.time_period == current_period) 
+						&& ((obj.month.getMonth() + 1) == current_month);}), 
+				function(obj) {return obj.direction + obj.id;}) // key for binding
+		.attr("stroke", function(obj) {return pctColour(obj);})
+		.attr("stroke-width", function(obj) {return volWidth(obj);})
+		.attr("stroke-linecap", sslinecap)
+		.attr("transform", function(obj) {return offsetSeg(obj);});
 }
 
 
@@ -155,18 +359,31 @@ function labelStreets(arr) {
 ***********************************************************************/
 // Load data and execute functions requiring immediate access to data
 var streets_lines = [];
+var dataURL = "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/data/street_volumes.csv";
+var vol_data;
+var streets_segments = [];
 d3.csv("streets_lines.csv", function(sl) {
-	streets_lines = sl.map(slConverter);
-	scaling(streets_lines);
-	labelStreets(streets_lines);
-	slpathGen(streets_lines);
+	d3.csv("streets_segments.csv", function(ss) {
+		d3.csv(dataURL, function(file) {
+			// typify data
+			streets_lines = sl.map(slConverter);
+			streets_segments = ss.map(ssConverter);
+			vol_data = file.map(dataConverter);
+			
+			// create scale and labels
+			scaling(streets_lines);
+			labelStreets(streets_lines);
+			
+			// create and draw paths
+			slpathGen(streets_lines);
+			sspathGen(streets_segments);
+			
+			// initial data view
+			buttonChecker();
+			sspathUpdate(vol_data);
+		});
+	});
 });
-
-
-
-
-
-
 		</script>
 	</body>
 </html>
