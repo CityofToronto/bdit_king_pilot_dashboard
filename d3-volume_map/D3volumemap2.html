@@ -2,6 +2,20 @@
 <meta charset="utf-8">
 <html>
 	<head>
+	<style>
+		div.tooltip {	
+			position: absolute;			
+			text-align: center;			
+			width: 100px;					
+			height: 30px;					
+			padding: 2px;				
+			font: 12px sans-serif;		
+			background: lightsteelblue;	
+			border: 0px;		
+			border-radius: 8px;			
+			pointer-events: none;			
+		}
+	</style>
 		<script src="https://d3js.org/d3.v4.min.js"></script>
 		<script src="https://d3js.org/d3-path.v1.min.js"></script>
 		<script src="https://d3js.org/d3-scale.v1.min.js"></script>
@@ -129,6 +143,14 @@ function scaling(arr) {
 		.domain([yMin, yMax])
 		.range([100, svgH-100]); // 100px SVG whitespace buffer
 }
+
+
+
+/* Create tooltip
+***********************************************************************/
+var divtip = d3.select("body").append("div")	
+	.attr("class", "tooltip")				
+	.style("opacity", 0);
 
 
 
@@ -311,7 +333,18 @@ function sspathUpdate(dataset) {
 		.attr("stroke", function(obj) {return pctColour(obj);})
 		.attr("stroke-width", function(obj) {return volWidth(obj);})
 		.attr("stroke-linecap", sslinecap)
-		.attr("transform", function(obj) {return offsetSeg(obj);});
+		.attr("transform", function(obj) {return offsetSeg(obj);})
+		.on("mouseover", function(obj) {
+			divtip.transition()
+				.duration(200)
+				.style("opacity", .9);
+			divtip.html("%Change: " + obj.pct_change + "<br/>" + "Volume: " + obj.volume)
+				.style("left", (d3.event.pageX) + "px")
+				.style("top", (d3.event.pageY - 30) + "px");})
+		.on("mouseout", function(obj) {
+			divtip.transition()
+				.duration(500)
+				.style("opacity", 0);});
 }
 
 
