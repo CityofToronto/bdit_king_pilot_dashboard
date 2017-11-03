@@ -15,7 +15,7 @@ import plotly.graph_objs as go
 #from plotly.grid_objs import Grid, Column
 
 
-times = pandas.read_csv('C:\\Users\\rrodger\\Documents\\GitHub\\bdit_king_pilot_dashboard\\car_travel_times.csv')
+times = pandas.read_csv('car_travel_times.csv')
 
 times['mon'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S').date() for i in times['mon']]
 
