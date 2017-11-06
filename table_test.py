@@ -7,28 +7,32 @@ from dash.dependencies import Input, Output
 
 import pandas as pd
 
-df = pd.read_csv(
-    'https://gist.githubusercontent.com/chriddyp/'
-    'c78bf172206ce24f77d6363a2d754b59/raw/'
-    'c353e8ef842413cae56ae3920b8fd78468aa4cb2/'
-    'usa-agricultural-exports-2011.csv')
+df = pd.read_csv("data/test.csv")
 
-def generate_table(dataframe, max_rows=10):
+def generate_table(dataframe, max_rows=30):
     return html.Table(
         # Header
-        [html.Tr([html.Th(col) for col in dataframe.columns])] +
+       # [
+        # html.Tr([html.Th(col) for col in dataframe.columns])
+        #] +
 
         # Body
+        [
+         html.Tr( [html.Td(""), html.Td("Eastbound",colSpan=2), html.Td("Westbound",colSpan=2)] )
+        ] +
+        [
+         html.Tr( [html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")] )
+        ] +
         [html.Tr([
-            html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
-        ], id= dataframe.iloc[i]['state'], n_clicks=0) for i in range(min(len(dataframe), max_rows))]
-        , id = 'data_table'
+            html.Td(dataframe.iloc[i][col], id = dataframe.iloc[i]['street'] + col) for col in dataframe.columns
+        ], id= dataframe.iloc[i]['street'], n_clicks=0) for i in range(min(len(dataframe), max_rows))]
+        , id = 'data_table', style = {'width' : 400, 'font-family' : 'sans-serif', 'text-align' : 'center'  }
     )
 
 app = dash.Dash()
 
 app.layout = html.Div(children=[
-    html.H4(children='US Agriculture Exports (2011)'),
+    html.H4(children='King Street Pilot'),
     generate_table(df),
     html.Div(id='row-selected', children='Selected row')
 ])
@@ -36,10 +40,10 @@ app.layout = html.Div(children=[
 #Super critical to store in an OrderedDict
 #This is a bad implementation, should be changed to a hidden div, see: https://community.plot.ly/t/app-not-resetting-with-page-refresh/5020/10
 #https://plot.ly/dash/sharing-data-between-callbacks
-CLICKS = OrderedDict([(df.iloc[i]['state'], 0) for i in range(10)])
+CLICKS = OrderedDict([(df.iloc[i]['street'], 0) for i in range(len(df))])
 
 @app.callback(Output('row-selected','children'),
-              [Input(df.iloc[i]['state'], 'n_clicks') for i in range(10)] )
+              [Input(df.iloc[i]['street'], 'n_clicks') for i in range(len(df))] )
 def button_click(*rows):
     global CLICKS
     state_clicked = ''
