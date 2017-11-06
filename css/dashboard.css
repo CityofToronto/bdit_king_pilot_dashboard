@@ -330,9 +330,9 @@ td:first-child {
 th:last-child,
 td:last-child {
   padding-right: 0; }
-td:segname {
+td.segname {
    text-align: left; }
-tr:selected {
+tr.selected {
    border: solid thin; }
 
 
