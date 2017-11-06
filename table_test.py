@@ -11,12 +11,6 @@ df = pd.read_csv("data/test.csv")
 
 def generate_table(dataframe, max_rows=30):
     return html.Table(
-        # Header
-       # [
-        # html.Tr([html.Th(col) for col in dataframe.columns])
-        #] +
-
-        # Body
         [
          html.Tr( [html.Td(""), html.Td("Eastbound",colSpan=2), html.Td("Westbound",colSpan=2)] )
         ] +
@@ -26,16 +20,29 @@ def generate_table(dataframe, max_rows=30):
         [html.Tr([
             html.Td(dataframe.iloc[i][col], id = dataframe.iloc[i]['street'] + col) for col in dataframe.columns
         ], id= dataframe.iloc[i]['street'], n_clicks=0) for i in range(min(len(dataframe), max_rows))]
-        , id = 'data_table', style = {'width' : 400, 'font-family' : 'sans-serif', 'text-align' : 'center'  }
+        , id = 'data_table'
     )
 
 app = dash.Dash()
 
-app.layout = html.Div(children=[
-    html.H4(children='King Street Pilot'),
-    generate_table(df),
-    html.Div(id='row-selected', children='Selected row')
-])
+app.layout = html.Div([
+#        html.Div(children=[
+#            html.H1(children='King Street Pilot'),
+#            ], className='row twelve columns'),
+        
+        html.Div([    
+            html.Div(children=[
+                        generate_table(df),
+                        html.Div(id='row-selected', children='Selected row')],
+                    className='three columns'
+                    ),
+                html.Div(children=[
+                        html.H2(children='Chart goes here')],
+                    className='nine columns'
+                    ),
+            ], className = 'row')
+
+        ])
 
 #Super critical to store in an OrderedDict
 #This is a bad implementation, should be changed to a hidden div, see: https://community.plot.ly/t/app-not-resetting-with-page-refresh/5020/10
@@ -56,5 +63,9 @@ def button_click(*rows):
     CLICKS[state_clicked] = n_clicks_clicked
     return state_clicked
 
+app.css.append_css({
+    'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
+})
+    
 if __name__ == '__main__':
     app.run_server(debug=True)
