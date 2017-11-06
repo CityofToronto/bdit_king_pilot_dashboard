@@ -1,9 +1,10 @@
 from collections import OrderedDict
+import json
 
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 import pandas as pd
 
@@ -24,6 +25,19 @@ def generate_table(dataframe, max_rows=30):
     )
 
 app = dash.Dash()
+CLICKS = OrderedDict([(df.iloc[i]['street'], dict(n_clicks=0, clicked=False)) for i in range(len(df))])
+
+
+
+#Super critical to store in an OrderedDict
+#This is a bad implementation, should be changed to a hidden div, see: https://community.plot.ly/t/app-not-resetting-with-page-refresh/5020/10
+#https://plot.ly/dash/sharing-data-between-callbacks
+
+def deserialise_clicks(clicks_json):
+    return json.loads(clicks_json, object_pairs_hook=OrderedDict)
+
+def serialise_clicks(clicks_dict):
+    return json.dumps(clicks_dict)
 
 app.layout = html.Div([
 #        html.Div(children=[
@@ -40,32 +54,35 @@ app.layout = html.Div([
                         html.H2(children='Chart goes here')],
                     className='nine columns'
                     ),
-            ], className = 'row')
-
+            ], className = 'row'),
+        html.Div(id='clicks_storage', style={'display': 'none'}, children=serialise_clicks(CLICKS))
         ])
 
-#Super critical to store in an OrderedDict
-#This is a bad implementation, should be changed to a hidden div, see: https://community.plot.ly/t/app-not-resetting-with-page-refresh/5020/10
-#https://plot.ly/dash/sharing-data-between-callbacks
-CLICKS = OrderedDict([(df.iloc[i]['street'], 0) for i in range(len(df))])
+@app.callback(Output('clicks_storage','children'),
+              [Input(df.iloc[i]['street'], 'n_clicks') for i in range(len(df))],
+              [State('clicks_storage','children')] )
+def button_click(*args):
+    rows, old_clicks = args[:-1], args[-1]
+    clicks = deserialise_clicks(old_clicks)
+    for (street_name, click_obj), n_click_new in zip(clicks.items(), rows):
+        if n_click_new > click_obj['n_clicks']:
+            click_obj['clicked'] = True
+            click_obj['n_clicks'] = n_click_new
+        else:
+            click_obj['clicked'] = False   
+    return serialise_clicks(clicks)
 
-@app.callback(Output('row-selected','children'),
-              [Input(df.iloc[i]['street'], 'n_clicks') for i in range(len(df))] )
-def button_click(*rows):
-    global CLICKS
-    state_clicked = ''
-    n_clicks_clicked = 0
-    for (state, n_click_old), n_click_new in zip(CLICKS.items(), rows):
-        if n_click_new > n_click_old:
-            state_clicked = state
-            n_clicks_clicked = n_click_new
-    
-    CLICKS[state_clicked] = n_clicks_clicked
-    return state_clicked
+@app.callback(Output('row-selected', 'children'),
+              [Input('clicks_storage', 'children')])
+def update_row_clicked(click_state):
+    clicks = deserialise_clicks(click_state)
+    return [street_name for street_name, click_obj in clicks.items() if click_obj['clicked']]
 
 app.css.append_css({
     'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
 })
+
+
     
 if __name__ == '__main__':
     app.run_server(debug=True)
