@@ -10,7 +10,20 @@ import pandas as pd
 
 df = pd.read_csv("data/test.csv")
 
-def generate_table(dataframe, max_rows=30):
+def generate_cell_class(colNum):
+    if colNum == 0:
+        return 'segname'
+    else:
+        return 'segother'
+    
+def generate_row_class(selected_str, current_str):
+    # if selected_str == current_str:
+    if current_str == 'Queen':
+        return 'selected';
+    else:
+        return 'notselected';
+
+def generate_table(dataframe, street_name=None, max_rows=30):
     return html.Table(
         [
          html.Tr( [html.Td(""), html.Td("Eastbound",colSpan=2), html.Td("Westbound",colSpan=2)] )
@@ -19,8 +32,8 @@ def generate_table(dataframe, max_rows=30):
          html.Tr( [html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")] )
         ] +
         [html.Tr([
-            html.Td(dataframe.iloc[i][col], id = dataframe.iloc[i]['street'] + col) for col in dataframe.columns
-        ], id= dataframe.iloc[i]['street'], n_clicks=0) for i in range(min(len(dataframe), max_rows))]
+            html.Td(dataframe.iloc[i][col], id = (dataframe.iloc[i]['street'] + '_' + str(dataframe.columns.get_loc(col)+1)), className = generate_cell_class(dataframe.columns.get_loc(col))) for col in dataframe.columns
+        ], id= dataframe.iloc[i]['street'], className = generate_row_class(street_name, dataframe.iloc[i]['street']), n_clicks=0) for i in range(min(len(dataframe), max_rows))]
         , id = 'data_table'
     )
 
@@ -46,13 +59,13 @@ app.layout = html.Div([
         
         html.Div([    
             html.Div(children=[
-                        generate_table(df),
+                        html.Div(id='div-table', children=generate_table(df)),
                         html.Div(id='row-selected', children='Selected row')],
-                    className='three columns'
+                    className='four columns'
                     ),
                 html.Div(children=[
                         html.H2(children='Chart goes here')],
-                    className='nine columns'
+                    className='eight columns'
                     ),
             ], className = 'row'),
         html.Div(id='clicks_storage', style={'display': 'none'}, children=serialise_clicks(CLICKS))
@@ -79,7 +92,7 @@ def update_row_clicked(click_state):
     return [street_name for street_name, click_obj in clicks.items() if click_obj['clicked']]
 
 app.css.append_css({
-    'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
+    'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/dashboard.css'
 })
 
 
