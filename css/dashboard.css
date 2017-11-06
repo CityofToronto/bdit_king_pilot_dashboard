@@ -322,7 +322,7 @@ table {
 th,
 td {
   padding: 12px 15px;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #E1E1E1; }
 th:first-child,
 td:first-child {
@@ -330,6 +330,10 @@ td:first-child {
 th:last-child,
 td:last-child {
   padding-right: 0; }
+td:segname {
+   text-align: left; }
+tr:selected {
+   border: solid thin; }
 
 
 /* Spacing
