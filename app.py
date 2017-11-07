@@ -1,112 +1,101 @@
-import os
-import struct
+from collections import OrderedDict
+import json
 
 import dash
-from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
-import pandas
-import plotly.graph_objs as go
+from dash.dependencies import Input, Output, State
+
+import pandas as pd
+
+df = pd.read_csv("data/test.csv")
+
+def generate_cell_class(colNum):
+    if colNum == 0:
+        return 'segname'
+    else:
+        return 'segother'
+    
+def generate_row_class(selected_str, current_str):
+    # if selected_str == current_str:
+    if current_str == 'Queen':
+        return 'selected';
+    else:
+        return 'notselected';
+
+def generate_table(dataframe, street_name=None, max_rows=30):
+    return html.Table(
+        [
+         html.Tr( [html.Td(""), html.Td("Eastbound",colSpan=2), html.Td("Westbound",colSpan=2)] )
+        ] +
+        [
+         html.Tr( [html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")] )
+        ] +
+        [html.Tr([
+            html.Td(dataframe.iloc[i][col], id = (dataframe.iloc[i]['street'] + '_' + str(dataframe.columns.get_loc(col)+1)), className = generate_cell_class(dataframe.columns.get_loc(col))) for col in dataframe.columns
+        ], id= dataframe.iloc[i]['street'], className = generate_row_class(street_name, dataframe.iloc[i]['street']), n_clicks=0) for i in range(min(len(dataframe), max_rows))]
+        , id = 'data_table'
+    )
 
 app = dash.Dash()
-# In case there are problems with react loading from unpkg, set to True
-app.css.append_css({"external_url": "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/style.css"})
-app.css.config.serve_locally = False
-app.scripts.config.serve_locally = False
-
-server = app.server
-server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
+CLICKS = OrderedDict([(df.iloc[i]['street'], dict(n_clicks=0, clicked=False)) for i in range(len(df))])
 
 
-NORMAL_TRAVEL_TIMES = dict(AM=dict(WB=dict(min_tt=22,
-                                           max_tt=25),
-                                   EB=dict(min_tt=19,
-                                           max_tt=21)),
-                           PM=dict(WB=dict(min_tt=20,
-                                           max_tt=23),
-                                   EB=dict(min_tt=23,
-                                           max_tt=26)))
-streetcar_df = pandas.read_csv('data/streetcar_travel_times.csv')
 
-MIN_DATE, MAX_DATE = streetcar_df.mon.min(), streetcar_df.mon.max()
-MIN_TT, MAX_TT = 0, 35
+#Super critical to store in an OrderedDict
+#This is a bad implementation, should be changed to a hidden div, see: https://community.plot.ly/t/app-not-resetting-with-page-refresh/5020/10
+#https://plot.ly/dash/sharing-data-between-callbacks
 
-HEX_COLOURS = dict(WB='ff5b33',
-                   EB='a97bc4')
+def deserialise_clicks(clicks_json):
+    return json.loads(clicks_json, object_pairs_hook=OrderedDict)
 
-COLOURS = {}
-#convert HEX colours to rgb strings e.g.: '255,91,51'
-for direction, colour in HEX_COLOURS.items():
-    rgb_colour = struct.unpack('BBB', bytes.fromhex(colour) )
-    COLOURS[direction] = ','.join([str(val) for val in rgb_colour])
+def serialise_clicks(clicks_dict):
+    return json.dumps(clicks_dict)
+
+app.layout = html.Div([
+#        html.Div(children=[
+#            html.H1(children='King Street Pilot'),
+#            ], className='row twelve columns'),
+        
+        html.Div([    
+            html.Div(children=[
+                        html.Div(id='div-table', children=generate_table(df)),
+                        html.Div(id='row-selected', children='Selected row')],
+                    className='four columns'
+                    ),
+                html.Div(children=[
+                        html.H2(children='Chart goes here')],
+                    className='eight columns'
+                    ),
+            ], className = 'row'),
+        html.Div(id='clicks_storage', style={'display': 'none'}, children=serialise_clicks(CLICKS))
+        ])
+
+@app.callback(Output('clicks_storage','children'),
+              [Input(df.iloc[i]['street'], 'n_clicks') for i in range(len(df))],
+              [State('clicks_storage','children')] )
+def button_click(*args):
+    rows, old_clicks = args[:-1], args[-1]
+    clicks = deserialise_clicks(old_clicks)
+    for (street_name, click_obj), n_click_new in zip(clicks.items(), rows):
+        if n_click_new > click_obj['n_clicks']:
+            click_obj['clicked'] = True
+            click_obj['n_clicks'] = n_click_new
+        else:
+            click_obj['clicked'] = False   
+    return serialise_clicks(clicks)
+
+@app.callback(Output('row-selected', 'children'),
+              [Input('clicks_storage', 'children')])
+def update_row_clicked(click_state):
+    clicks = deserialise_clicks(click_state)
+    return [street_name for street_name, click_obj in clicks.items() if click_obj['clicked']]
+
+app.css.append_css({
+    'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/dashboard.css'
+})
 
 
-def filter_aggregate_timeperiod(timeperiod: str):
-    """
-    Returns the dataframe filtered by the provided timeperiod
-        :param timeperiod:
-    """
-    filtered = streetcar_df[streetcar_df['time_period'] == timeperiod]
-    agged_df = filtered[['mon',
-                      'dir',
-                      'travel_time']].groupby(['mon',
-                                               'dir'],
-                                              as_index=False).sum()
-    return agged_df
-
-def create_shapes(timeperiod: str):
-    shapes_lst = []
-    alpha = '0.5'
     
-    for _dir, y_extents in NORMAL_TRAVEL_TIMES[timeperiod].items():
-        colour_str = COLOURS[_dir]
-        rgba = 'rgba('+colour_str+','+alpha+')'
-        shapes_lst.append({'type': 'rect',
-                           'x0': MIN_DATE,
-                           'y0': y_extents['min_tt'],
-                           'x1': MAX_DATE,
-                           'y1': y_extents['max_tt'],
-                           'line':{
-                               'color': rgba
-                           },
-                           'fillcolor': rgba
-                           })
-    return shapes_lst
-
-def create_graph(agged_df, shapes_lst):
-    agged_wb = agged_df[agged_df['dir'] == 'WB']
-    agged_eb = agged_df[agged_df['dir'] == 'EB']
-
-    data = [go.Scatter(x=agged_wb['mon'],
-                       y=agged_wb['travel_time'],
-                       mode='lines',
-                       name='WB'),
-            go.Scatter(x=agged_eb['mon'],
-                       y=agged_eb['travel_time'],
-                       mode='lines',
-                       name='EB')
-            ]
-    layout = dict(title='Average Streetcar Travel Times',
-                  xaxis=dict(title="Month"),
-                  yaxis=dict(title="Travel Time (min)", range=[MIN_TT, MAX_TT]),
-                  shapes=shapes_lst)
-    return {'layout': layout, 'data': data}
-
-app.layout = html.Div(children=[dcc.RadioItems(id='radio_timeperiods',
-                                               options=[{'label': 'AM Peak', 'value': 'AM'}, 
-                                                        {'label': 'PM Peak', 'value': 'PM'}],
-                                               value='AM'),
-                                html.Div(dcc.Graph(id='travel-time-graph'))
-                                ])
-
-
-@app.callback(Output('travel-time-graph','figure'),
-              [Input('radio_timeperiods', 'value')])
-def button_click(peak):
-    agged = filter_aggregate_timeperiod(peak)
-    shapes = create_shapes(peak)
-    return create_graph(agged, shapes)
-
-
 if __name__ == '__main__':
     app.run_server(debug=True)
