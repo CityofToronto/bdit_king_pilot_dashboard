@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import json
+import os
 
 import dash
 import dash_core_components as dcc
@@ -40,7 +41,10 @@ def generate_row(df_row, row_state):
 
 
 app = dash.Dash()
-app.config['suppress_callback_exceptions']=True
+
+server = app.server
+server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
+
 CLICKS = OrderedDict([( row.street, dict(n_clicks=0, clicked=(row.street=='Queen'))) for row in DATA.itertuples()])
 
 def deserialise_clicks(clicks_json):
@@ -75,9 +79,15 @@ app.layout = html.Div([
         ])
 
 def create_row_click_function(streetname):
+    '''Create a callback function for a given streetname
+    streetname is the id for the row in the datatable
+
+    '''
     @app.callback(Output(streetname, 'className'),
                 [Input(HIDDEN_DIV_ID, 'children')])
     def update_clicked_row(state_data):
+        '''Inner function to update row with id=streetname
+        '''
         state_data_dict = deserialise_clicks(state_data)
         return generate_row_class(state_data_dict[streetname]['clicked'])
     update_clicked_row.__name__ = 'update_row_'+streetname
