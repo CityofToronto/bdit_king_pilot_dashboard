@@ -23,19 +23,23 @@ def generate_row_class(selected_str, current_str):
     else:
         return 'notselected';
 
-def generate_table(dataframe, street_name=None, max_rows=30):
+def generate_row(df_row, street_name = None):
+    '''Create an HTML row from a database row
+    '''
+    return html.Tr([
+            html.Td(df_row.street, className = generate_cell_class(0)),
+            html.Td(df_row.eb_after, className = generate_cell_class(1)),
+            html.Td(df_row.eb_base, className = generate_cell_class(2)),
+            html.Td(df_row.wb_after, className = generate_cell_class(3)),
+            html.Td(df_row.wb_base, className = generate_cell_class(4))
+        ], id= df_row.street, className = generate_row_class(street_name, df_row.street), n_clicks=0) 
+
+def generate_table(dataframe):
     return html.Table(
-        [
-         html.Tr( [html.Td(""), html.Td("Eastbound",colSpan=2), html.Td("Westbound",colSpan=2)] )
-        ] +
-        [
-         html.Tr( [html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")] )
-        ] +
-        [html.Tr([
-            html.Td(dataframe.iloc[i][col], id = (dataframe.iloc[i]['street'] + '_' + str(dataframe.columns.get_loc(col)+1)), className = generate_cell_class(dataframe.columns.get_loc(col))) for col in dataframe.columns
-        ], id= dataframe.iloc[i]['street'], className = generate_row_class(street_name, dataframe.iloc[i]['street']), n_clicks=0) for i in range(min(len(dataframe), max_rows))]
-        , id = 'data_table'
-    )
+           [html.Tr( [html.Td(""), html.Td("Eastbound",colSpan=2), html.Td("Westbound",colSpan=2)] )] +
+           [html.Tr( [html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")] )] +
+           [generate_row(row) for row in dataframe.itertuples()]
+        , id='data_table')
 
 app = dash.Dash()
 CLICKS = OrderedDict([(df.iloc[i]['street'], dict(n_clicks=0, clicked=False)) for i in range(len(df))])
