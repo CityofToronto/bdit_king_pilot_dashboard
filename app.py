@@ -9,8 +9,8 @@ from dash.dependencies import Input, Output, State
 
 import pandas as pd
 
-DATA = pd.read_csv("data/bt_king_fake_data.csv")
-BASELINE = pd.read_csv("data/test.csv")
+DATA = pd.read_csv("data/daily_fake.csv")
+BASELINE = pd.read_csv("data/baselines_fake.csv")
 
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 TIMEPERIODS = DATA['period'].unique()
@@ -41,14 +41,13 @@ def generate_row(df_row, baseline_row, row_state):
     '''
     return html.Tr([
             html.Td(df_row.street, className='segname'),
-            *generate_direction_cells(baseline_row.eb_base, df_row.EB),
-            *generate_direction_cells(baseline_row.wb_base, df_row.WB)
+            *generate_direction_cells(baseline_row.EB, df_row.EB),
+            *generate_direction_cells(baseline_row.WB, df_row.WB)
         ], id= df_row.street, className = generate_row_class(row_state['clicked']), n_clicks=row_state['n_clicks']) 
 
 
 
 app = dash.Dash()
-
 server = app.server
 server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 
@@ -60,22 +59,33 @@ def deserialise_clicks(clicks_json):
 def serialise_clicks(clicks_dict):
     return json.dumps(clicks_dict)
 
-def filter_data(timeperiod):
-    '''Return data aggregated and filtered by timeperiod
-    '''
-    filtered = DATA[DATA['period']==timeperiod].groupby(by=['street','direction'], as_index=False).mean()
-    pivoted = filtered.pivot_table(index='street', columns='direction', values='tt').reset_index()
+def pivot_order(df):
+    pivoted = df.pivot_table(index='street', columns='direction', values='tt').reset_index()
     pivoted.street = pivoted.street.astype("category")
     pivoted.street.cat.set_categories(STREETS, inplace=True)
     return pivoted.sort_values(['street']).round(1)
 
+def filter_data(timeperiod, day_type):
+    '''Return data aggregated and filtered by timeperiod
+    '''
+    #current data
+    filtered = DATA[(DATA['period']==timeperiod) & (DATA['day_type']==day_type)].groupby(by=['street','direction'], as_index=False).mean()
+    pivoted = pivot_order(filtered)
 
-def generate_table(state_data_dict, timeperiod = 'AMPK'):
-    filtered_data = filter_data(timeperiod)
+    #baseline data
+
+    filtered_baseline = BASELINE[(BASELINE['period']==timeperiod) & (BASELINE['day_type']==day_type)]
+    pivoted_baseline = pivot_order(filtered_baseline)
+
+    return (pivoted, pivoted_baseline)
+
+
+def generate_table(state_data_dict, timeperiod = 'AMPK', day_type='Weekday'):
+    filtered_data, baseline = filter_data(timeperiod, day_type)
     return html.Table(
            [html.Tr( [html.Td(""), html.Td("Eastbound",colSpan=2), html.Td("Westbound",colSpan=2)] )] +
            [html.Tr( [html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")] )] +
-           [generate_row(new_row, baseline_row, row_state) for new_row, baseline_row, row_state in zip(filtered_data.itertuples(), BASELINE.itertuples(), state_data_dict.values())]
+           [generate_row(new_row, baseline_row, row_state) for new_row, baseline_row, row_state in zip(filtered_data.itertuples(), baseline.itertuples(), state_data_dict.values())]
         , id='data_table')
 
 app.layout = html.Div([

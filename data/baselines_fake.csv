@@ -1,4 +1,4 @@
-street,direction,day_type,period,baseline_tt
+street,direction,day_type,period,tt
 Adelaide,EB,Weekday,AMPK,18.9832972
 Dundas,EB,Weekday,AMPK,17.96168231
 Dundas,WB,Weekday,AMPK,12.98833484
