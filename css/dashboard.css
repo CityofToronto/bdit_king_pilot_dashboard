@@ -320,11 +320,14 @@ table {
   border-collapse: collapse;
 }
 th,
+tr:hover {
+    background-color: #C4F7F1;
+}
 td {
   padding: 8px 15px;
   text-align: center;
   border-bottom: 1px solid #E1E1E1;
-  font-size: 1.5em; }
+  font-size: 1.4em; }
 th:first-child,
 td:first-child {
   padding-left: 2; }
@@ -333,7 +336,7 @@ td:last-child {
   padding-right: 2; }
 td.segname {
    text-align: left; 
-   font-size: 1.5em; }
+   font-size: 1.4em; }
 td.baseline {
    background-color: #F7F7F7;
    color: #808080; 
@@ -352,6 +355,7 @@ td.same {
    font-size: 1.8em; }
 tr.selected {
    border: 3px solid black; }
+
 
 
 /* Spacing
