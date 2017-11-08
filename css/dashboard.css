@@ -331,23 +331,24 @@ th:last-child,
 td:last-child {
   padding-right: 2; }
 td.segname {
-   text-align: left; }
+   text-align: left; 
+   font-size: 1.6em; }
 td.baseline {
    background-color: #F7F7F7;
    color: #808080; 
-   font-size: 2.0em; }
+   font-size: 1.8em; }
 td.worse {
    background-color: #E9A3C9;
    color: #000000; 
-   font-size: 2.0em; }
+   font-size: 1.8em; }
 td.better {
    background-color: #A1D76A;
    color: #000000; 
-   font-size: 2.0em; }
+   font-size: 1.8em; }
 td.same {
    background-color: #F7F7F7;
    color: #000000; 
-   font-size: 2.0em; }
+   font-size: 1.8em; }
 tr.selected {
    border: 3px solid black; }
 
