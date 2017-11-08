@@ -332,6 +332,18 @@ td:last-child {
   padding-right: 2; }
 td.segname {
    text-align: left; }
+td.baseline {
+   bgcolor: "#f7f7f7",
+   color: "#808080"; }
+td.worse {
+   bgcolor: "#e9a3c9",
+   color: "#000000"; }
+td.better {
+   bgcolor: "#a1d76a",
+   color: "#000000"; }
+td.same {
+   bgcolor: "#f7f7f7",
+   color: "#000000"; }
 tr.selected {
    border: 2px solid black; }
 
