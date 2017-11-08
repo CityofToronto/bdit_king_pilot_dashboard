@@ -30,15 +30,25 @@ def generate_row_class(clicked):
     else:
         return 'notselected'
 
+def generate_direction_cells(before, after):
+    return [html.Td(after, className=[after_cell_class(before, after)]),
+            html.Td(before, className=[generate_cell_class(2), 'baseline'])]
+
+def after_cell_class(before, after):
+    if after - before > 1:
+        return 'worse'
+    elif after - before < -1:
+        return 'better'
+    else:
+        return 'same'
+
 def generate_row(df_row, baseline_row, row_state):
     '''Create an HTML row from a database row
     '''
     return html.Tr([
-            html.Td(df_row.street, className = generate_cell_class(0)),
-            html.Td(df_row.EB, className = generate_cell_class(1)),
-            html.Td(baseline_row.eb_base, className = generate_cell_class(2)),
-            html.Td(df_row.WB, className = generate_cell_class(3)),
-            html.Td(baseline_row.wb_base, className = generate_cell_class(4))
+            html.Td(df_row.street, className=generate_cell_class(0)),
+            *generate_direction_cells(baseline_row.eb_base, df_row.EB),
+            *generate_direction_cells(baseline_row.wb_base, df_row.WB)
         ], id= df_row.street, className = generate_row_class(row_state['clicked']), n_clicks=row_state['n_clicks']) 
 
 
@@ -63,7 +73,7 @@ def filter_data(timeperiod):
     pivoted = filtered.pivot_table(index='street', columns='direction', values='tt').reset_index()
     pivoted.street = pivoted.street.astype("category")
     pivoted.street.cat.set_categories(STREETS, inplace=True)
-    return pivoted.sort_values(['street'])
+    return pivoted.sort_values(['street']).round(1)
 
 
 def generate_table(state_data_dict, timeperiod = 'AMPK'):
