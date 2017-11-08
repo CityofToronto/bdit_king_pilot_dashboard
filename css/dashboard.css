@@ -333,17 +333,17 @@ td:last-child {
 td.segname {
    text-align: left; }
 td.baseline {
-   background-color: "#F7F7F7";
-   color: "#808080"; }
+   background-color: #F7F7F7;
+   color: #808080; }
 td.worse {
-   background-color: "#E9A3C9";
-   color: "#000000"; }
+   background-color: #E9A3C9;
+   color: #000000; }
 td.better {
-   background-color: "#A1D76A";
-   color: "#000000"; }
+   background-color: #A1D76A;
+   color: #000000; }
 td.same {
-   background-color: "#F7F7F7";
-   color: "#000000"; }
+   background-color: #F7F7F7;
+   color: #000000; }
 tr.selected {
    border: 2px solid black; }
 
