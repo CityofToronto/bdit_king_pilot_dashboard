@@ -12,17 +12,11 @@ import pandas as pd
 DATA = pd.read_csv("data/bt_king_fake_data.csv")
 BASELINE = pd.read_csv("data/test.csv")
 
-STREETS = BASELINE['street']
+STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 TIMEPERIODS = DATA['period'].unique()
 HIDDEN_DIV_ID = 'clicks_storage'
 TABLE_DIV_ID = 'div-table'
 
-def generate_cell_class(colNum):
-    if colNum == 0:
-        return 'segname'
-    else:
-        return 'segother'
-    
 def generate_row_class(clicked):
     '''Assigns class to clicked row'''
     if clicked:
@@ -31,8 +25,8 @@ def generate_row_class(clicked):
         return 'notselected'
 
 def generate_direction_cells(before, after):
-    return [html.Td(after, className=[after_cell_class(before, after)]),
-            html.Td(before, className=[generate_cell_class(2), 'baseline'])]
+    return [html.Td(after, className=after_cell_class(before, after)),
+            html.Td(before, className='baseline')]
 
 def after_cell_class(before, after):
     if after - before > 1:
@@ -46,7 +40,7 @@ def generate_row(df_row, baseline_row, row_state):
     '''Create an HTML row from a database row
     '''
     return html.Tr([
-            html.Td(df_row.street, className=generate_cell_class(0)),
+            html.Td(df_row.street, className='segname'),
             *generate_direction_cells(baseline_row.eb_base, df_row.EB),
             *generate_direction_cells(baseline_row.wb_base, df_row.WB)
         ], id= df_row.street, className = generate_row_class(row_state['clicked']), n_clicks=row_state['n_clicks']) 
