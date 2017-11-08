@@ -40,8 +40,6 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
 #     grid = Grid[befAP, aftAP, befPA, aftPA]
 #==============================================================================
     
-#original approach by defining figures in the function
-#==============================================================================
 #     fig1 = go.Bar(x = data['b' + AMPM][street]['dir'],
 #                   y = data['b' + AMPM][street]['travel_time'],
 #                   name = 'Before',
@@ -52,12 +50,24 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
 #                   width = 1.5,# Also accepts list corresponding to each bar
 #                   opacity = 0.5,
 #                   text = "This will appear on hover and can also be a list for each column")
-#==============================================================================
-
+    diffEB = int(times[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == AMPM)].groupby(['dir'])['travel_time'].mean()['EB'] - times[(times['corridor'] == street) & (times['mon'] >= middate) & (times['time_period'] == AMPM)].groupby(['dir'])['travel_time'].mean()['EB'])
+    diffWB = int(times[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == AMPM)].groupby(['dir'])['travel_time'].mean()['WB'] - times[(times['corridor'] == street) & (times['mon'] >= middate) & (times['time_period'] == AMPM)].groupby(['dir'])['travel_time'].mean()['WB'])
+    if(diffEB > 0):
+        strdiffEB = '+' + str(diffEB)+ ' min'
+    elif(diffEB < 0):
+        strdiffEB = str(diffEB)+ ' min'
+    else:
+        strdiffEB = '< 1 min'
+    if(diffWB > 0):
+        strdiffWB = '+' + str(diffWB)+ ' min'
+    elif(diffWB < 0):
+        strdiffWB = str(diffWB) + ' min'
+    else:
+        strdiffWB = '< 1 min'
     
     layout = go.Layout(barmode = 'group',
                        title = street,
-                       xaxis = dict(title = 'Before/After',
+                       xaxis = dict(title = 'Before/After'
 #                                    ,tickangle = 30,
 #                                   tickfont = dict(size = 14
 #                                                   color = 'rgb(204, 204, 204)'),
@@ -77,17 +87,25 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
                        annotations = ([dict(
                                        x = 'EB',
                                        y = yrng[1],
-                                       text = 'this is an EB test',
+                                       text = strdiffEB,
                                        xanchor = 'centre',
                                        yanchor = 'top',
-                                       showarrow = False),
+                                       showarrow = False,
+                                       font = dict(
+                                               color = "black",
+                                               size = 30,
+                                               family = 'arial narrow')),
                                         dict(
                                         x = 'WB',
                                         y = yrng[1],
-                                        text = 'this is a WB test',
+                                        text = strdiffWB,
                                         xanchor = 'centre',
                                         yref = 'top',
-                                        showarrow = False)])
+                                        showarrow = False,
+                                        font = dict(
+                                               color = "black",
+                                               size = 30,
+                                               family = 'arial narrow'))])
                #        width = w,
                #        height = h,
                #        margin = sizemg,
@@ -95,8 +113,6 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
                  #      bargap=-1,
                  #      bargroupgap=-2
                        )
-    
-    #frames = go.Frames
     
     return {'data' : [before_figs[AMPM][street], after_figs[AMPM][street]],
             'layout' : layout}
@@ -106,8 +122,6 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
 app = dash.Dash()
 server = app.server
 
-#Issue with group by. Line runs fine with dummy street and APM value. 
-#print ({APM : {street : street + APM for street in streets} for APM in ('AM', 'PM')})
 before_figs = {APM : {street : go.Bar(
                                 x = times.loc[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean().index,
                                 y = times.loc[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean(),
