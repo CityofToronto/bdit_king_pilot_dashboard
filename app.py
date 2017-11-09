@@ -115,9 +115,6 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                   yaxis=dict(title='Travel Time (min)'))
     return {'layout': layout, 'data': data}
 
-def generate_radio_options(day_type = 'Weekday'):
-    return [{'label': period, 'value': period} for period in TIMEPERIODS[TIMEPERIODS['day_type'] == day_type]['period']]
-
 app.layout = html.Div([
 html.Div(children=[html.H1(children='King Street Pilot', id='title'),
                   ], className='row twelve columns'),
@@ -127,8 +124,10 @@ html.Div(children=[html.H1(children='King Street Pilot', id='title'),
             html.H2('Bathurst - Jarvis'),
             html.Div(id=TABLE_DIV_ID),
             dcc.RadioItems(id=CONTROLS['timeperiods'],
-                           options=generate_radio_options(),
-                           value=TIMEPERIODS.iloc[0]['period'])
+                           value=TIMEPERIODS.iloc[0]['period']),
+            dcc.RadioItems(id=CONTROLS['day_types'],
+                           options=[{'label': day_type, 'value': day_type} for day_type in TIMEPERIODS['day_type'].unique()],
+                           value=TIMEPERIODS.iloc[0]['day_type'])
                            ],
                  className='four columns'
                 ),
@@ -143,10 +142,23 @@ html.Div(children=[html.H1(children='King Street Pilot', id='title'),
     html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=STREETS[0])
     ])
 
+@app.callback(Output(CONTROLS['timeperiods'], 'options'),
+              [Input(CONTROLS['day_types'], 'value')])
+def generate_radio_options(day_type = 'Weekday'):
+    return [{'label': period, 'value': period} for period in TIMEPERIODS[TIMEPERIODS['day_type'] == day_type]['period']]
+
+@app.callback(Output(CONTROLS['timeperiods'], 'value'),
+              [Input(CONTROLS['day_types'], 'value')])
+def generate_radio_options(day_type = 'Weekday'):
+    return TIMEPERIODS[TIMEPERIODS['day_type'] == day_type].iloc[0]['period']
+
+
+
 @app.callback(Output(TABLE_DIV_ID, 'children'),
-              [Input(CONTROLS['timeperiods'], 'value')],
+              [Input(CONTROLS['timeperiods'], 'value'),
+               Input(CONTROLS['day_types'], 'value')],
               [State(STATE_DIV_ID, 'children')])
-def generate_table(period, state_data, day_type='Weekday'):
+def generate_table(period, day_type, state_data,):
     state_data_dict = deserialise_clicks(state_data)
     filtered_data, baseline = filter_table_data(period, day_type)
     return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
@@ -178,9 +190,9 @@ def create_row_click_function(streetname):
 
 [create_row_click_function(key) for key in INITIAL_STATE.keys()]
 
-@app.callback(Output(STATE_DIV_ID,'children'),
+@app.callback(Output(STATE_DIV_ID, 'children'),
               [Input(street, 'n_clicks') for street in STREETS],
-              [State(STATE_DIV_ID,'children'), 
+              [State(STATE_DIV_ID, 'children'), 
                State(SELECTED_STREET_DIV, 'children')] )
 def button_click(*args):
     rows, old_clicks, prev_clicked_street = args[:-1], args[-2], args[-1]
@@ -195,11 +207,11 @@ def button_click(*args):
             click_obj['clicked'] = False
     #If no street was found to be clicked by this function, revert to previously clicked street.
     if not click_updated:
-        clicks[prev_clicked_street]['clicked'] = True
+        clicks[prev_clicked_street[0]]['clicked'] = True
     return serialise_clicks(clicks)
 
 @app.callback(Output(SELECTED_STREET_DIV, 'children'),
-              [Input(STATE_DIV_ID,'children')])
+              [Input(STATE_DIV_ID, 'children')])
 def update_selected_street(state_data):
     state_data_dict = deserialise_clicks(state_data)
     return [street for street, click_obj in state_data_dict.items() if click_obj['clicked']]
@@ -207,18 +219,20 @@ def update_selected_street(state_data):
 def create_update_graph(graph_number):
     @app.callback(Output(GRAPHS[graph_number], 'figure'),
                 [Input(SELECTED_STREET_DIV, 'children'),
-                 Input(CONTROLS['timeperiods'], 'value')])
-    def update_graph(street, period):
-        return generate_graph(street[0], DIRECTIONS[graph_number], period=period)
+                 Input(CONTROLS['timeperiods'], 'value'),
+                 Input(CONTROLS['day_types'], 'value')])
+    def update_graph(street, period, day_type):
+        return generate_graph(street[0], DIRECTIONS[graph_number], period=period, day_type=day_type)
     update_graph.__name__ = 'update_graph_' + GRAPHS[graph_number]
     return update_graph
 
 [create_update_graph(i) for i in range(len(GRAPHS))]
 
 @app.callback(Output(TIMEPERIOD_DIV, 'children'),
-              [Input(CONTROLS['timeperiods'], 'value')])
-def update_timeperiod(timeperiod):
-    return timeperiod + ' Travel Times'
+              [Input(CONTROLS['timeperiods'], 'value'),
+              Input(CONTROLS['day_types'], 'value')])
+def update_timeperiod(timeperiod, day_type):
+    return day_type + ' ' + timeperiod + ' Travel Times'
 
 
 app.css.append_css({
