@@ -145,8 +145,12 @@ html.Div(children=[html.H1(children='King Street Pilot', id='title'),
                  className='four columns'
                 ),
         html.Div(children=[
-            dcc.Graph(id=GRAPHS[0], figure=generate_graph(STREETS[0], 'EB')),
-            dcc.Graph(id=GRAPHS[1], figure=generate_graph(STREETS[0], 'WB'))
+            dcc.Graph(id=GRAPHS[0],
+                      figure=generate_graph(STREETS[0], DIRECTIONS[1]),
+                      config={'displayModeBar': False}),
+            dcc.Graph(id=GRAPHS[1],
+                      figure=generate_graph(STREETS[0], DIRECTIONS[1]),
+                      config={'displayModeBar': False})
         ],
                  className='eight columns'
                 ),
