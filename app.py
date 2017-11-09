@@ -1,14 +1,13 @@
-from collections import OrderedDict
 import json
 import os
+from collections import OrderedDict
 
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, State
-import plotly.graph_objs as go
-
 import pandas as pd
+import plotly.graph_objs as go
+from dash.dependencies import Input, Output, State
 
 DATA = pd.read_csv("data/daily_fake.csv")
 BASELINE = pd.read_csv("data/baselines_fake.csv")
@@ -18,9 +17,11 @@ DIRECTIONS = dict(EB='Eastbound',
                   WB='Westbound')
 TIMEPERIODS = DATA['period'].unique()
 THRESHOLD = 1
+
 STATE_DIV_ID = 'clicks-storage'
 SELECTED_STREET_DIV = 'selected-street'
 TABLE_DIV_ID = 'div-table'
+TIMEPERIOD_DIV = 'timeperiod'
 GRAPHS = ['eb-graph', 'wb-graph']
 
 def generate_row_class(clicked):
@@ -46,8 +47,8 @@ def generate_row(df_row, baseline_row, row_state):
     '''Create an HTML row from a database row
     '''
     return html.Tr([html.Td(df_row.street, className='segname'),
-                   *generate_direction_cells(baseline_row.EB, df_row.EB),
-                   *generate_direction_cells(baseline_row.WB, df_row.WB)],
+                    *generate_direction_cells(baseline_row.EB, df_row.EB),
+                    *generate_direction_cells(baseline_row.WB, df_row.WB)],
                    id=df_row.street,
                    className=generate_row_class(row_state['clicked']),
                    n_clicks=row_state['n_clicks'])
@@ -92,7 +93,9 @@ def filter_table_data(period, day_type):
     return (pivoted, pivoted_baseline)
 
 def filter_graph_data(street, direction, day_type='Weekday', period='AMPK'):
-    print('Filter graph data:', [street, direction, day_type, period])
+    '''Filter dataframes by street, direction, day_type, and period
+    Returns a filtered baseline, and a filtered current dataframe
+    '''
     filtered = DATA[(DATA['street'] == street) &
                     (DATA['period'] == period) &
                     (DATA['day_type'] == day_type) &
@@ -115,19 +118,23 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
 
 def generate_table(state_data_dict, period='AMPK', day_type='Weekday'):
     filtered_data, baseline = filter_table_data(period, day_type)
-    return html.Table([html.Tr( [html.Td(""), html.Td("Eastbound",colSpan=2), html.Td("Westbound",colSpan=2)] )] +
-                      [html.Tr( [html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")] )] +
-                      [generate_row(new_row, baseline_row, row_state) 
-                      for new_row, baseline_row, row_state 
-                      in zip(filtered_data.itertuples(), baseline.itertuples(), state_data_dict.values())]
+    return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
+                      [html.Tr([html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")])] +
+                      [generate_row(new_row, baseline_row, row_state)
+                       for new_row, baseline_row, row_state
+                       in zip(filtered_data.itertuples(),
+                              baseline.itertuples(),
+                              state_data_dict.values())]
                       , id='data_table')
 
 app.layout = html.Div([
-#        html.Div(children=[
-#            html.H1(children='King Street Pilot'),
-#            ], className='row twelve columns'),
+       html.Div(children=[
+           html.H1(children='King Street Pilot', id='title'),
+           ], className='row twelve columns'),
         html.Div([    
             html.Div(children=[
+                        html.H2(id=TIMEPERIOD_DIV, children='AM Peak Travel Times'),
+                        html.H2('Bathurst - Jarvis'),
                         html.Div(id=TABLE_DIV_ID, children=generate_table(INITIAL_STATE))],
                     className='four columns'
                     ),
@@ -141,8 +148,6 @@ app.layout = html.Div([
         html.Div(id=STATE_DIV_ID, style={'display': 'none'}, children=serialise_clicks(INITIAL_STATE)),
         html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=STREETS[0])
         ])
-
-
 
 
 def create_row_click_function(streetname):
@@ -170,7 +175,7 @@ def create_row_click_function(streetname):
 def button_click(*args):
     rows, old_clicks = args[:-1], args[-1]
     clicks = deserialise_clicks(old_clicks)
-    for (street_name, click_obj), n_click_new in zip(clicks.items(), rows):
+    for click_obj, n_click_new in zip(clicks.values(), rows):
         if n_click_new > click_obj['n_clicks']:
             click_obj['clicked'] = True
             click_obj['n_clicks'] = n_click_new
@@ -188,7 +193,6 @@ def update_selected_street(state_data):
 @app.callback(Output(GRAPHS[0], 'figure'),
               [Input(SELECTED_STREET_DIV, 'children')])
 def update_eb_graph(street):
-    print('update_eb_graph:', street)
     return generate_graph(street[0], 'EB')
 
 @app.callback(Output(GRAPHS[1], 'figure'),
