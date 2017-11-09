@@ -401,6 +401,11 @@ hr {
   border-width: 0;
   border-top: 1px solid #E1E1E1; }
 
+/*https://community.plot.ly/t/is-it-possible-to-hide-the-floating-toolbar/4911/11
+*/
+._dash-undo-redo {
+  display: none;
+}
 
 /* Clearing
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
