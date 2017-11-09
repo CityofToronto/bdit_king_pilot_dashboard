@@ -63,10 +63,10 @@ INITIAL_STATE = OrderedDict([(street,
                               dict(n_clicks=(1 if street == 'Dundas' else 0),
                                    clicked=(street == 'Dundas'))) for street in STREETS])
 
-def deserialise_clicks(clicks_json):
+def deserialise_state(clicks_json):
     return json.loads(clicks_json, object_pairs_hook=OrderedDict)
 
-def serialise_clicks(clicks_dict):
+def serialise_state(clicks_dict):
     return json.dumps(clicks_dict)
 
 def pivot_order(df):
@@ -110,9 +110,22 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     after_data, base_data = filter_graph_data(street, direction, day_type, period)
     data = [go.Bar(x=after_data['date'],
                    y=after_data['tt'])]
+    line = None
+    min_date, max_date = after_data.date.min(), after_data.date.max()
+    if not base_data.empty:
+        line = {'type':'line',
+            'x0': 0,
+            'x1': 1,
+            'xref': 'paper',
+            'y0': base_data.iloc[0]['tt'],
+            'y1': base_data.iloc[0]['tt'],
+            'line': {'color': 'rgba(128, 128, 128, 0.7)',
+                     'width': 4}
+        }
     layout = dict(title=direction,
                   xaxis=dict(title='Date'),
-                  yaxis=dict(title='Travel Time (min)'))
+                  yaxis=dict(title='Travel Time (min)'),
+                  shapes=[line])
     return {'layout': layout, 'data': data}
 
 app.layout = html.Div([
@@ -138,8 +151,8 @@ html.Div(children=[html.H1(children='King Street Pilot', id='title'),
                  className='eight columns'
                 ),
     ], className='row'),
-    html.Div(id=STATE_DIV_ID, style={'display': 'none'}, children=serialise_clicks(INITIAL_STATE)),
-    html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=STREETS[0])
+    html.Div(id=STATE_DIV_ID, style={'display': 'none'}, children=serialise_state(INITIAL_STATE)),
+    html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=[STREETS[0]])
     ])
 
 @app.callback(Output(CONTROLS['timeperiods'], 'options'),
@@ -152,14 +165,12 @@ def generate_radio_options(day_type = 'Weekday'):
 def generate_radio_options(day_type = 'Weekday'):
     return TIMEPERIODS[TIMEPERIODS['day_type'] == day_type].iloc[0]['period']
 
-
-
 @app.callback(Output(TABLE_DIV_ID, 'children'),
               [Input(CONTROLS['timeperiods'], 'value'),
                Input(CONTROLS['day_types'], 'value')],
               [State(STATE_DIV_ID, 'children')])
-def generate_table(period, day_type, state_data,):
-    state_data_dict = deserialise_clicks(state_data)
+def generate_table(period, day_type, state_data):
+    state_data_dict = deserialise_state(state_data)
     filtered_data, baseline = filter_table_data(period, day_type)
     return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")])] +
@@ -196,7 +207,7 @@ def create_row_click_function(streetname):
                State(SELECTED_STREET_DIV, 'children')] )
 def button_click(*args):
     rows, old_clicks, prev_clicked_street = args[:-1], args[-2], args[-1]
-    clicks = deserialise_clicks(old_clicks)
+    clicks = deserialise_state(old_clicks)
     click_updated = False
     for click_obj, n_click_new in zip(clicks.values(), rows):
         if n_click_new > click_obj['n_clicks']:
@@ -208,19 +219,19 @@ def button_click(*args):
     #If no street was found to be clicked by this function, revert to previously clicked street.
     if not click_updated:
         clicks[prev_clicked_street[0]]['clicked'] = True
-    return serialise_clicks(clicks)
+    return serialise_state(clicks)
 
 @app.callback(Output(SELECTED_STREET_DIV, 'children'),
               [Input(STATE_DIV_ID, 'children')])
 def update_selected_street(state_data):
-    state_data_dict = deserialise_clicks(state_data)
+    state_data_dict = deserialise_state(state_data)
     return [street for street, click_obj in state_data_dict.items() if click_obj['clicked']]
 
 def create_update_graph(graph_number):
     @app.callback(Output(GRAPHS[graph_number], 'figure'),
-                [Input(SELECTED_STREET_DIV, 'children'),
-                 Input(CONTROLS['timeperiods'], 'value'),
-                 Input(CONTROLS['day_types'], 'value')])
+                  [Input(SELECTED_STREET_DIV, 'children'),
+                   Input(CONTROLS['timeperiods'], 'value'),
+                   Input(CONTROLS['day_types'], 'value')])
     def update_graph(street, period, day_type):
         return generate_graph(street[0], DIRECTIONS[graph_number], period=period, day_type=day_type)
     update_graph.__name__ = 'update_graph_' + GRAPHS[graph_number]
@@ -230,7 +241,7 @@ def create_update_graph(graph_number):
 
 @app.callback(Output(TIMEPERIOD_DIV, 'children'),
               [Input(CONTROLS['timeperiods'], 'value'),
-              Input(CONTROLS['day_types'], 'value')])
+               Input(CONTROLS['day_types'], 'value')])
 def update_timeperiod(timeperiod, day_type):
     return day_type + ' ' + timeperiod + ' Travel Times'
 
