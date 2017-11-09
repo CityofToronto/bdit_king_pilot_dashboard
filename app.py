@@ -13,16 +13,17 @@ DATA = pd.read_csv("data/daily_fake.csv")
 BASELINE = pd.read_csv("data/baselines_fake.csv")
 
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
-DIRECTIONS = dict(EB='Eastbound',
-                  WB='Westbound')
-TIMEPERIODS = DATA['period'].unique()
+DIRECTIONS = sorted(BASELINE['direction'].unique())
+TIMEPERIODS = BASELINE[['day_type','period']].drop_duplicates()
 THRESHOLD = 1
 
 STATE_DIV_ID = 'clicks-storage'
 SELECTED_STREET_DIV = 'selected-street'
 TABLE_DIV_ID = 'div-table'
 TIMEPERIOD_DIV = 'timeperiod'
-GRAPHS = ['eb-graph', 'wb-graph']
+CONTROLS = dict(timeperiods='timeperiod-radio',
+                day_types='day-type-radio')
+GRAPHS = ['eb_graph', 'wb_graph']
 
 def generate_row_class(clicked):
     '''Assigns class to clicked row'''
@@ -53,9 +54,8 @@ def generate_row(df_row, baseline_row, row_state):
                    className=generate_row_class(row_state['clicked']),
                    n_clicks=row_state['n_clicks'])
 
-
-
 app = dash.Dash()
+app.config['suppress_callback_exceptions']=True
 server = app.server
 server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 
@@ -110,13 +110,44 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     after_data, base_data = filter_graph_data(street, direction, day_type, period)
     data = [go.Bar(x=after_data['date'],
                    y=after_data['tt'])]
-    layout = dict(title=DIRECTIONS[direction],
+    layout = dict(title=direction,
                   xaxis=dict(title='Date'),
                   yaxis=dict(title='Travel Time (min)'))
     return {'layout': layout, 'data': data}
 
+def generate_radio_options(day_type = 'Weekday'):
+    return [{'label': period, 'value': period} for period in TIMEPERIODS[TIMEPERIODS['day_type'] == day_type]['period']]
 
-def generate_table(state_data_dict, period='AMPK', day_type='Weekday'):
+app.layout = html.Div([
+html.Div(children=[html.H1(children='King Street Pilot', id='title'),
+                  ], className='row twelve columns'),
+    html.Div([
+        html.Div(children=[
+            html.H2(id=TIMEPERIOD_DIV, children='AM Peak Travel Times'),
+            html.H2('Bathurst - Jarvis'),
+            html.Div(id=TABLE_DIV_ID),
+            dcc.RadioItems(id=CONTROLS['timeperiods'],
+                           options=generate_radio_options(),
+                           value=TIMEPERIODS.iloc[0]['period'])
+                           ],
+                 className='four columns'
+                ),
+        html.Div(children=[
+            dcc.Graph(id=GRAPHS[0], figure=generate_graph(STREETS[0], 'EB')),
+            dcc.Graph(id=GRAPHS[1], figure=generate_graph(STREETS[0], 'WB'))
+        ],
+                 className='eight columns'
+                ),
+    ], className='row'),
+    html.Div(id=STATE_DIV_ID, style={'display': 'none'}, children=serialise_clicks(INITIAL_STATE)),
+    html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=STREETS[0])
+    ])
+
+@app.callback(Output(TABLE_DIV_ID, 'children'),
+              [Input(CONTROLS['timeperiods'], 'value')],
+              [State(STATE_DIV_ID, 'children')])
+def generate_table(period, state_data, day_type='Weekday'):
+    state_data_dict = deserialise_clicks(state_data)
     filtered_data, baseline = filter_table_data(period, day_type)
     return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")])] +
@@ -126,28 +157,6 @@ def generate_table(state_data_dict, period='AMPK', day_type='Weekday'):
                               baseline.itertuples(),
                               state_data_dict.values())]
                       , id='data_table')
-
-app.layout = html.Div([
-       html.Div(children=[
-           html.H1(children='King Street Pilot', id='title'),
-           ], className='row twelve columns'),
-        html.Div([    
-            html.Div(children=[
-                        html.H2(id=TIMEPERIOD_DIV, children='AM Peak Travel Times'),
-                        html.H2('Bathurst - Jarvis'),
-                        html.Div(id=TABLE_DIV_ID, children=generate_table(INITIAL_STATE))],
-                    className='four columns'
-                    ),
-            html.Div(children=[
-                dcc.Graph(id=GRAPHS[0], figure=generate_graph(STREETS[0], 'EB')),
-                dcc.Graph(id=GRAPHS[1], figure=generate_graph(STREETS[0], 'WB'))
-            ],
-                className='eight columns'
-                ),
-            ], className = 'row'),
-        html.Div(id=STATE_DIV_ID, style={'display': 'none'}, children=serialise_clicks(INITIAL_STATE)),
-        html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=STREETS[0])
-        ])
 
 
 def create_row_click_function(streetname):
@@ -171,34 +180,46 @@ def create_row_click_function(streetname):
 
 @app.callback(Output(STATE_DIV_ID,'children'),
               [Input(street, 'n_clicks') for street in STREETS],
-              [State(STATE_DIV_ID,'children')] )
+              [State(STATE_DIV_ID,'children'), 
+               State(SELECTED_STREET_DIV, 'children')] )
 def button_click(*args):
-    rows, old_clicks = args[:-1], args[-1]
+    rows, old_clicks, prev_clicked_street = args[:-1], args[-2], args[-1]
     clicks = deserialise_clicks(old_clicks)
+    click_updated = False
     for click_obj, n_click_new in zip(clicks.values(), rows):
         if n_click_new > click_obj['n_clicks']:
             click_obj['clicked'] = True
             click_obj['n_clicks'] = n_click_new
+            click_updated = True
         else:
-            click_obj['clicked'] = False   
+            click_obj['clicked'] = False
+    #If no street was found to be clicked by this function, revert to previously clicked street.
+    if not click_updated:
+        clicks[prev_clicked_street]['clicked'] = True
     return serialise_clicks(clicks)
 
 @app.callback(Output(SELECTED_STREET_DIV, 'children'),
               [Input(STATE_DIV_ID,'children')])
 def update_selected_street(state_data):
     state_data_dict = deserialise_clicks(state_data)
-    clicked = [street for street, click_obj in state_data_dict.items() if click_obj['clicked']]
-    return clicked if clicked else [STREETS[0]]
+    return [street for street, click_obj in state_data_dict.items() if click_obj['clicked']]
 
-@app.callback(Output(GRAPHS[0], 'figure'),
-              [Input(SELECTED_STREET_DIV, 'children')])
-def update_eb_graph(street):
-    return generate_graph(street[0], 'EB')
+def create_update_graph(graph_number):
+    @app.callback(Output(GRAPHS[graph_number], 'figure'),
+                [Input(SELECTED_STREET_DIV, 'children'),
+                 Input(CONTROLS['timeperiods'], 'value')])
+    def update_graph(street, period):
+        return generate_graph(street[0], DIRECTIONS[graph_number], period=period)
+    update_graph.__name__ = 'update_graph_' + GRAPHS[graph_number]
+    return update_graph
 
-@app.callback(Output(GRAPHS[1], 'figure'),
-              [Input(SELECTED_STREET_DIV, 'children')])
-def update_wb_graph(street):
-    return generate_graph(street[0], 'WB')
+[create_update_graph(i) for i in range(len(GRAPHS))]
+
+@app.callback(Output(TIMEPERIOD_DIV, 'children'),
+              [Input(CONTROLS['timeperiods'], 'value')])
+def update_timeperiod(timeperiod):
+    return timeperiod + ' Travel Times'
+
 
 app.css.append_css({
     'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/dashboard.css'
