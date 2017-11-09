@@ -1,0 +1,8 @@
+period_id,day_type,period_name,period_range
+1,Weekday,AM Peak,"[07:00:00,10:00:00)"
+2,Weekday,Midday,"[10:00:00,16:00:00)"
+3,Weekday,PM Peak,"[16:00:00,19:00:00)"
+4,Weekday,Evening,"[19:00:00,23:00:00)"
+5,Weekend,Morning,"[08:00:00,12:00:00)"
+6,Weekend,Afternoon,"[12:00:00,17:00:00)"
+7,Weekend,Evening,"[17:00:00,23:00:00)"
