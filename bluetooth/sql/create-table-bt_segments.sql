@@ -7,3 +7,6 @@ CREATE TABLE king_pilot.bt_segments (
 	direction text,
 	from_intersection text,
 	to_intersection text);
+	
+GRANT ALL ON TABLE king_pilot.bt_segments TO aharpal;
+GRANT SELECT ON TABLE king_pilot.bt_segments TO public;
