@@ -320,8 +320,18 @@ table {
   border-collapse: collapse;
 }
 th,
+tr {
+   padding-left: 4px;
+   padding-top: 4px;
+   padding-right: 4px;
+   padding-bottom: 4px;
+}
 tr.notselected:hover {
    border: 2px solid black;
+   padding-left: 2px;
+   padding-top: 2px;
+   padding-right: 2px;
+   padding-bottom: 2px;
 }
 td {
   padding: 8px 15px;
