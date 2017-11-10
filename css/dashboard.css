@@ -140,7 +140,7 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
   margin-bottom: 0;
   font-weight: 300; }
-h1 { font-size: 3.0rem; line-height: 1.2;  letter-spacing: -.1rem; margin-bottom: 1rem; }
+h1 { font-size: 3.0rem; line-height: 1.2;  letter-spacing: -.1rem; margin-bottom: 1rem; background-color: #165788; color: #FFFFFF; }
 h2 { font-size: 2.5rem; line-height: 1.25; letter-spacing: -.1rem; margin-bottom: 1rem; margin-top: 1rem;}
 h3 { font-size: 2.0rem; line-height: 1.3;  letter-spacing: -.1rem; margin-bottom: 0.5rem; margin-top: 0.5rem;}
 h4 { font-size: 1.6rem; line-height: 1.35; letter-spacing: -.08rem; margin-bottom: 0.5rem; margin-top: 0.5rem;}
@@ -327,7 +327,7 @@ td {
   padding: 8px 15px;
   text-align: center;
   border-bottom: 1px solid #E1E1E1;
-  font-size: 1.4em; }
+  font-size: 1.6rem; }
 th:first-child,
 td:first-child {
   padding-left: 2; }
@@ -336,23 +336,23 @@ td:last-child {
   padding-right: 2; }
 td.segname {
    text-align: left; 
-   font-size: 1.4rem; }
+   font-size: 1.6rem; }
 td.baseline {
    background-color: #FFFFFF;
    color: #808080; 
-   font-size: 1.8rem; }
+   font-size: 2.0rem; }
 td.worse {
    background-color: #E9A3C9;
    color: #000000; 
-   font-size: 1.8rem; }
+   font-size: 2.0rem; }
 td.better {
    background-color: #A1D76A;
    color: #000000; 
-   font-size: 1.8rem; }
+   font-size: 2.0rem; }
 td.same {
    background-color: #F7F7F7;
    color: #000000; 
-   font-size: 1.8rem; }
+   font-size: 2.0rem; }
 tr.selected {
    border: 4px solid black; }
 
