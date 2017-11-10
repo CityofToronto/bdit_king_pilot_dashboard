@@ -22,8 +22,8 @@ else:
     dbset = CONFIG['DBSETTINGS']
     con = connect(**dbset)
 
-DATA = pandasql.read_sql("SELECT street, direction, dt AS date, day_type, period, round(tt,2) tt FROM king_pilot.dash_daily ", con)
-BASELINE = pandasql.read_sql("SELECT street, direction, day_type, period, round(tt,2) tt FROM king_pilot.dash_baseline ", con)
+DATA = pandasql.read_sql("SELECT street, direction, dt AS date, day_type, period, round(tt,1) tt FROM king_pilot.dash_daily ", con)
+BASELINE = pandasql.read_sql("SELECT street, direction, day_type, period, round(tt,1) tt FROM king_pilot.dash_baseline ", con)
 
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
@@ -166,10 +166,12 @@ html.Div(children=[html.H1(children='King Street Pilot', id='title'),
             html.H2('Bathurst - Jarvis'),
             html.Div(id=TABLE_DIV_ID),
             dcc.RadioItems(id=CONTROLS['timeperiods'],
-                           value=TIMEPERIODS.iloc[0]['period']),
+                           value=TIMEPERIODS.iloc[0]['period'],
+                           className='radio-toolbar'),
             dcc.RadioItems(id=CONTROLS['day_types'],
                            options=[{'label': day_type, 'value': day_type} for day_type in TIMEPERIODS['day_type'].unique()],
-                           value=TIMEPERIODS.iloc[0]['day_type'])
+                           value=TIMEPERIODS.iloc[0]['day_type'],
+                           className='radio-toolbar')
                            ],
                  className='four columns'
                 ),
@@ -308,6 +310,10 @@ def update_timeperiod(timeperiod, day_type):
 app.css.append_css({
     'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/dashboard.css'
 })
-    
+app.css.append_css({
+    'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/style.css'
+})
+
+
 if __name__ == '__main__':
     app.run_server(debug=True)
