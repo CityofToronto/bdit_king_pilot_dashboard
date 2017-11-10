@@ -33,10 +33,14 @@ def generate_row_class(clicked):
         return 'notselected'
 
 def generate_direction_cells(before, after):
+    '''Generate before/after cells for each street direction
+    '''
     return [html.Td(after, className=after_cell_class(before, after)),
             html.Td(before, className='baseline')]
 
 def after_cell_class(before, after):
+    '''Colour the after cell based on its difference with the before
+    '''
     if after - before > THRESHOLD:
         return 'worse'
     elif after - before < -THRESHOLD:
@@ -55,7 +59,7 @@ def generate_row(df_row, baseline_row, row_state):
                    n_clicks=row_state['n_clicks'])
 
 app = dash.Dash()
-app.config['suppress_callback_exceptions']=True
+app.config['suppress_callback_exceptions'] = True
 server = app.server
 server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 
@@ -64,12 +68,19 @@ INITIAL_STATE = OrderedDict([(street,
                                    clicked=(street == 'Dundas'))) for street in STREETS])
 
 def deserialise_state(clicks_json):
+    '''Turn the state stored in hidden div into python dict
+    '''
     return json.loads(clicks_json, object_pairs_hook=OrderedDict)
 
 def serialise_state(clicks_dict):
+    '''Turn python dict of the clicks state of the table into json
+    to store in hidden div
+    '''
     return json.dumps(clicks_dict)
 
 def pivot_order(df):
+    '''Pivot the dataframe around street directions and order by STREETS global var
+    '''
     pivoted = df.pivot_table(index='street', columns='direction', values='tt').reset_index()
     pivoted.street = pivoted.street.astype("category")
     pivoted.street.cat.set_categories(STREETS, inplace=True)
@@ -87,8 +98,8 @@ def filter_table_data(period, day_type):
 
     #baseline data
 
-    filtered_baseline = BASELINE[(BASELINE['period'] == period) & (BASELINE['day_type'] == day_type)]
-    pivoted_baseline = pivot_order(filtered_baseline)
+    filtered_base = BASELINE[(BASELINE['period'] == period) & (BASELINE['day_type'] == day_type)]
+    pivoted_baseline = pivot_order(filtered_base)
 
     return (pivoted, pivoted_baseline)
 
@@ -107,21 +118,21 @@ def filter_graph_data(street, direction, day_type='Weekday', period='AMPK'):
     return (filtered, filtered_baseline)
 
 def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
+    '''Generate a Dash bar chart of average travel times by day
+    '''
     after_data, base_data = filter_graph_data(street, direction, day_type, period)
     data = [go.Bar(x=after_data['date'],
                    y=after_data['tt'])]
     line = None
-    min_date, max_date = after_data.date.min(), after_data.date.max()
     if not base_data.empty:
         line = {'type':'line',
-            'x0': 0,
-            'x1': 1,
-            'xref': 'paper',
-            'y0': base_data.iloc[0]['tt'],
-            'y1': base_data.iloc[0]['tt'],
-            'line': {'color': 'rgba(128, 128, 128, 0.7)',
-                     'width': 4}
-        }
+                'x0': 0,
+                'x1': 1,
+                'xref': 'paper',
+                'y0': base_data.iloc[0]['tt'],
+                'y1': base_data.iloc[0]['tt'],
+                'line': BASELINE_LINE
+               }
     layout = dict(title=direction,
                   xaxis=dict(title='Date'),
                   yaxis=dict(title='Travel Time (min)'),
@@ -161,12 +172,18 @@ html.Div(children=[html.H1(children='King Street Pilot', id='title'),
 
 @app.callback(Output(CONTROLS['timeperiods'], 'options'),
               [Input(CONTROLS['day_types'], 'value')])
-def generate_radio_options(day_type = 'Weekday'):
-    return [{'label': period, 'value': period} for period in TIMEPERIODS[TIMEPERIODS['day_type'] == day_type]['period']]
+def generate_radio_options(day_type='Weekday'):
+    '''Assign time period radio button options based on select day type
+    '''
+    return [{'label': period, 'value': period}
+            for period
+            in TIMEPERIODS[TIMEPERIODS['day_type'] == day_type]['period']]
 
 @app.callback(Output(CONTROLS['timeperiods'], 'value'),
               [Input(CONTROLS['day_types'], 'value')])
-def generate_radio_options(day_type = 'Weekday'):
+def assign_default_timperiod(day_type='Weekday'):
+    '''Assign the time period radio button selected option based on selected day type
+    '''
     return TIMEPERIODS[TIMEPERIODS['day_type'] == day_type].iloc[0]['period']
 
 @app.callback(Output(TABLE_DIV_ID, 'children'),
@@ -174,6 +191,9 @@ def generate_radio_options(day_type = 'Weekday'):
                Input(CONTROLS['day_types'], 'value')],
               [State(STATE_DIV_ID, 'children')])
 def generate_table(period, day_type, state_data):
+    '''Generate HTML table of before-after travel times based on selected
+    day type, time period, and remember which row was previously selected
+    '''
     state_data_dict = deserialise_state(state_data)
     filtered_data, baseline = filter_table_data(period, day_type)
     return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
@@ -197,7 +217,7 @@ def create_row_click_function(streetname):
         '''Inner function to update row with id=streetname
         '''
         if street:
-            return generate_row_class(streetname ==  street[0])
+            return generate_row_class(streetname == street[0])
         else:
             return generate_row_class(False)
     update_clicked_row.__name__ = 'update_row_'+streetname
@@ -207,9 +227,14 @@ def create_row_click_function(streetname):
 
 @app.callback(Output(STATE_DIV_ID, 'children'),
               [Input(street, 'n_clicks') for street in STREETS],
-              [State(STATE_DIV_ID, 'children'), 
-               State(SELECTED_STREET_DIV, 'children')] )
-def button_click(*args):
+              [State(STATE_DIV_ID, 'children'),
+               State(SELECTED_STREET_DIV, 'children')])
+def row_click(*args):
+    '''Detect which row was clicked and update the graphs to be for the selected street
+
+    Clicks are detected by comparing the previous number of clicks for each row with
+    the current state. Previous state is stored in a json in a hidden div
+    '''
     rows, old_clicks, prev_clicked_street = args[:-1], args[-2], args[-1]
     clicks = deserialise_state(old_clicks)
     click_updated = False
@@ -228,15 +253,25 @@ def button_click(*args):
 @app.callback(Output(SELECTED_STREET_DIV, 'children'),
               [Input(STATE_DIV_ID, 'children')])
 def update_selected_street(state_data):
+    '''Store selected street in a hidden div based on current state as
+    stored in its own hidden div
+    '''
     state_data_dict = deserialise_state(state_data)
     return [street for street, click_obj in state_data_dict.items() if click_obj['clicked']]
 
 def create_update_graph(graph_number):
+    '''Dynamically create callback functions to update graphs based on a graph number
+    '''
     @app.callback(Output(GRAPHS[graph_number], 'figure'),
                   [Input(SELECTED_STREET_DIV, 'children'),
                    Input(CONTROLS['timeperiods'], 'value'),
                    Input(CONTROLS['day_types'], 'value')])
     def update_graph(street, period, day_type):
+        '''Update the graph for a street direction based on the selected:
+         - street
+         - time period
+         - day type
+        '''
         return generate_graph(street[0], DIRECTIONS[graph_number], period=period, day_type=day_type)
     update_graph.__name__ = 'update_graph_' + GRAPHS[graph_number]
     return update_graph
@@ -247,6 +282,8 @@ def create_update_graph(graph_number):
               [Input(CONTROLS['timeperiods'], 'value'),
                Input(CONTROLS['day_types'], 'value')])
 def update_timeperiod(timeperiod, day_type):
+    '''Update sub title text based on selected time period and day type
+    '''
     return day_type + ' ' + timeperiod + ' Travel Times'
 
 
