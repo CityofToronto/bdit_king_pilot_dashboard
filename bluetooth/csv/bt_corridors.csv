@@ -1,13 +1,13 @@
-corridor_id,corridor_name,street_name,direction
-1,Dundas EB - Bathurst to Jarvis,Dundas,EB
-2,Dundas WB - Jarvis to Bathurst,Dundas,WB
-3,Queen EB - Bathurst to Jarvis,Queen,EB
-4,Queen WB - Jarvis to Bathurst,Queen,WB
-5,Richmond WB - Jarvis to Bathurst,Richmond,WB
-6,Adelaide EB - Bathurst to Jarvis,Adelaide,EB
-7,Adelaide EB - Spadina to Jarvis,Adelaide,EB
-8,King EB - Bathurst to Jarvis,King,EB
-9,King WB - Jarvis to Bathurst,King,WB
-10,Wellington WB - Jarvis to Blue Jays Way,Wellington,WB
-11,Front EB - Bathurst to Jarvis,Front,EB
-12,Front WB - Yonge to Bathurst,Front,WB
+corridor_id,corridor_name,street_name,direction,segments
+1,Dundas EB - Bathurst to Jarvis,Dundas,Eastbound,4
+2,Dundas WB - Jarvis to Bathurst,Dundas,Westbound,4
+3,Queen EB - Bathurst to Jarvis,Queen,Eastbound,4
+4,Queen WB - Jarvis to Bathurst,Queen,Westbound,4
+5,Richmond WB - Jarvis to Bathurst,Richmond,Westbound,4
+6,Adelaide EB - Bathurst to Jarvis,Adelaide,Eastbound,4
+7,Adelaide EB - Spadina to Jarvis,Adelaide,Eastbound,3
+8,King EB - Bathurst to Jarvis,King,Eastbound,4
+9,King WB - Jarvis to Bathurst,King,Westbound,4
+10,Wellington WB - Jarvis to Blue Jays Way,Wellington,Westbound,3
+11,Front EB - Bathurst to Jarvis,Front,Eastbound,4
+12,Front WB - Yonge to Bathurst,Front,Westbound,3
