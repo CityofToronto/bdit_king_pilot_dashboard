@@ -357,13 +357,13 @@ td.same {
    font-size: 2.0rem; }
 tr.selected {
    border: 4px solid black; }
-td:first-child .selected {
+.selected td:first-child {
    padding : 4px 8px }
-td:last-child .selected {
+.selected td:last-child  {
    padding : 4px 8px }
-td:first-child .notselected:hover {
+.notselected:hover td:first-child {
    padding : 6px 10px }
-td:last-child .notselected:hover {
+.notselected:hover td:last-child {
    padding : 6px 10px }
 
 
