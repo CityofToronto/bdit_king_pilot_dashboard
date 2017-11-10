@@ -3,11 +3,11 @@ import os
 from collections import OrderedDict
 
 import dash
+from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
-from dash.dependencies import Input, Output, State
 
 DATA = pd.read_csv("data/daily_fake.csv")
 BASELINE = pd.read_csv("data/baselines_fake.csv")
@@ -16,6 +16,10 @@ STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
 TIMEPERIODS = BASELINE[['day_type','period']].drop_duplicates()
 THRESHOLD = 1
+MAX_TIME = 30 #Max travel time to fix y axis of graphs.
+
+BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
+                 'width': 4}
 
 STATE_DIV_ID = 'clicks-storage'
 SELECTED_STREET_DIV = 'selected-street'
@@ -135,7 +139,8 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                }
     layout = dict(title=direction,
                   xaxis=dict(title='Date'),
-                  yaxis=dict(title='Travel Time (min)'),
+                  yaxis=dict(title='Travel Time (min)',
+                             range=[0, MAX_TIME]),
                   shapes=[line])
     return {'layout': layout, 'data': data}
 
