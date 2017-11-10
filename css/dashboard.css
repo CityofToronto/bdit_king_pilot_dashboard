@@ -366,7 +366,6 @@ tr.notselected:hover td:first-child {
 tr.notselected:hover td:last-child {
    padding-right : 11px; }
 tr.notselected:hover td {
-   padding-top : 7px;
    padding-bottom: 7px; }
 
 
