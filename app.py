@@ -33,6 +33,7 @@ MAX_TIME = 30 #Max travel time to fix y axis of graphs.
 
 BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
+PLOT_COLOR = 'rgba(22, 87, 136, 100)'
 
 STATE_DIV_ID = 'clicks-storage'
 SELECTED_STREET_DIV = 'selected-street'
@@ -139,7 +140,12 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     '''
     after_data, base_data = filter_graph_data(street, direction, day_type, period)
     data = [go.Bar(x=after_data['date'],
-                   y=after_data['tt'])]
+                   y=after_data['tt'],
+                   text=after_data['tt'].round(),
+                   hoverinfo='x+y',
+                   textposition='inside',
+                   insidetextfont=dict(color='rgba(255,255,255,1)'),
+                   marker=dict(color=PLOT_COLOR))]
     line = None
     if not base_data.empty:
         line = {'type':'line',
@@ -154,7 +160,8 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                   xaxis=dict(title='Date'),
                   yaxis=dict(title='Travel Time (min)',
                              range=[0, MAX_TIME]),
-                  shapes=[line])
+                  shapes=[line]
+                  )
     return {'layout': layout, 'data': data}
 
 app.layout = html.Div([
@@ -169,7 +176,7 @@ html.Div(children=[html.H1(children='King Street Pilot', id='title'),
                            value=TIMEPERIODS.iloc[0]['period'],
                            className='radio-toolbar'),
             dcc.RadioItems(id=CONTROLS['day_types'],
-                           options=[{'label': day_type, 'value': day_type} for day_type in TIMEPERIODS['day_type'].unique()],
+                           options=[{'label': day_type, 'value': day_type, 'id': day_type} for day_type in TIMEPERIODS['day_type'].unique()],
                            value=TIMEPERIODS.iloc[0]['day_type'],
                            className='radio-toolbar')
                            ],
