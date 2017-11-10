@@ -6,11 +6,24 @@ import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
+from psycopg2 import connect
+import pandas.io.sql as pandasql
 import pandas as pd
 import plotly.graph_objs as go
 
-DATA = pd.read_csv("data/daily_fake.csv")
-BASELINE = pd.read_csv("data/baselines_fake.csv")
+
+database_url = os.getenv("DATABASE_URL")
+if database_url is not None:
+    con = connect(database_url)
+else:
+    import configparser
+    CONFIG = configparser.ConfigParser()
+    CONFIG.read('db.cfg')
+    dbset = CONFIG['DBSETTINGS']
+    con = connect(**dbset)
+
+DATA = pandasql.read_sql("SELECT street, direction, dt AS date, day_type, period, round(tt,2) tt FROM king_pilot.dash_daily ", con)
+BASELINE = pandasql.read_sql("SELECT street, direction, day_type, period, round(tt,2) tt FROM king_pilot.dash_baseline ", con)
 
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
@@ -55,10 +68,10 @@ def after_cell_class(before, after):
 def generate_row(df_row, baseline_row, row_state):
     '''Create an HTML row from a database row
     '''
-    return html.Tr([html.Td(df_row.street, className='segname'),
-                    *generate_direction_cells(baseline_row.EB, df_row.EB),
-                    *generate_direction_cells(baseline_row.WB, df_row.WB)],
-                   id=df_row.street,
+    return html.Tr([html.Td(df_row['street'], className='segname'),
+                    *generate_direction_cells(baseline_row[DIRECTIONS[0]], df_row[DIRECTIONS[0]]),
+                    *generate_direction_cells(baseline_row[DIRECTIONS[1]], df_row[DIRECTIONS[1]])],
+                   id=df_row['street'],
                    className=generate_row_class(row_state['clicked']),
                    n_clicks=row_state['n_clicks'])
 
@@ -203,10 +216,10 @@ def generate_table(period, day_type, state_data):
     filtered_data, baseline = filter_table_data(period, day_type)
     return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")])] +
-                      [generate_row(new_row, baseline_row, row_state)
+                      [generate_row(new_row[1], baseline_row[1], row_state)
                        for new_row, baseline_row, row_state
-                       in zip(filtered_data.itertuples(),
-                              baseline.itertuples(),
+                       in zip(filtered_data.iterrows(),
+                              baseline.iterrows(),
                               state_data_dict.values())]
                       , id='data_table')
 
