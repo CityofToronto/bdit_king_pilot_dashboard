@@ -332,10 +332,10 @@ td {
   text-align: center;
   border-bottom: 1px solid #E1E1E1;
   font-size: 1.6rem; }
-th:first-child,
+/* th:first-child,
 td:first-child,
 th:last-child,
-td:last-child,
+td:last-child, */
 td.segname {
    text-align: left; 
    font-size: 1.6rem; }
@@ -357,13 +357,13 @@ td.same {
    font-size: 2.0rem; }
 tr.selected {
    border: 4px solid black; }
-.selected td:first-child {
+tr.selected td:first-child {
    padding : 4px 8px }
-.selected td:last-child  {
+tr.selected td:last-child {
    padding : 4px 8px }
-.notselected:hover td:first-child {
+tr.notselected:hover td:first-child {
    padding : 6px 10px }
-.notselected:hover td:last-child {
+tr.notselected:hover td:last-child {
    padding : 6px 10px }
 
 
