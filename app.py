@@ -34,6 +34,7 @@ MAX_TIME = 30 #Max travel time to fix y axis of graphs.
 BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
 PLOT_COLOR = 'rgba(22, 87, 136, 100)'
+FONT_FAMILY = ["Open Sans", "HelveticaNeue", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"]
 
 STATE_DIV_ID = 'clicks-storage'
 SELECTED_STREET_DIV = 'selected-street'
@@ -156,7 +157,8 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                 'y1': base_data.iloc[0]['tt'],
                 'line': BASELINE_LINE
                }
-    layout = dict(title=direction,
+    layout = dict(font={'family': FONT_FAMILY},
+                  title=direction,
                   xaxis=dict(title='Date'),
                   yaxis=dict(title='Travel Time (min)',
                              range=[0, MAX_TIME]),
