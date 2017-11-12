@@ -168,11 +168,11 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     return {'layout': layout, 'data': data}
 
 app.layout = html.Div([
-html.Div(children=[html.H1(children='King Street Transit Pilot', id='title'),
+html.Div(children=[html.H1(children='King Street Transit Pilot: Travel Time Monitoring', id='title'),
                   ], className='row twelve columns'),
     html.Div([
         html.Div(children=[
-            html.H2(id=TIMEPERIOD_DIV, children='AM Peak Travel Times'),
+            html.H2(id=TIMEPERIOD_DIV, children='Weekday AM Peak'),
             html.Div(id=TABLE_DIV_ID),
             dcc.RadioItems(id=CONTROLS['timeperiods'],
                            value=TIMEPERIODS.iloc[0]['period'],
@@ -314,7 +314,7 @@ def create_update_graph(graph_number):
 def update_timeperiod(timeperiod, day_type):
     '''Update sub title text based on selected time period and day type
     '''
-    return day_type + ' ' + timeperiod + ' Travel Times'
+    return day_type + ' ' + timeperiod
 
 
 app.css.append_css({
