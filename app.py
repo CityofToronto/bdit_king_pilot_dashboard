@@ -37,6 +37,7 @@ PLOT_COLOR = 'rgba(22, 87, 136, 100)'
 FONT_FAMILY = ["Open Sans", "HelveticaNeue", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"]
 
 STATE_DIV_ID = 'clicks-storage'
+STREETNAME_DIV = 'street-name'
 SELECTED_STREET_DIV = 'selected-street'
 TABLE_DIV_ID = 'div-table'
 TIMEPERIOD_DIV = 'timeperiod'
@@ -167,12 +168,11 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     return {'layout': layout, 'data': data}
 
 app.layout = html.Div([
-html.Div(children=[html.H1(children='King Street Pilot', id='title'),
+html.Div(children=[html.H1(children='King Street Transit Pilot', id='title'),
                   ], className='row twelve columns'),
     html.Div([
         html.Div(children=[
             html.H2(id=TIMEPERIOD_DIV, children='AM Peak Travel Times'),
-            html.H2('Bathurst - Jarvis'),
             html.Div(id=TABLE_DIV_ID),
             dcc.RadioItems(id=CONTROLS['timeperiods'],
                            value=TIMEPERIODS.iloc[0]['period'],
@@ -185,6 +185,7 @@ html.Div(children=[html.H1(children='King Street Pilot', id='title'),
                  className='four columns'
                 ),
         html.Div(children=[
+            html.H2(id=STREETNAME_DIV, children='Bathurst - Jarvis'),
             dcc.Graph(id=GRAPHS[0],
                       figure=generate_graph(STREETS[0], DIRECTIONS[1]),
                       config={'displayModeBar': False}),
