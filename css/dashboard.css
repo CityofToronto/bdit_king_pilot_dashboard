@@ -82,6 +82,7 @@ td.same {
 
 /* For devices larger than 550px */
 @media (min-width: 550px) {
+   /*
    td {
      font-size: 1.6rem; }
    td.segname {
@@ -94,7 +95,7 @@ td.same {
       font-size: 2.0rem; }
    td.same {
       font-size: 2.0rem; }
-
+   */
    .container {
     width: 80%; }
   .column,
