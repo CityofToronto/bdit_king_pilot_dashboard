@@ -23,11 +23,11 @@ else:
     con = connect(**dbset)
 
 DATA = pandasql.read_sql("SELECT street, direction, dt AS date, day_type, period, round(tt,1) tt FROM king_pilot.dash_daily ", con)
-BASELINE = pandasql.read_sql("SELECT street, direction, day_type, period, round(tt,1) tt FROM king_pilot.dash_baseline ", con)
+BASELINE = pandasql.read_sql("SELECT street, direction, day_type, period, period_range, round(tt,1) tt FROM king_pilot.dash_baseline ", con)
 
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
-TIMEPERIODS = BASELINE[['day_type','period']].drop_duplicates()
+TIMEPERIODS = BASELINE[['day_type','period', 'period_range']].drop_duplicates().sort_values(['day_type', 'period_range'])
 THRESHOLD = 1
 MAX_TIME = 30 #Max travel time to fix y axis of graphs.
 
@@ -356,7 +356,8 @@ def create_update_graph(graph_number):
 def update_timeperiod(timeperiod, day_type):
     '''Update sub title text based on selected time period and day type
     '''
-    return day_type + ' ' + timeperiod
+    time_range = TIMEPERIODS[(TIMEPERIODS['period'] == timeperiod) & (TIMEPERIODS['day_type'] == day_type)].iloc[0]['period_range']
+    return day_type + ' ' + timeperiod + ' ' + time_range
 
 
 app.css.append_css({
