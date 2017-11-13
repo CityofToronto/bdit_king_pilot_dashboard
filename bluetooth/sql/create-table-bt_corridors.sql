@@ -5,6 +5,8 @@ CREATE TABLE king_pilot.bt_corridors (
 	corridor_name text,
 	street_name text,
 	direction text,
+	from_intersection text,
+	to_intersection text,
 	segments int);
 
 GRANT ALL ON TABLE king_pilot.bt_corridors TO aharpal;
