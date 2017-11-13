@@ -35,7 +35,7 @@ BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
 PLOT = dict(margin={'t':40, 'b': 40, 'r': 40, 'l': 40})
 PLOT_COLOR = 'rgba(22, 87, 136, 100)'
-FONT_FAMILY = ["Open Sans", "HelveticaNeue", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"]
+FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
 STATE_DIV_ID = 'clicks-storage'
 STREETNAME_DIV = 'street-name'
