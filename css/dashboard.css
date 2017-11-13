@@ -49,29 +49,29 @@
 
 /* Default font sizes - small */
 td {
-  padding: 8px 12px;
+  padding: 6px 10px;
   text-align: center;
   border-bottom: 1px solid #E1E1E1;
-  font-size: 1.4rem; }
+  font-size: 1.3rem; }
 td.segname {
    text-align: left; 
-   font-size: 1.4rem; }
+   font-size: 1.3rem; }
 td.baseline {
    background-color: #FFFFFF;
    color: #808080; 
-   font-size: 1.7rem; }
+   font-size: 1.6rem; }
 td.worse {
    background-color: #E9A3C9;
    color: #000000; 
-   font-size: 1.7rem; }
+   font-size: 1.6rem; }
 td.better {
    background-color: #A1D76A;
    color: #000000; 
-   font-size: 1.7rem; }
+   font-size: 1.6rem; }
 td.same {
    background-color: #F7F7F7;
    color: #000000; 
-   font-size: 1.7rem; }
+   font-size: 1.6rem; }
 
 /* For devices larger than 400px */
 @media (min-width: 400px) {
@@ -370,15 +370,15 @@ tr.notselected:hover {
 tr.selected {
    border: 4px solid black; }
 tr.selected td:first-child {
-   padding-left : 10px; }
+   padding-left : 8px; }
 tr.selected td:last-child {
-   padding-right : 10px; }
+   padding-right : 8px; }
 tr.notselected:hover td:first-child {
-   padding-left : 11px; }
+   padding-left : 9px; }
 tr.notselected:hover td:last-child {
-   padding-right : 11px; }
+   padding-right : 9px; }
 tr.notselected:hover td {
-   padding-bottom: 7px; }
+   padding-bottom: 5px; }
 
 
 
