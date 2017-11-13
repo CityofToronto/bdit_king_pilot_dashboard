@@ -17,7 +17,7 @@
 
 .radio-toolbar label {
     opacity: 1;
-    line-height: 40px;
+    line-height: 3em;
     text-align: center;
     padding-top: 1px;
     padding-right: 13px;
@@ -26,9 +26,28 @@
     display: inline-block;
     margin: 2px;
     border: 2px solid black;
+    font-size: smaller
 }
 
 .radio-toolbar input[type="radio"]:checked+label {
   background-color: rgba(22, 87, 136, 0.76);
   border: 2px solid black;
+}
+
+
+.radio-toolbar label:hover {
+  background-color:  rgba(22, 87, 136, 0.5);
+}
+
+.radio-toolbar input[type="radio"]:checked+label {
+  background-color: rgba(22, 87, 136, 0.55);
+  border: 2px solid black;
+}
+
+#day-type-radio label {
+  background-color:  rgba(22, 87, 136, 0.25);
+}
+
+#day-type-radio label:hover {
+  background-color:  rgba(22, 87, 136, 0.5);
 }
