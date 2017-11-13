@@ -201,9 +201,11 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                }
     layout = dict(font={'family': FONT_FAMILY},
                   title=direction,
-                  xaxis=dict(title='Date'),
+                  xaxis=dict(title='Date',
+                             fixedrange=True),
                   yaxis=dict(title='Travel Time (min)',
-                             range=[0, MAX_TIME]),
+                             range=[0, MAX_TIME],
+                             fixedrange=True),
                   shapes=[line],
                   margin=PLOT['margin']
                   )
