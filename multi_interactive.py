@@ -31,6 +31,7 @@ yrng = [0, times['travel_time'].max()] #All graphs have the same y axis
 
 def getfig(street, APM): #returns a graph_objs figure from a dataset.
 #can be stacked/grouped if data is appropriately formatted.
+<<<<<<< HEAD
     WB = False
     EB = False
     bdata = times[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean()
@@ -51,6 +52,35 @@ def getfig(street, APM): #returns a graph_objs figure from a dataset.
         EB = True
         diffEB = int(bdata['EB'] - adata['EB'])
         
+=======
+    
+#     fig1 = go.Bar(x = data['b' + AMPM][street]['dir'],
+#                   y = data['b' + AMPM][street]['travel_time'],
+#                   name = 'Before',
+#                   marker = dict(color = 'rgb(0,58,114)', #bar color. Also accepts list of colors corresponding to each column
+#                                  line = dict(
+#                                          color = 'rgb(0,29,57)', #line color
+#                                          width = 2))
+#                   width = 1.5,# Also accepts list corresponding to each bar
+#                   opacity = 0.5,
+#                   text = "This will appear on hover and can also be a list for each column")
+    WB = False
+    EB = False
+    bdata = times[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean()
+    adata = times[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean()
+    if any('WB' == bdata.index):
+        WB = True
+        diffWB = int(bdata['WB'] - adata['WB'])
+        if(diffWB > 0):
+            strdiffWB = '+' + str(diffWB)+ ' min'
+        elif(diffWB < 0):
+            strdiffWB = str(diffWB) + ' min'
+        else:
+            strdiffWB = '< 1 min'
+    if any('EB' == bdata.index):
+        EB = True
+        diffEB = int(bdata['EB'] - adata['EB'])
+>>>>>>> 29bdaf4b7196ed81c0689a803a90dfeb6710be08
         if(diffEB > 0):
             strdiffEB = '+' + str(diffEB)+ ' min'
         elif(diffEB < 0):
@@ -59,17 +89,39 @@ def getfig(street, APM): #returns a graph_objs figure from a dataset.
             strdiffEB = '< 1 min'
     
     layout = go.Layout(title = street,
+<<<<<<< HEAD
                        titlefont = dict(size = 30),
                        xaxis = dict(title = 'Before/After',
                                     titlefont = dict(
                                             size = 15)),
+=======
+                       xaxis = dict(title = 'Before/After'
+#                                    ,tickangle = 30,
+#                                   tickfont = dict(size = 14
+#                                                   color = 'rgb(204, 204, 204)'),
+#                                    titlefont=dict(
+#                                                   size=16,
+#                                                    color='rgb(107, 107, 107)')
+                                    ),
+>>>>>>> 29bdaf4b7196ed81c0689a803a90dfeb6710be08
                        yaxis = dict(title = 'Travel Time',
                                     titlefont = dict(
                                             size = 15),
                                     range = yrng),
                         
                        autosize = True,
+<<<<<<< HEAD
                        annotations = [])
+=======
+                       annotations = []
+               #        width = w,
+               #        height = h,
+               #        margin = sizemg,
+                      # hovermode = False
+                 #      bargap=-1,
+                 #      bargroupgap=-2
+                       )
+>>>>>>> 29bdaf4b7196ed81c0689a803a90dfeb6710be08
     if WB and EB:
         layout['barmode'] = 'group'
         
@@ -83,7 +135,11 @@ def getfig(street, APM): #returns a graph_objs figure from a dataset.
                                         showarrow = False,
                                         font = dict(
                                                color = "black",
+<<<<<<< HEAD
                                                size = 25,
+=======
+                                               size = 30,
+>>>>>>> 29bdaf4b7196ed81c0689a803a90dfeb6710be08
                                                family = 'arial narrow')))
     if EB:
         layout['annotations'].append(dict(
@@ -95,7 +151,11 @@ def getfig(street, APM): #returns a graph_objs figure from a dataset.
                                         showarrow = False,
                                         font = dict(
                                                color = "black",
+<<<<<<< HEAD
                                                size = 25,
+=======
+                                               size = 30,
+>>>>>>> 29bdaf4b7196ed81c0689a803a90dfeb6710be08
                                                family = 'arial narrow')))
     
     return {'data' : [before_figs[APM][street], after_figs[APM][street]],
@@ -195,3 +255,48 @@ def update_wellington(AMPM):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+<<<<<<< HEAD
+=======
+
+#==============================================================================
+# {'data': [{'marker': {'color': 'rgb(0,58,114)'},
+#    'name': 'Before',
+#    'type': 'bar',
+#    'width': 0.3,
+#    'x': Index(['EB', 'WB'], dtype='object', name='dir'),
+#    'y': dir
+#    EB    10.30
+#    WB    14.35
+#    Name: travel_time, dtype: float64},
+#   {'marker': {'color': 'rgb(200,114,58)'},
+#    'name': 'After',
+#    'type': 'bar',
+#    'width': 0.3,
+#    'x': Index(['EB', 'WB'], dtype='object', name='dir'),
+#    'y': dir
+#    EB    14.1
+#    WB     5.4
+#    Name: travel_time, dtype: float64}],
+#  'layout': {'annotations': [{'font': {'color': 'black',
+#      'family': 'arial narrow',
+#      'size': 30},
+#     'showarrow': False,
+#     'text': '< 1 min',
+#     'x': 'EB',
+#     'xanchor': 'centre',
+#     'y': 15.0,
+#     'yanchor': 'top'},
+#    {'font': {'color': 'black', 'family': 'arial narrow', 'size': 30},
+#     'showarrow': False,
+#     'text': '< 1 min',
+#     'x': 'WB',
+#     'xanchor': 'centre',
+#     'y': 15.0,
+#     'yref': 'top'}],
+#   'autosize': True,
+#   'barmode': 'group',
+#   'title': 'Wellington',
+#   'xaxis': {'title': 'Before/After'},
+#   'yaxis': {'range': [0, 15.0], 'title': 'Travel Time'}}}
+#==============================================================================
+>>>>>>> 29bdaf4b7196ed81c0689a803a90dfeb6710be08
