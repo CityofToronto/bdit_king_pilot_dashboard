@@ -22,80 +22,59 @@ times['mon'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S').date() for i in times[
 middate = date(2017, 10, 2)
 streets = ['Dundas', 'Queen', 'Adelaide', 'Front', 'Richmond', 'Wellington']
 h = 500
-w = 1000 #graph width and height
-sizemg = go.Margin(l = 20, #graph margins
+w = 1000
+sizemg = go.Margin(l = 20,
               r = 20,
               b = 50,
               t = 50)
 yrng = [0, times['travel_time'].max()] #All graphs have the same y axis
 
-def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
+def getfig(street, APM): #returns a graph_objs figure from a dataset.
 #can be stacked/grouped if data is appropriately formatted.
-
-#Attempt at animating AM\PM transition. Make a grind with AM and PM graphs. When one is selected transition from other.
-#==============================================================================
-#     befPA = before[street].loc[(before[street]['time_period'] != AMPM)] #previous graph state, for animation
-#     aftPA = after[street].loc[(after[street]['time_period'] != AMPM)]
-#     
-#     grid = Grid[befAP, aftAP, befPA, aftPA]
-#==============================================================================
+    WB = False
+    EB = False
+    bdata = times[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean()
+    adata = times[(times['corridor'] == street) & (times['mon'] >= middate) & (times['time_period'] == APM)].groupby(['dir'])['travel_time'].mean()
     
-#     fig1 = go.Bar(x = data['b' + AMPM][street]['dir'],
-#                   y = data['b' + AMPM][street]['travel_time'],
-#                   name = 'Before',
-#                   marker = dict(color = 'rgb(0,58,114)', #bar color. Also accepts list of colors corresponding to each column
-#                                  line = dict(
-#                                          color = 'rgb(0,29,57)', #line color
-#                                          width = 2))
-#                   width = 1.5,# Also accepts list corresponding to each bar
-#                   opacity = 0.5,
-#                   text = "This will appear on hover and can also be a list for each column")
-    diffEB = int(times[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == AMPM)].groupby(['dir'])['travel_time'].mean()['EB'] - times[(times['corridor'] == street) & (times['mon'] >= middate) & (times['time_period'] == AMPM)].groupby(['dir'])['travel_time'].mean()['EB'])
-    diffWB = int(times[(times['corridor'] == street) & (times['mon'] <= middate) & (times['time_period'] == AMPM)].groupby(['dir'])['travel_time'].mean()['WB'] - times[(times['corridor'] == street) & (times['mon'] >= middate) & (times['time_period'] == AMPM)].groupby(['dir'])['travel_time'].mean()['WB'])
-    if(diffEB > 0):
-        strdiffEB = '+' + str(diffEB)+ ' min'
-    elif(diffEB < 0):
-        strdiffEB = str(diffEB)+ ' min'
-    else:
-        strdiffEB = '< 1 min'
-    if(diffWB > 0):
-        strdiffWB = '+' + str(diffWB)+ ' min'
-    elif(diffWB < 0):
-        strdiffWB = str(diffWB) + ' min'
-    else:
-        strdiffWB = '< 1 min'
+    if any('WB' == bdata.index):
+        WB = True
+        diffWB = int(bdata['WB'] - adata['WB'])
+        
+        if(diffWB > 0):
+            strdiffWB = '+' + str(diffWB)+ ' min'
+        elif(diffWB < 0):
+            strdiffWB = str(diffWB) + ' min'
+        else:
+            strdiffWB = '< 1 min'
     
-    layout = go.Layout(barmode = 'group',
-                       title = street,
-                       xaxis = dict(title = 'Before/After'
-#                                    ,tickangle = 30,
-#                                   tickfont = dict(size = 14
-#                                                   color = 'rgb(204, 204, 204)'),
-#                                    titlefont=dict(
-#                                                   size=16,
-#                                                    color='rgb(107, 107, 107)')
-                                    ),
+    if any('EB' == bdata.index):
+        EB = True
+        diffEB = int(bdata['EB'] - adata['EB'])
+        
+        if(diffEB > 0):
+            strdiffEB = '+' + str(diffEB)+ ' min'
+        elif(diffEB < 0):
+            strdiffEB = str(diffEB)+ ' min'
+        else:
+            strdiffEB = '< 1 min'
+    
+    layout = go.Layout(title = street,
+                       titlefont = dict(size = 30),
+                       xaxis = dict(title = 'Before/After',
+                                    titlefont = dict(
+                                            size = 15)),
                        yaxis = dict(title = 'Travel Time',
+                                    titlefont = dict(
+                                            size = 15),
                                     range = yrng),
-#                        legend=dict(
-#                                x=0,
-#                                y=1.0,
-#                                bgcolor='rgba(255, 255, 255, 0)',
-#                                bordercolor='rgba(255, 255, 255, 0)'
-#    ),
+                        
                        autosize = True,
-                       annotations = ([dict(
-                                       x = 'EB',
-                                       y = yrng[1],
-                                       text = strdiffEB,
-                                       xanchor = 'centre',
-                                       yanchor = 'top',
-                                       showarrow = False,
-                                       font = dict(
-                                               color = "black",
-                                               size = 30,
-                                               family = 'arial narrow')),
-                                        dict(
+                       annotations = [])
+    if WB and EB:
+        layout['barmode'] = 'group'
+        
+    if WB:
+        layout['annotations'].append(dict(
                                         x = 'WB',
                                         y = yrng[1],
                                         text = strdiffWB,
@@ -104,17 +83,22 @@ def getfig(street, AMPM): #returns a graph_objs figure from a dataset.
                                         showarrow = False,
                                         font = dict(
                                                color = "black",
-                                               size = 30,
-                                               family = 'arial narrow'))])
-               #        width = w,
-               #        height = h,
-               #        margin = sizemg,
-                      # hovermode = False
-                 #      bargap=-1,
-                 #      bargroupgap=-2
-                       )
+                                               size = 25,
+                                               family = 'arial narrow')))
+    if EB:
+        layout['annotations'].append(dict(
+                                        x = 'EB',
+                                        y = yrng[1],
+                                        text = strdiffEB,
+                                        xanchor = 'centre',
+                                        yref = 'top',
+                                        showarrow = False,
+                                        font = dict(
+                                               color = "black",
+                                               size = 25,
+                                               family = 'arial narrow')))
     
-    return {'data' : [before_figs[AMPM][street], after_figs[AMPM][street]],
+    return {'data' : [before_figs[APM][street], after_figs[APM][street]],
             'layout' : layout}
     
 
@@ -211,4 +195,3 @@ def update_wellington(AMPM):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-
