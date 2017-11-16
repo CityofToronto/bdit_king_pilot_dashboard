@@ -23,7 +23,10 @@ else:
     con = connect(**dbset)
 
 DATA = pandasql.read_sql("SELECT street, direction, dt AS date, day_type, period, round(tt,1) tt FROM king_pilot.dash_daily ", con)
-BASELINE = pandasql.read_sql("SELECT street, direction, day_type, period, period_range, round(tt,1) tt FROM king_pilot.dash_baseline ", con)
+BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_intersection, 
+                             day_type, period, period_range, round(tt,1) tt 
+                             FROM king_pilot.dash_baseline ''',
+                             con)
 
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
@@ -38,7 +41,7 @@ PLOT_COLOR = 'rgba(22, 87, 136, 100)'
 FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
 STATE_DIV_ID = 'clicks-storage'
-STREETNAME_DIV = 'street-name'
+STREETNAME_DIV = ['street-name-'+str(i) for i in [0,1]]
 SELECTED_STREET_DIV = 'selected-street'
 TABLE_DIV_ID = 'div-table'
 TIMEPERIOD_DIV = 'timeperiod'
@@ -200,7 +203,6 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                 'line': BASELINE_LINE
                }
     layout = dict(font={'family': FONT_FAMILY},
-                  title=direction,
                   xaxis=dict(title='Date',
                              fixedrange=True),
                   yaxis=dict(title='Travel Time (min)',
@@ -229,10 +231,11 @@ html.Div(children=[html.H1(children='King Street Transit Pilot: Travel Time Moni
                  className='four columns'
                 ),
         html.Div(children=[
-            html.H2(id=STREETNAME_DIV, children='Bathurst - Jarvis'),
+            html.H2(id=STREETNAME_DIV[0], children='Dundas Eastbound: Bathurst - Jarvis'),
             dcc.Graph(id=GRAPHS[0],
                       figure=generate_graph(STREETS[0], DIRECTIONS[1]),
                       config={'displayModeBar': False}),
+            html.H2(id=STREETNAME_DIV[1], children='Dundas Westbound: Bathurst - Jarvis'),
             dcc.Graph(id=GRAPHS[1],
                       figure=generate_graph(STREETS[0], DIRECTIONS[1]),
                       config={'displayModeBar': False})
@@ -332,6 +335,17 @@ def update_selected_street(state_data):
     '''
     state_data_dict = deserialise_state(state_data)
     return [street for street, click_obj in state_data_dict.items() if click_obj['clicked']]
+
+def create_update_street_name(dir_id):
+    @app.callback(Output(STREETNAME_DIV[dir_id], 'children'),
+                  [Input(SELECTED_STREET_DIV, 'children')])
+    def update_street_name(street):
+        from_to = BASELINE[(BASELINE['street'] == street[0]) &
+                           (BASELINE['direction'] == DIRECTIONS[dir_id])][['from_intersection',
+                                                                           'to_intersection']].iloc[0]
+        return [html.B(street[0] + ' ' + DIRECTIONS[dir_id] + ': '), from_to['from_intersection'] + ' - ' + from_to['to_intersection']]
+
+[create_update_street_name(i) for i in [0,1]]
 
 def create_update_graph(graph_number):
     '''Dynamically create callback functions to update graphs based on a graph number
