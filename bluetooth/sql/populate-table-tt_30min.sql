@@ -11,7 +11,6 @@ SELECT 	A.bt_id,
 
 FROM king_pilot.bt_segments A
 INNER JOIN bluetooth.aggr_5min B USING (analysis_id)
--- INNER JOIN king_pilot.date_lookup C USING (bt_id)
 
 WHERE NOT (A.bt_id = 33 AND B.datetime_bin::date = '2017-09-19' AND B.datetime_bin::time >= '19:00')
 GROUP BY A.bt_id, B.datetime_bin::date, (TIMESTAMP WITHOUT TIME ZONE 'epoch' + INTERVAL '1 second' * (floor((extract('epoch' from B.datetime_bin)) / 1800) * 1800))::time
