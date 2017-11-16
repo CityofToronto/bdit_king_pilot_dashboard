@@ -2,6 +2,7 @@ import json
 import os
 from collections import OrderedDict
 
+from dateutil.relativedelta import relativedelta
 import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
@@ -30,6 +31,8 @@ BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_
 
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
+DATERANGE = [DATA['date'].min() - relativedelta(days=1),
+             DATA['date'].max() + relativedelta(days=1)]
 TIMEPERIODS = BASELINE[['day_type','period', 'period_range']].drop_duplicates().sort_values(['day_type', 'period_range'])
 THRESHOLD = 1
 MAX_TIME = 30 #Max travel time to fix y axis of graphs.
@@ -206,6 +209,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                   autosize=True,
                   height=225,
                   xaxis=dict(title='Date',
+                             range=DATERANGE,
                              fixedrange=True),
                   yaxis=dict(title='Travel Time (min)',
                              range=[0, MAX_TIME],
