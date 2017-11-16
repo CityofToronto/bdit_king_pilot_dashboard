@@ -231,11 +231,11 @@ html.Div(children=[html.H1(children='King Street Transit Pilot: Travel Time Moni
                  className='four columns'
                 ),
         html.Div(children=[
-            html.H2(id=STREETNAME_DIV[0], children='Dundas Eastbound: Bathurst - Jarvis'),
+            html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'), ' Bathurst - Jarvis']),
             dcc.Graph(id=GRAPHS[0],
                       figure=generate_graph(STREETS[0], DIRECTIONS[1]),
                       config={'displayModeBar': False}),
-            html.H2(id=STREETNAME_DIV[1], children='Dundas Westbound: Bathurst - Jarvis'),
+            html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'), ' Jarvis - Bathurst']),
             dcc.Graph(id=GRAPHS[1],
                       figure=generate_graph(STREETS[0], DIRECTIONS[1]),
                       config={'displayModeBar': False})
@@ -340,10 +340,14 @@ def create_update_street_name(dir_id):
     @app.callback(Output(STREETNAME_DIV[dir_id], 'children'),
                   [Input(SELECTED_STREET_DIV, 'children')])
     def update_street_name(street):
-        from_to = BASELINE[(BASELINE['street'] == street[0]) &
+        try:
+            from_to = BASELINE[(BASELINE['street'] == street[0]) &
                            (BASELINE['direction'] == DIRECTIONS[dir_id])][['from_intersection',
                                                                            'to_intersection']].iloc[0]
-        return [html.B(street[0] + ' ' + DIRECTIONS[dir_id] + ': '), from_to['from_intersection'] + ' - ' + from_to['to_intersection']]
+        except IndexError:
+            return None
+        else:
+            return [html.B(street[0] + ' ' + DIRECTIONS[dir_id] + ': '), from_to['from_intersection'] + ' - ' + from_to['to_intersection']]
 
 [create_update_street_name(i) for i in [0,1]]
 
