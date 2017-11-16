@@ -191,8 +191,23 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     if after_data.empty:
         data = [go.Bar()]
         line = None
+        annotations = None
     else:
         data = [go.Bar(x=after_data['date'],
+                       y=after_data['tt'],
+                       text=after_data['tt'].round(),
+                       hoverinfo='x+y',
+                       textposition='inside',
+                       insidetextfont=dict(color='rgba(255,255,255,1)'),
+                       marker=dict(color=PLOT_COLOR))]
+        annotations = [dict(x=0,
+                            y=base_data.iloc[0]['tt'] + 2,
+                            text='Baseline',
+                            font={'color':BASELINE_LINE['color']},
+                            xref='paper',
+                            yref='yaxis',
+                            showarrow=False
+                            )]
         line = {'type':'line',
                 'x0': 0,
                 'x1': 1,
@@ -211,7 +226,8 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                              range=[0, MAX_TIME],
                              fixedrange=True),
                   shapes=[line],
-                  margin=PLOT['margin']
+                  margin=PLOT['margin'],
+                  annotations=annotations
                   )
     return {'layout': layout, 'data': data}
 
