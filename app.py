@@ -188,15 +188,11 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     '''Generate a Dash bar chart of average travel times by day
     '''
     after_data, base_data = filter_graph_data(street, direction, day_type, period)
-    data = [go.Bar(x=after_data['date'],
-                   y=after_data['tt'],
-                   text=after_data['tt'].round(),
-                   hoverinfo='x+y',
-                   textposition='inside',
-                   insidetextfont=dict(color='rgba(255,255,255,1)'),
-                   marker=dict(color=PLOT_COLOR))]
-    line = None
-    if not base_data.empty:
+    if after_data.empty:
+        data = [go.Bar()]
+        line = None
+    else:
+        data = [go.Bar(x=after_data['date'],
         line = {'type':'line',
                 'x0': 0,
                 'x1': 1,
@@ -348,12 +344,13 @@ def create_update_street_name(dir_id):
     def update_street_name(street):
         try:
             from_to = BASELINE[(BASELINE['street'] == street[0]) &
-                           (BASELINE['direction'] == DIRECTIONS[dir_id])][['from_intersection',
-                                                                           'to_intersection']].iloc[0]
+                               (BASELINE['direction'] == DIRECTIONS[dir_id])][['from_intersection',
+                                                                               'to_intersection']].iloc[0]
         except IndexError:
-            return None
+            return [html.B(street[0]+': ')]
         else:
-            return [html.B(street[0] + ' ' + DIRECTIONS[dir_id] + ': '), from_to['from_intersection'] + ' - ' + from_to['to_intersection']]
+            return [html.B(street[0] + ' ' + DIRECTIONS[dir_id] + ': '),
+                    from_to['from_intersection'] + ' - ' + from_to['to_intersection']]
 
 [create_update_street_name(i) for i in [0,1]]
 
