@@ -39,7 +39,7 @@ MAX_TIME = 30 #Max travel time to fix y axis of graphs.
 
 BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
-PLOT = dict(margin={'t':10, 'b': 40, 'r': 40, 'l': 40})
+PLOT = dict(margin={'t':10, 'b': 40, 'r': 40, 'l': 40, 'pad': 8})
 PLOT_COLOR = 'rgba(22, 87, 136, 100)'
 FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
@@ -200,7 +200,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                        textposition='inside',
                        insidetextfont=dict(color='rgba(255,255,255,1)'),
                        marker=dict(color=PLOT_COLOR))]
-        annotations = [dict(x=0,
+        annotations = [dict(x=-0.008,
                             y=base_data.iloc[0]['tt'] + 2,
                             text='Baseline',
                             font={'color':BASELINE_LINE['color']},
