@@ -36,7 +36,7 @@ MAX_TIME = 30 #Max travel time to fix y axis of graphs.
 
 BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
-PLOT = dict(margin={'t':40, 'b': 40, 'r': 40, 'l': 40})
+PLOT = dict(margin={'t':10, 'b': 40, 'r': 40, 'l': 40})
 PLOT_COLOR = 'rgba(22, 87, 136, 100)'
 FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
@@ -203,6 +203,8 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                 'line': BASELINE_LINE
                }
     layout = dict(font={'family': FONT_FAMILY},
+                  autosize=True,
+                  height=225,
                   xaxis=dict(title='Date',
                              fixedrange=True),
                   yaxis=dict(title='Travel Time (min)',
