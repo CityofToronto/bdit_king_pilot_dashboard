@@ -1,18 +1,32 @@
-﻿DROP VIEW IF EXISTS king_pilot.dash_baseline;
+DROP VIEW king_pilot.dash_baseline;
 
-CREATE VIEW king_pilot.dash_baseline AS
-SELECT Z.street_name as street, Z.direction, Z.from_intersection, Z.to_intersection, X.day_type, X.period_name AS period, X.period_range, SUM(X.tt)/60.0 AS tt
-FROM
-( 	SELECT A.bt_id, A.day_type, B.period_name, B.period_range, AVG(A.tt) AS tt
-	FROM king_pilot.baselines A
-	INNER JOIN king_pilot.periods B USING (day_type)
-	INNER JOIN king_pilot.bt_segments C USING (bt_id)
-	WHERE A.time_bin <@ B.period_range
-	GROUP BY A.bt_id, A.day_type, B.period_name, B.period_range
-	) AS X
-INNER JOIN king_pilot.bt_corridor_segments Y USING (bt_id)
-INNER JOIN king_pilot.bt_corridors Z USING (corridor_id)
-WHERE Z.corridor_id NOT IN (6,8,9)
-GROUP BY Z.corridor_id, Z.corridor_name, X.day_type, X.period_name, X.period_range, Z.segments, Z.street_name, Z.direction, Z.from_intersection, Z.to_intersection
-HAVING COUNT(X.*) = Z.segments
-ORDER BY Z.corridor_id, X.day_type, X.period_range
+CREATE OR REPLACE VIEW king_pilot.dash_baseline AS 
+ SELECT z.street_name AS street,
+    z.direction,
+    z.from_intersection,
+    z.to_intersection,
+    x.day_type,
+    x.period_name AS period,
+    '(' || to_char(lower(period_range), 'HH24:MM') || '-' || to_char(upper(period_range), 'HH24:MM') ||')' AS period_range,
+    sum(x.tt) / 60.0 AS tt
+   FROM ( SELECT a.bt_id,
+            a.day_type,
+            b.period_name,
+            b.period_range,
+            avg(a.tt) AS tt
+           FROM king_pilot.baselines a
+             JOIN king_pilot.periods b USING (day_type)
+             JOIN king_pilot.bt_segments c USING (bt_id)
+          WHERE a.time_bin <@ b.period_range
+          GROUP BY a.bt_id, a.day_type, b.period_name, b.period_range) x
+     JOIN king_pilot.bt_corridor_segments y USING (bt_id)
+     JOIN king_pilot.bt_corridors z USING (corridor_id)
+  WHERE z.corridor_id <> ALL (ARRAY[6, 8, 9])
+  GROUP BY z.corridor_id, z.corridor_name, x.day_type, x.period_name, x.period_range, z.segments, z.street_name, z.direction, z.from_intersection, z.to_intersection
+ HAVING count(x.*) = z.segments
+  ORDER BY z.corridor_id, x.day_type, x.period_range;
+
+ALTER TABLE king_pilot.dash_baseline
+  OWNER TO aharpal;
+GRANT ALL ON TABLE king_pilot.dash_baseline TO aharpal;
+GRANT SELECT ON TABLE king_pilot.dash_baseline TO public;
