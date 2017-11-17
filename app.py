@@ -130,6 +130,7 @@ class DashResponsive(dash.Dash):
 
 app = DashResponsive()
 app.config['suppress_callback_exceptions'] = True
+app.title='King Street Transit Pilot: Travel Time Monitoring'
 server = app.server
 
 server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
@@ -153,7 +154,9 @@ def pivot_order(df):
     '''Pivot the dataframe around street directions and order by STREETS global var
     '''
     if 'date' in df.columns:
-        pivoted = df.pivot_table(index=['street', 'date'], columns='direction', values='tt').reset_index()
+        pivoted = df.pivot_table(index=['street', 'date'],
+                                 columns='direction',
+                                 values='tt').reset_index()
     else:
         pivoted = df.pivot_table(index='street', columns='direction', values='tt').reset_index()
     pivoted.street = pivoted.street.astype("category")
@@ -268,6 +271,11 @@ html.Div(children=[html.H1(children='King Street Transit Pilot: Travel Time Moni
                  className='eight columns'
                 ),
     ], className='row'),
+    html.Div(children=html.H3(['Created by the ',
+                               html.A('Big Data Innovation Team',
+                                      href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
+                                      style={'text-align':'right', 'padding-right':'1em'}),
+             className='row'),
     html.Div(id=STATE_DIV_ID, style={'display': 'none'}, children=serialise_state(INITIAL_STATE)),
     html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=[STREETS[0]])
     ])
