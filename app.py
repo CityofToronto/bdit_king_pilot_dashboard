@@ -23,7 +23,7 @@ else:
     dbset = CONFIG['DBSETTINGS']
     con = connect(**dbset)
 
-DATA = pandasql.read_sql('''SELECT street, direction, dt AS date, day_type, period, round(tt,1) tt, 
+DATA = pandasql.read_sql('''SELECT street, direction, dt AS date, day_type, category, period, round(tt,1) tt, 
                          rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS most_recent
                          FROM king_pilot.dash_daily''', con)
 BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_intersection, 
@@ -44,7 +44,8 @@ MAX_TIME = 30 #Max travel time to fix y axis of graphs.
 BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
 PLOT = dict(margin={'t':10, 'b': 40, 'r': 40, 'l': 40, 'pad': 8})
-PLOT_COLOR = 'rgba(22, 87, 136, 100)'
+PLOT_COLORS = dict(pilot='rgba(22, 87, 136, 100)',
+                   baseline='rgba(128, 128, 128, 1.0)')
 FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
 STATE_DIV_ID = 'clicks-storage'
@@ -202,14 +203,39 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
         line = None
         annotations = None
     else:
-        data = [go.Bar(x=after_data['date'],
-                       y=after_data['tt'],
-                       text=after_data['tt'].round(),
-                       hoverinfo='x+y',
-                       textposition='inside',
-                       insidetextfont=dict(color='rgba(255,255,255,1)',
-                                           size=12),
-                       marker=dict(color=PLOT_COLOR))]
+        baseline_days = after_data[after_data['category'] == 'Baseline']
+        if baseline_days.empty:
+            data = [go.Bar(x=after_data['date'],
+                           y=after_data['tt'],
+                           text=after_data['tt'].round(),
+                           hoverinfo='x+y',
+                           textposition='inside',
+                           insidetextfont=dict(color='rgba(255,255,255,1)',
+                                               size=12),
+                           marker=dict(color=PLOT_COLORS['pilot']))]
+        else:
+            pilot_days = after_data[after_data['category'] == 'Pilot']
+            pilot_data = dict(x=pilot_days['date'],
+                              y=pilot_days['tt'],
+                              text=pilot_days['tt'].round(),
+                              hoverinfo='x+y',
+                              textposition='inside',
+                              insidetextfont=dict(color='rgba(255,255,255,1)',
+                                                  size=12),
+                              marker=dict(color=PLOT_COLORS['pilot']),
+                              type='bar',
+                              name='Pilot')
+            baseline_data = dict(x=baseline_days['date'],
+                                 y=baseline_days['tt'],
+                                 text=baseline_days['tt'].round(),
+                                 hoverinfo='x+y',
+                                 textposition='inside',
+                                 insidetextfont=dict(color='rgba(255,255,255,1)',
+                                                     size=12),
+                                 marker=dict(color=PLOT_COLORS['baseline']),
+                                 type='bar',
+                                 name='Baseline')
+            data=[pilot_data, baseline_data]
         annotations = [dict(x=-0.008,
                             y=base_data.iloc[0]['tt'] + 2,
                             text='Baseline',
@@ -229,6 +255,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     layout = dict(font={'family': FONT_FAMILY},
                   autosize=True,
                   height=225,
+                  barmode='overlay',
                   xaxis=dict(title='Date',
                              range=DATERANGE,
                              fixedrange=True),
@@ -237,7 +264,8 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                              fixedrange=True),
                   shapes=[line],
                   margin=PLOT['margin'],
-                  annotations=annotations
+                  annotations=annotations,
+                  legend={'x':0.90}
                   )
     return {'layout': layout, 'data': data}
 
