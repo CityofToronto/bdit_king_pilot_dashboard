@@ -103,7 +103,7 @@ class DashResponsive(dash.Dash):
         scripts = self._generate_scripts_html()
         css = self._generate_css_dist_html()
         config = self._generate_config_html()
-        title = getattr(self, 'title', 'Dash')
+        title = getattr(self, 'title', 'King Street Transit Pilot: Travel Time Monitoring')
         return ('''
         <!DOCTYPE html>
         <html>
