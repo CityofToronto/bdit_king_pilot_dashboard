@@ -31,6 +31,8 @@ BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_
                              FROM king_pilot.dash_baseline ''',
                              con)
 
+con.close()
+
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
 DATERANGE = [DATA['date'].min() - relativedelta(days=1),
@@ -88,7 +90,7 @@ def generate_row(df_row, baseline_row, row_state):
                    n_clicks=row_state['n_clicks'])
 
 
-class Dash_responsive(dash.Dash):
+class DashResponsive(dash.Dash):
     """Patched version of dash.Dash to add a meta tag to <head>
     
     """
@@ -126,7 +128,7 @@ class Dash_responsive(dash.Dash):
         '''.format(title, css, config, scripts))
 
 
-app = Dash_responsive()
+app = DashResponsive()
 app.config['suppress_callback_exceptions'] = True
 server = app.server
 
@@ -202,7 +204,8 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                        text=after_data['tt'].round(),
                        hoverinfo='x+y',
                        textposition='inside',
-                       insidetextfont=dict(color='rgba(255,255,255,1)'),
+                       insidetextfont=dict(color='rgba(255,255,255,1)',
+                                           size=12),
                        marker=dict(color=PLOT_COLOR))]
         annotations = [dict(x=-0.008,
                             y=base_data.iloc[0]['tt'] + 2,
