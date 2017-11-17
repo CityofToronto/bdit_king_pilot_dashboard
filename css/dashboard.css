@@ -73,6 +73,7 @@ td.same {
    color: #000000; 
    font-size: 1.6rem; }
 
+.twelve.columns { background-color: #165788; }
 h1 { font-size: 2.5rem; line-height: 1.3;  letter-spacing: -.1rem; margin-top: 0.8rem; margin-bottom: 0.8rem; margin-left: 0.8rem; color: #FFFFFF; font-weight: bold; }
 h2 { font-size: 2.0rem; line-height: 1.1; letter-spacing: -.1rem; margin-bottom: 0.4rem; margin-top: 0.4rem; margin-left: 0.8rem;}
 
@@ -81,7 +82,6 @@ h2 { font-size: 2.0rem; line-height: 1.1; letter-spacing: -.1rem; margin-bottom:
    .container {
     width: 85%;
     padding: 0; }
-   .twelve.columns { background-color: #165788; }
 }
 
 /* For devices larger than 800px */
