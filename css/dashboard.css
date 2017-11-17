@@ -73,7 +73,7 @@ td.same {
    color: #000000; 
    font-size: 1.6rem; }
 
-h1 { font-size: 2.5rem; line-height: 1.3;  letter-spacing: -.1rem; margin-top: 0.8rem; margin-bottom: 0.8rem; margin-left: 0.8rem; background-color: #165788; color: #FFFFFF; font-weight: bold; }
+h1 { font-size: 2.5rem; line-height: 1.3;  letter-spacing: -.1rem; margin-top: 0.8rem; margin-bottom: 0.8rem; margin-left: 0.8rem; color: #FFFFFF; font-weight: bold; }
 h2 { font-size: 2.0rem; line-height: 1.1; letter-spacing: -.1rem; margin-bottom: 0.4rem; margin-top: 0.4rem; margin-left: 0.8rem;}
 
 /* For devices larger than 400px */
@@ -84,8 +84,8 @@ h2 { font-size: 2.0rem; line-height: 1.1; letter-spacing: -.1rem; margin-bottom:
 }
 
 /* For devices larger than 800px */
-@media (min-width: 800px) {
-   h1 { font-size: 3.5rem; line-height: 1.5;  letter-spacing: -.1rem; margin-top: 0.8rem; margin-bottom: 0.8rem; margin-left: 1.0rem; background-color: #165788; color: #FFFFFF; font-weight: bold;}
+@media (min-width: 1200px) {
+   h1 { font-size: 3.5rem; line-height: 1.5;  letter-spacing: -.1rem; margin-top: 0.8rem; margin-bottom: 0.8rem; margin-left: 1.0rem; color: #FFFFFF; font-weight: bold;}
    h2 { font-size: 2.5rem; line-height: 1.2; letter-spacing: -.1rem; margin-bottom: 0.4rem; margin-top: 0.4rem; margin-left: 1.0rem; }
    td {
      font-size: 1.6rem; }
@@ -120,7 +120,7 @@ h2 { font-size: 2.0rem; line-height: 1.1; letter-spacing: -.1rem; margin-bottom:
   .nine.columns                   { width: 74.0%;          }
   .ten.columns                    { width: 82.6666666667%; }
   .eleven.columns                 { width: 91.3333333333%; }
-  .twelve.columns                 { width: 100%; margin-left: 0; }
+  .twelve.columns                 { width: 100%; margin-left: 0; background-color: #165788; }
 
   .one-third.column               { width: 30.6666666667%; }
   .two-thirds.column              { width: 65.3333333333%; }
