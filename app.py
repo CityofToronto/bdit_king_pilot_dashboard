@@ -276,6 +276,8 @@ html.Div(children=[html.H1(children='King Street Transit Pilot: Travel Time Moni
         html.Div(children=[
             html.H2(id=TIMEPERIOD_DIV, children='Weekday AM Peak'),
             html.Div(id=TABLE_DIV_ID),
+            html.Div([html.B('Travel Time', className='worse'), '1+ min', html.B('longer'), 'than baseline']),
+            html.Div([html.B('Travel Time', className='better'), '1+ min', html.B('shorter'), 'than baseline']),
             dcc.RadioItems(id=CONTROLS['timeperiods'],
                            value=TIMEPERIODS.iloc[0]['period'],
                            className='radio-toolbar'),
