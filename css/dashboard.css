@@ -73,6 +73,9 @@ td.same {
    color: #000000; 
    font-size: 1.6rem; }
 
+h1 { font-size: 2.5rem; line-height: 1.3;  letter-spacing: -.1rem; margin-top: 0.8rem; margin-bottom: 0.8rem; background-color: #165788; color: #FFFFFF; font-weight: bold; text-indent: 1rem each-line;}
+h2 { font-size: 2.0rem; line-height: 1.1; letter-spacing: -.1rem; margin-bottom: 0.4rem; margin-top: 0.4rem; text-indent: 1rem each-line;}
+
 /* For devices larger than 400px */
 @media (min-width: 400px) {
    .container {
@@ -80,9 +83,10 @@ td.same {
     padding: 0; }
 }
 
-/* For devices larger than 550px */
-@media (min-width: 550px) {
-   /*
+/* For devices larger than 800px */
+@media (min-width: 800px) {
+   h1 { font-size: 3.5rem; line-height: 1.5;  letter-spacing: -.1rem; margin-top: 0.8rem; margin-bottom: 0.8rem; background-color: #165788; color: #FFFFFF; font-weight: bold; text-indent: 1rem each-line;}
+   h2 { font-size: 2.5rem; line-height: 1.2; letter-spacing: -.1rem; margin-bottom: 0.4rem; margin-top: 0.4rem; text-indent: 1rem each-line;}
    td {
      font-size: 1.6rem; }
    td.segname {
@@ -95,7 +99,6 @@ td.same {
       font-size: 2.0rem; }
    td.same {
       font-size: 2.0rem; }
-   */
    .container {
     width: 80%; }
   .column,
@@ -180,8 +183,6 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
   margin-bottom: 0;
   font-weight: 300; }
-h1 { font-size: 3.5rem; line-height: 1.5;  letter-spacing: -.1rem; margin-top: 0.8rem; margin-bottom: 0.8rem; background-color: #165788; color: #FFFFFF; font-weight: bold; text-indent: 1rem}
-h2 { font-size: 2.5rem; line-height: 1.2; letter-spacing: -.1rem; margin-bottom: 0.4rem; margin-top: 0.4rem; text-indent: 1rem}}
 h3 { font-size: 2.0rem; line-height: 1.3;  letter-spacing: -.1rem; margin-bottom: 0.5rem; margin-top: 0.5rem;}
 h4 { font-size: 1.6rem; line-height: 1.35; letter-spacing: -.08rem; margin-bottom: 0.5rem; margin-top: 0.5rem;}
 h5 { font-size: 1.4rem; line-height: 1.5;  letter-spacing: -.05rem; margin-bottom: 0.6rem; margin-top: 0.6rem;}
