@@ -81,6 +81,7 @@ h2 { font-size: 2.0rem; line-height: 1.1; letter-spacing: -.1rem; margin-bottom:
    .container {
     width: 85%;
     padding: 0; }
+   .twelve.columns { background-color: #165788; }
 }
 
 /* For devices larger than 800px */
