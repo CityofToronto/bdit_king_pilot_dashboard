@@ -235,7 +235,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                                  marker=dict(color=PLOT_COLORS['baseline']),
                                  type='bar',
                                  name='Baseline')
-            data=[pilot_data, baseline_data]
+            data = [baseline_data, pilot_data]
         annotations = [dict(x=-0.008,
                             y=base_data.iloc[0]['tt'] + 2,
                             text='Baseline',
@@ -255,7 +255,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     layout = dict(font={'family': FONT_FAMILY},
                   autosize=True,
                   height=225,
-                  barmode='overlay',
+                  barmode='relative',
                   xaxis=dict(title='Date',
                              range=DATERANGE,
                              fixedrange=True),
