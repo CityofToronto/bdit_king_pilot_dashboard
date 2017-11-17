@@ -23,7 +23,9 @@ else:
     dbset = CONFIG['DBSETTINGS']
     con = connect(**dbset)
 
-DATA = pandasql.read_sql("SELECT street, direction, dt AS date, day_type, period, round(tt,1) tt FROM king_pilot.dash_daily ", con)
+DATA = pandasql.read_sql('''SELECT street, direction, dt AS date, day_type, period, round(tt,1) tt, 
+                         rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS most_recent
+                         FROM king_pilot.dash_daily''', con)
 BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_intersection, 
                              day_type, period, period_range, round(tt,1) tt 
                              FROM king_pilot.dash_baseline ''',
@@ -148,7 +150,10 @@ def serialise_state(clicks_dict):
 def pivot_order(df):
     '''Pivot the dataframe around street directions and order by STREETS global var
     '''
-    pivoted = df.pivot_table(index='street', columns='direction', values='tt').reset_index()
+    if 'date' in df.columns:
+        pivoted = df.pivot_table(index=['street', 'date'], columns='direction', values='tt').reset_index()
+    else:
+        pivoted = df.pivot_table(index='street', columns='direction', values='tt').reset_index()
     pivoted.street = pivoted.street.astype("category")
     pivoted.street.cat.set_categories(STREETS, inplace=True)
     return pivoted.sort_values(['street']).round(1)
@@ -158,9 +163,8 @@ def filter_table_data(period, day_type):
     '''
     #current data
     filtered = DATA[(DATA['period'] == period) &
-                    (DATA['day_type'] == day_type)].groupby(by=['street',
-                                                                'direction'],
-                                                            as_index=False).mean()
+                    (DATA['day_type'] == day_type) &
+                    (DATA['most_recent'] == 1)]
     pivoted = pivot_order(filtered)
 
     #baseline data
@@ -291,8 +295,9 @@ def generate_table(period, day_type, state_data):
     '''
     state_data_dict = deserialise_state(state_data)
     filtered_data, baseline = filter_table_data(period, day_type)
+    day = filtered_data['date'].iloc[0].strftime('%a %b %d')
     return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
-                      [html.Tr([html.Td(""), html.Td("After"), html.Td("Baseline"), html.Td("After"), html.Td("Baseline")])] +
+                      [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
                       [generate_row(new_row[1], baseline_row[1], row_state)
                        for new_row, baseline_row, row_state
                        in zip(filtered_data.iterrows(),
