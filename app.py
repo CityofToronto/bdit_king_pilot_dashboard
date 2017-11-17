@@ -265,7 +265,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                   shapes=[line],
                   margin=PLOT['margin'],
                   annotations=annotations,
-                  legend={'x':0.90}
+                  legend={'xanchor':'right'}
                   )
     return {'layout': layout, 'data': data}
 
