@@ -12,6 +12,7 @@ import pandas.io.sql as pandasql
 import pandas as pd
 import plotly.graph_objs as go
 
+from dash_responsive import DashResponsive
 
 database_url = os.getenv("DATABASE_URL")
 if database_url is not None:
@@ -61,6 +62,7 @@ CONTROLS = dict(timeperiods='timeperiod-radio',
                 day_types='day-type-radio')
 GRAPHS = ['eb_graph', 'wb_graph']
 
+
 def generate_row_class(clicked):
     '''Assigns class to clicked row'''
     if clicked:
@@ -93,44 +95,6 @@ def generate_row(df_row, baseline_row, row_state):
                    id=df_row['street'],
                    className=generate_row_class(row_state['clicked']),
                    n_clicks=row_state['n_clicks'])
-
-
-class DashResponsive(dash.Dash):
-    """Patched version of dash.Dash to add a meta tag to <head>
-    
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def index(self, *args, **kwargs):
-        '''Overriding from https://github.com/plotly/dash/blob/master/dash/dash.py#L282
-        '''
-        scripts = self._generate_scripts_html()
-        css = self._generate_css_dist_html()
-        config = self._generate_config_html()
-        title = getattr(self, 'title', TITLE)
-        return ('''
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <meta charset="UTF-8"/>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-                <title>{}</title>
-                {}
-            </head>
-            <body>
-                <div id="react-entry-point">
-                    <div class="_dash-loading">
-                        Loading...
-                    </div>
-                </div>
-            </body>
-            <footer>
-                {}
-                {}
-            </footer>
-        </html>
-        '''.format(title, css, config, scripts))
 
 
 app = DashResponsive()
