@@ -33,6 +33,7 @@ BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_
 
 con.close()
 
+# Data management constants
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
 DATERANGE = [DATA['date'].min() - relativedelta(days=1),
@@ -41,6 +42,8 @@ TIMEPERIODS = BASELINE[['day_type','period', 'period_range']].drop_duplicates().
 THRESHOLD = 1
 MAX_TIME = 30 #Max travel time to fix y axis of graphs.
 
+# Plot appearance
+TITLE = 'King Street Transit Pilot: Vehicular Travel Time Monitoring'
 BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
 PLOT = dict(margin={'t':10, 'b': 40, 'r': 40, 'l': 40, 'pad': 8})
@@ -48,6 +51,7 @@ PLOT_COLORS = dict(pilot='rgba(22, 87, 136, 100)',
                    baseline='rgba(128, 128, 128, 1.0)')
 FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
+# IDs for divs
 STATE_DIV_ID = 'clicks-storage'
 STREETNAME_DIV = ['street-name-'+str(i) for i in [0,1]]
 SELECTED_STREET_DIV = 'selected-street'
@@ -104,7 +108,7 @@ class DashResponsive(dash.Dash):
         scripts = self._generate_scripts_html()
         css = self._generate_css_dist_html()
         config = self._generate_config_html()
-        title = getattr(self, 'title', 'King Street Transit Pilot: Travel Time Monitoring')
+        title = getattr(self, 'title', TITLE)
         return ('''
         <!DOCTYPE html>
         <html>
@@ -131,7 +135,7 @@ class DashResponsive(dash.Dash):
 
 app = DashResponsive()
 app.config['suppress_callback_exceptions'] = True
-app.title='King Street Transit Pilot: Travel Time Monitoring'
+app.title=TITLE
 server = app.server
 
 server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
@@ -270,7 +274,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     return {'layout': layout, 'data': data}
 
 app.layout = html.Div([
-html.Div(children=[html.H1(children='King Street Transit Pilot: Travel Time Monitoring', id='title'),
+html.Div(children=[html.H1(children=TITLE, id='title'),
                   ], className='row twelve columns'),
     html.Div([
         html.Div(children=[
