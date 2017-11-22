@@ -8,7 +8,7 @@ FROM
 	INNER JOIN king_pilot.periods T USING (day_type)
 	WHERE 	R.time_bin <@ T.period_range 
 		AND (
-			((upper(T.period_range) - INTERVAL '30 minutes') <= (SELECT MAX(time_bin) FROM king_pilot.real_tt_30min))
+			((upper(T.period_range) - INTERVAL '30 minutes') <= (SELECT MAX(time_bin) FROM king_pilot.real_tt_30min WHERE dt = (SELECT MAX(dt) FROM king_pilot.real_tt_30min)))
 			OR
 			((SELECT MAX(dt) FROM king_pilot.real_tt_30min) > S.dt)
 		)
