@@ -50,7 +50,8 @@ con.close()
 
 # Data management constants
 STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
-DIRECTIONS = sorted(BASELINE['direction'].unique())
+DIRECTIONS = dict(ew = ['Eastbound', 'Westbound'],
+                  ns = ['Northbound', 'Southbound'])
 DATERANGE = [DATA['date'].min() - relativedelta(days=1),
              DATA['date'].max() + relativedelta(days=1)]
 TIMEPERIODS = BASELINE[['day_type','period', 'period_range']].drop_duplicates().sort_values(['day_type', 'period_range'])
@@ -68,7 +69,8 @@ FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial,
 
 # IDs for divs
 STATE_DIV_ID = 'clicks-storage'
-STREETNAME_DIV = ['street-name-'+str(i) for i in [0,1]]
+MAIN_DIV = 'main-page'
+STREETNAME_DIV = ['street-name-'+str(i) for i in [0, 1]]
 SELECTED_STREET_DIV = 'selected-street'
 TABLE_DIV_ID = 'div-table'
 TIMEPERIOD_DIV = 'timeperiod'
@@ -111,18 +113,21 @@ def pivot_order(df):
     pivoted.street.cat.set_categories(STREETS, inplace=True)
     return pivoted.sort_values(['street']).round(1)
 
-def filter_table_data(period, day_type):
+def filter_table_data(period, day_type, orientation='ew'):
     '''Return data aggregated and filtered by period
     '''
     #current data
     filtered = DATA[(DATA['period'] == period) &
                     (DATA['day_type'] == day_type) &
+                    (DATA['direction'].isin(DIRECTIONS[orientation])) &
                     (DATA['most_recent'] == 1)]
     pivoted = pivot_order(filtered)
 
     #baseline data
 
-    filtered_base = BASELINE[(BASELINE['period'] == period) & (BASELINE['day_type'] == day_type)]
+    filtered_base = BASELINE[(BASELINE['period'] == period) &
+                             (BASELINE['day_type'] == day_type) &
+                             (BASELINE['direction'].isin(DIRECTIONS[orientation]))]
     pivoted_baseline = pivot_order(filtered_base)
 
     return (pivoted, pivoted_baseline)
@@ -170,24 +175,24 @@ def after_cell_class(before, after):
     else:
         return 'same'
 
-def generate_row(df_row, baseline_row, row_state):
+def generate_row(df_row, baseline_row, row_state, orientation='ew'):
     """Create an HTML row from a database row (each street)
 
-        :param df_row: 
+        :param df_row:
             Daily data dataframe row
-        :param baseline_row: 
+        :param baseline_row:
             Baseline row for that street
-        :param row_state: 
+        :param row_state:
             Current state of that row: number of clicks, whether it is currently clicked
     """
     return html.Tr([html.Td(df_row['street'], className='segname'),
-                    *generate_direction_cells(baseline_row[DIRECTIONS[0]], df_row[DIRECTIONS[0]]),
-                    *generate_direction_cells(baseline_row[DIRECTIONS[1]], df_row[DIRECTIONS[1]])],
+                    *generate_direction_cells(baseline_row[DIRECTIONS[orientation][0]], df_row[DIRECTIONS[orientation][0]]),
+                    *generate_direction_cells(baseline_row[DIRECTIONS[orientation][1]], df_row[DIRECTIONS[orientation][1]])],
                    id=df_row['street'],
                    className=generate_row_class(row_state['clicked']),
                    n_clicks=row_state['n_clicks'])
 
-def generate_table(state, day_type, period):
+def generate_table(state, day_type, period, orientation='ew'):
     """Generate HTML table of streets and before-after values
     
         :param state: 
@@ -198,7 +203,7 @@ def generate_table(state, day_type, period):
             Timeperiod name
     """
 
-    filtered_data, baseline = filter_table_data(period, day_type)
+    filtered_data, baseline = filter_table_data(period, day_type, orientation)
     #Current date for the data, to replace "After" header
     day = filtered_data['date'].iloc[0].strftime('%a %b %d')
     return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
@@ -297,49 +302,54 @@ server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 app.layout = html.Div([
 html.Div(children=[html.H1(children=TITLE, id='title'),
                   ], className='row twelve columns'),
-    html.Div([
-        html.Div(children=[
-            html.H2(id=TIMEPERIOD_DIV, children='Weekday AM Peak'),
-            html.Div(id=TABLE_DIV_ID, children=generate_table(INITIAL_STATE, 'Weekday', 'AM Peak')),
-            html.Div([html.B('Travel Time', style={'background-color':'#E9A3C9'}),
-                      ' 1+ min', html.B(' longer'), ' than baseline']),
-            html.Div([html.B('Travel Time', style={'background-color':'#A1D76A'}),
-                      ' 1+ min', html.B(' shorter'), ' than baseline']),
-            dcc.RadioItems(id=CONTROLS['timeperiods'],
-                           value=TIMEPERIODS.iloc[0]['period'],
-                           className='radio-toolbar'),
-            dcc.RadioItems(id=CONTROLS['day_types'],
-                           options=[{'label': day_type,
-                                     'value': day_type,
-                                     'id': day_type} 
-                                     for day_type in TIMEPERIODS['day_type'].unique()],
-                           value=TIMEPERIODS.iloc[0]['day_type'],
-                           className='radio-toolbar')
-                           ],
-                 className='four columns'
-                ),
-        html.Div(children=[
-            html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'), ' Bathurst - Jarvis']),
-            dcc.Graph(id=GRAPHS[0],
-                      figure=generate_graph(STREETS[0], DIRECTIONS[1]),
-                      config={'displayModeBar': False}),
-            html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'), ' Jarvis - Bathurst']),
-            dcc.Graph(id=GRAPHS[1],
-                      figure=generate_graph(STREETS[0], DIRECTIONS[1]),
-                      config={'displayModeBar': False})
-        ],
-                 className='eight columns'
-                ),
-    ], className='row'),
+    dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
+                   {'label': 'North-South Streets', 'value': 'ns'}],
+             value='ew',
+             id='tabs')
+    , html.Div(id=MAIN_DIV, className='row'),
     html.Div(children=html.H3(['Created by the ',
                                html.A('Big Data Innovation Team',
                                       href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
-                                      style={'text-align':'right', 'padding-right':'1em'}),
+                               style={'text-align':'right', 'padding-right':'1em'}),
              className='row'),
     html.Div(id=STATE_DIV_ID, style={'display': 'none'}, children=serialise_state(INITIAL_STATE)),
     html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=[STREETS[0]])
     ])
 
+#Elements to include in the "main-"
+STREETS_LAYOUT = [html.Div(children=[
+    html.H2(id=TIMEPERIOD_DIV, children='Weekday AM Peak'),
+    html.Div(id=TABLE_DIV_ID, children=generate_table(INITIAL_STATE, 'Weekday', 'AM Peak')),
+    html.Div([html.B('Travel Time', style={'background-color':'#E9A3C9'}),
+              ' 1+ min', html.B(' longer'), ' than baseline']),
+    html.Div([html.B('Travel Time', style={'background-color':'#A1D76A'}),
+              ' 1+ min', html.B(' shorter'), ' than baseline']),
+    dcc.RadioItems(id=CONTROLS['timeperiods'],
+                   value=TIMEPERIODS.iloc[0]['period'],
+                   className='radio-toolbar'),
+    dcc.RadioItems(id=CONTROLS['day_types'],
+                   options=[{'label': day_type,
+                             'value': day_type,
+                             'id': day_type}
+                            for day_type in TIMEPERIODS['day_type'].unique()],
+                   value=TIMEPERIODS.iloc[0]['day_type'],
+                   className='radio-toolbar')
+                   ],
+                           className='four columns'
+                          ),
+                  html.Div(children=[
+                    html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
+                                                            ' Bathurst - Jarvis']),
+                    dcc.Graph(id=GRAPHS[0],
+                              config={'displayModeBar': False}),
+                    html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
+                                                            ' Jarvis - Bathurst']),
+                    dcc.Graph(id=GRAPHS[1],
+                              config={'displayModeBar': False})
+                ],
+                         className='eight columns'
+                        ),
+               ]
 
 app.css.append_css({
     'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/dashboard.css'
@@ -354,9 +364,16 @@ app.css.append_css({
 #                                                                                                 #
 ###################################################################################################
 
+@app.callback(Output('main-page', 'children'), [Input('tabs', 'value')])
+def display_content(value):
+
+    if value == 'ew':
+        return STREETS_LAYOUT
+    elif value=='ns':
+        return 'North South Streets Coming Soon'
 
 @app.callback(Output(CONTROLS['timeperiods'], 'options'),
-              [Input(CONTROLS['day_types'], 'value')])
+              [Input(CONTROLS['day_types'], 'value')]) 
 def generate_radio_options(day_type='Weekday'):
     '''Assign time period radio button options based on select day type
     '''
@@ -439,16 +456,17 @@ def update_selected_street(state_data):
 
 def create_update_street_name(dir_id):
     @app.callback(Output(STREETNAME_DIV[dir_id], 'children'),
-                  [Input(SELECTED_STREET_DIV, 'children')])
-    def update_street_name(street):
+                  [Input(SELECTED_STREET_DIV, 'children'),
+                   Input('tabs', 'value')])
+    def update_street_name(street, orientation = 'ew'):
         try:
             from_to = BASELINE[(BASELINE['street'] == street[0]) &
-                               (BASELINE['direction'] == DIRECTIONS[dir_id])][['from_intersection',
+                               (BASELINE['direction'] == DIRECTIONS[orientation][dir_id])][['from_intersection',
                                                                                'to_intersection']].iloc[0]
         except IndexError:
             return [html.B(street[0]+': ')]
         else:
-            return [html.B(street[0] + ' ' + DIRECTIONS[dir_id] + ': '),
+            return [html.B(street[0] + ' ' + DIRECTIONS[orientation][dir_id] + ': '),
                     from_to['from_intersection'] + ' - ' + from_to['to_intersection']]
 
 [create_update_street_name(i) for i in [0,1]]
@@ -459,14 +477,15 @@ def create_update_graph(graph_number):
     @app.callback(Output(GRAPHS[graph_number], 'figure'),
                   [Input(SELECTED_STREET_DIV, 'children'),
                    Input(CONTROLS['timeperiods'], 'value'),
-                   Input(CONTROLS['day_types'], 'value')])
-    def update_graph(street, period, day_type):
+                   Input(CONTROLS['day_types'], 'value'),
+                   Input('tabs', 'value')])
+    def update_graph(street, period, day_type, orientation = 'ew'):
         '''Update the graph for a street direction based on the selected:
          - street
          - time period
          - day type
         '''
-        return generate_graph(street[0], DIRECTIONS[graph_number], period=period, day_type=day_type)
+        return generate_graph(street[0], DIRECTIONS[orientation][graph_number], period=period, day_type=day_type)
     update_graph.__name__ = 'update_graph_' + GRAPHS[graph_number]
     return update_graph
 
