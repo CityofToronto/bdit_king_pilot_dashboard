@@ -1,0 +1,9 @@
+"DT-0024. Queen-EB_University-to-Yonge", '2017-09-24', '2017-09-30', '2017-10-01';
+"DT-0031. Queen-WB_Yonge-to-University", '2017-09-30', '2017-10-01';
+"DT-0033. Queen-WB_Spadina-to-Bathurst", '2017-09-19';
+"DT-0047. Adelaide-EB_Jarvis-to-Parliament", '2017-10-30', '2017-10-31', '2017-11-01';
+"DT-0074. Front-EB_Jarvis-to-Parliament", '2017-09-16';
+"DT-0086. Dufferin-SB_Queen-to-King", '2017-11-05';
+"DT-0128. Jarvis-NB_Front-to-King", '2017-09-16';
+"DT-0129. Jarvis-NB_King-to-Queen", '2017-09-17';
+"DT-0137. Parliament-NB_Queen-to-Dundas", '2017-09-24';
