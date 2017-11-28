@@ -20,7 +20,7 @@ times = pandas.read_csv('car_travel_times.csv')
 times['mon'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S').date() for i in times['mon']]
 
 middate = date(2017, 10, 2)
-streets = ['Dundas', 'Queen', 'Adelaide', 'Front', 'Richmond', 'Wellington']
+streets = ['Dundas', 'Richmond', 'Wellington', 'Queen', 'Adelaide', 'Front']
 h = 500
 w = 1000
 sizemg = go.Margin(l = 20,
