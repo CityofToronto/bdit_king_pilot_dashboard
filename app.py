@@ -153,12 +153,18 @@ def generate_row_class(clicked):
         return 'selected'
     else:
         return 'notselected'
+    
+def intstr(integer):
+    if integer > 0:
+        return str(integer)
+    else:
+        return integer
 
 def generate_direction_cells(before, after):
     '''Generate before/after cells for each street direction
     '''
-    return [html.Td(after, className=after_cell_class(before, after)),
-            html.Td(before, className='baseline')]
+    return [html.Td(intstr(after), className=after_cell_class(before, after)),
+            html.Td(intstr(before), className='baseline')]
 
 def after_cell_class(before, after):
     '''Colour the after cell based on its difference with the before
@@ -201,6 +207,7 @@ def generate_table(state, day_type, period):
     filtered_data, baseline = filter_table_data(period, day_type)
     #Current date for the data, to replace "After" header
     day = filtered_data['date'].iloc[0].strftime('%a %b %d')
+                       
     return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
                       # Generate a row 
@@ -293,7 +300,7 @@ app.title=TITLE
 server = app.server
 
 server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
-
+            
 app.layout = html.Div([
 html.Div(children=[html.H1(children=TITLE, id='title'),
                   ], className='row twelve columns'),
@@ -326,10 +333,9 @@ html.Div(children=[html.H1(children=TITLE, id='title'),
             html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'), ' Jarvis - Bathurst']),
             dcc.Graph(id=GRAPHS[1],
                       figure=generate_graph(STREETS[0], DIRECTIONS[1]),
-                      config={'displayModeBar': False})
-        ],
-                 className='eight columns'
-                ),
+                      config={'displayModeBar': False})], 
+                      
+                      className='eight columns'),
     ], className='row'),
     html.Div(children=html.H3(['Created by the ',
                                html.A('Big Data Innovation Team',
@@ -484,3 +490,4 @@ def update_timeperiod(timeperiod, day_type):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
