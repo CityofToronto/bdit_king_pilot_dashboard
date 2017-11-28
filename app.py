@@ -213,7 +213,7 @@ def generate_table(state, day_type, period, orientation='ew'):
     filtered_data, baseline = filter_table_data(period, day_type, orientation)
     #Current date for the data, to replace "After" header
     day = filtered_data['date'].iloc[0].strftime('%a %b %d')
-    return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
+    return html.Table([html.Tr([html.Td(""), html.Td(DIRECTIONS[orientation][0], colSpan=2), html.Td(DIRECTIONS[orientation][1], colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
                       # Generate a row 
                       [generate_row(new_row[1], baseline_row[1], row_state, orientation)
