@@ -12,6 +12,14 @@ import pandas.io.sql as pandasql
 import pandas as pd
 import plotly.graph_objs as go
 
+from dash_responsive import DashResponsive
+
+###################################################################################################
+#                                                                                                 #
+#                                       Data Fetching                                             #
+#                                                                                                 #
+###################################################################################################
+
 
 database_url = os.getenv("DATABASE_URL")
 if database_url is not None:
@@ -33,8 +41,15 @@ BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_
 
 con.close()
 
+###################################################################################################
+#                                                                                                 #
+#                                        Constants                                                #
+#                                                                                                 #
+###################################################################################################
+
+
 # Data management constants
-STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
+STREETS = ['Dundas', 'Queen', 'Richmond', 'Adelaide', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
 DATERANGE = [DATA['date'].min() - relativedelta(days=1),
              DATA['date'].max() + relativedelta(days=1)]
@@ -61,88 +76,16 @@ CONTROLS = dict(timeperiods='timeperiod-radio',
                 day_types='day-type-radio')
 GRAPHS = ['eb_graph', 'wb_graph']
 
-def generate_row_class(clicked):
-    '''Assigns class to clicked row'''
-    if clicked:
-        return 'selected'
-    else:
-        return 'notselected'
-
-def generate_direction_cells(before, after):
-    '''Generate before/after cells for each street direction
-    '''
-    return [html.Td(after, className=after_cell_class(before, after)),
-            html.Td(before, className='baseline')]
-
-def after_cell_class(before, after):
-    '''Colour the after cell based on its difference with the before
-    '''
-    if after - before > THRESHOLD:
-        return 'worse'
-    elif after - before < -THRESHOLD:
-        return 'better'
-    else:
-        return 'same'
-
-def generate_row(df_row, baseline_row, row_state):
-    '''Create an HTML row from a database row
-    '''
-    return html.Tr([html.Td(df_row['street'], className='segname'),
-                    *generate_direction_cells(baseline_row[DIRECTIONS[0]], df_row[DIRECTIONS[0]]),
-                    *generate_direction_cells(baseline_row[DIRECTIONS[1]], df_row[DIRECTIONS[1]])],
-                   id=df_row['street'],
-                   className=generate_row_class(row_state['clicked']),
-                   n_clicks=row_state['n_clicks'])
-
-
-class DashResponsive(dash.Dash):
-    """Patched version of dash.Dash to add a meta tag to <head>
-    
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def index(self, *args, **kwargs):
-        '''Overriding from https://github.com/plotly/dash/blob/master/dash/dash.py#L282
-        '''
-        scripts = self._generate_scripts_html()
-        css = self._generate_css_dist_html()
-        config = self._generate_config_html()
-        title = getattr(self, 'title', TITLE)
-        return ('''
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <meta charset="UTF-8"/>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-                <title>{}</title>
-                {}
-            </head>
-            <body>
-                <div id="react-entry-point">
-                    <div class="_dash-loading">
-                        Loading...
-                    </div>
-                </div>
-            </body>
-            <footer>
-                {}
-                {}
-            </footer>
-        </html>
-        '''.format(title, css, config, scripts))
-
-
-app = DashResponsive()
-app.config['suppress_callback_exceptions'] = True
-app.title=TITLE
-server = app.server
-
-server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 
 INITIAL_STATE = OrderedDict([(street,
                               dict(n_clicks=(1 if street == 'Dundas' else 0),
                                    clicked=(street == 'Dundas'))) for street in STREETS])
+
+###################################################################################################
+#                                                                                                 #
+#                                   Data Manipulation                                             #
+#                                                                                                 #
+###################################################################################################
 
 def deserialise_state(clicks_json):
     '''Turn the state stored in hidden div into python dict
@@ -175,10 +118,10 @@ def filter_table_data(period, day_type):
     filtered = DATA[(DATA['period'] == period) &
                     (DATA['day_type'] == day_type) &
                     (DATA['most_recent'] == 1)]
+
     pivoted = pivot_order(filtered)
-
     #baseline data
-
+    
     filtered_base = BASELINE[(BASELINE['period'] == period) & (BASELINE['day_type'] == day_type)]
     pivoted_baseline = pivot_order(filtered_base)
 
@@ -197,6 +140,77 @@ def filter_graph_data(street, direction, day_type='Weekday', period='AMPK'):
                                  (BASELINE['day_type'] == day_type) &
                                  (BASELINE['direction'] == direction)]
     return (filtered, filtered_baseline)
+
+###################################################################################################
+#                                                                                                 #
+#                                         App Layout                                              #
+#                                                                                                 #
+###################################################################################################
+
+def generate_row_class(clicked):
+    '''Assigns class to clicked row'''
+    if clicked:
+        return 'selected'
+    else:
+        return 'notselected'
+
+def generate_direction_cells(before, after):
+    '''Generate before/after cells for each street direction
+    '''
+    return [html.Td(after, className=after_cell_class(before, after)),
+            html.Td(before, className='baseline')]
+
+def after_cell_class(before, after):
+    '''Colour the after cell based on its difference with the before
+    '''
+    if after - before > THRESHOLD:
+        return 'worse'
+    elif after - before < -THRESHOLD:
+        return 'better'
+    else:
+        return 'same'
+
+def generate_row(df_row, baseline_row, row_state):
+    """Create an HTML row from a database row (each street)
+
+        :param df_row: 
+            Daily data dataframe row
+        :param baseline_row: 
+            Baseline row for that street
+        :param row_state: 
+            Current state of that row: number of clicks, whether it is currently clicked
+    """
+    return html.Tr([html.Td(df_row['street'], className='segname'),
+                    *generate_direction_cells(baseline_row[DIRECTIONS[0]], df_row[DIRECTIONS[0]]),
+                    *generate_direction_cells(baseline_row[DIRECTIONS[1]], df_row[DIRECTIONS[1]])],
+                   id=df_row['street'],
+                   className=generate_row_class(row_state['clicked']),
+                   n_clicks=row_state['n_clicks'])
+
+def generate_table(state, day_type, period):
+    """Generate HTML table of streets and before-after values
+    
+        :param state: 
+            Dictionary of table's state: {street: (n_clicks, clicked)}
+        :param day_type: 
+            Type of day
+        :param period: 
+            Timeperiod name
+    """
+
+    filtered_data, baseline = filter_table_data(period, day_type)
+    #Current date for the data, to replace "After" header
+    day = filtered_data['date'].iloc[0].strftime('%a %b %d')
+    return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
+                      [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
+                      # Generate a row 
+                      [generate_row(new_row[1], baseline_row[1], row_state)
+                      # for each street, keeping in mind the state (which row is clicked)
+                       for new_row, baseline_row, row_state
+                       in zip(filtered_data.iterrows(),
+                              baseline.iterrows(),
+                              state.values())]
+                      , id='data_table')
 
 def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     '''Generate a Dash bar chart of average travel times by day
@@ -273,13 +287,20 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                   )
     return {'layout': layout, 'data': data}
 
+app = DashResponsive()
+app.config['suppress_callback_exceptions'] = True
+app.title=TITLE
+server = app.server
+
+server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
+
 app.layout = html.Div([
 html.Div(children=[html.H1(children=TITLE, id='title'),
                   ], className='row twelve columns'),
     html.Div([
         html.Div(children=[
             html.H2(id=TIMEPERIOD_DIV, children='Weekday AM Peak'),
-            html.Div(id=TABLE_DIV_ID),
+            html.Div(id=TABLE_DIV_ID, children=generate_table(INITIAL_STATE, 'Weekday', 'AM Peak')),
             html.Div([html.B('Travel Time', style={'background-color':'#E9A3C9'}),
                       ' 1+ min', html.B(' longer'), ' than baseline']),
             html.Div([html.B('Travel Time', style={'background-color':'#A1D76A'}),
@@ -288,7 +309,10 @@ html.Div(children=[html.H1(children=TITLE, id='title'),
                            value=TIMEPERIODS.iloc[0]['period'],
                            className='radio-toolbar'),
             dcc.RadioItems(id=CONTROLS['day_types'],
-                           options=[{'label': day_type, 'value': day_type, 'id': day_type} for day_type in TIMEPERIODS['day_type'].unique()],
+                           options=[{'label': day_type,
+                                     'value': day_type,
+                                     'id': day_type} 
+                                     for day_type in TIMEPERIODS['day_type'].unique()],
                            value=TIMEPERIODS.iloc[0]['day_type'],
                            className='radio-toolbar')
                            ],
@@ -316,6 +340,21 @@ html.Div(children=[html.H1(children=TITLE, id='title'),
     html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=[STREETS[0]])
     ])
 
+
+app.css.append_css({
+    'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/dashboard.css'
+})
+app.css.append_css({
+    'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/style.css'
+})
+
+###################################################################################################
+#                                                                                                 #
+#                                         Controllers                                             #
+#                                                                                                 #
+###################################################################################################
+
+
 @app.callback(Output(CONTROLS['timeperiods'], 'options'),
               [Input(CONTROLS['day_types'], 'value')])
 def generate_radio_options(day_type='Weekday'):
@@ -336,21 +375,13 @@ def assign_default_timperiod(day_type='Weekday'):
               [Input(CONTROLS['timeperiods'], 'value'),
                Input(CONTROLS['day_types'], 'value')],
               [State(STATE_DIV_ID, 'children')])
-def generate_table(period, day_type, state_data):
+def update_table(period, day_type, state_data):
     '''Generate HTML table of before-after travel times based on selected
     day type, time period, and remember which row was previously selected
     '''
     state_data_dict = deserialise_state(state_data)
-    filtered_data, baseline = filter_table_data(period, day_type)
-    day = filtered_data['date'].iloc[0].strftime('%a %b %d')
-    return html.Table([html.Tr([html.Td(""), html.Td("Eastbound", colSpan=2), html.Td("Westbound", colSpan=2)])] +
-                      [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
-                      [generate_row(new_row[1], baseline_row[1], row_state)
-                       for new_row, baseline_row, row_state
-                       in zip(filtered_data.iterrows(),
-                              baseline.iterrows(),
-                              state_data_dict.values())]
-                      , id='data_table')
+    table = generate_table(state_data_dict, day_type, period)
+    return table
 
 
 def create_row_click_function(streetname):
@@ -449,14 +480,6 @@ def update_timeperiod(timeperiod, day_type):
     '''
     time_range = TIMEPERIODS[(TIMEPERIODS['period'] == timeperiod) & (TIMEPERIODS['day_type'] == day_type)].iloc[0]['period_range']
     return day_type + ' ' + timeperiod + ' ' + time_range
-
-
-app.css.append_css({
-    'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/dashboard.css'
-})
-app.css.append_css({
-    'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/style.css'
-})
 
 
 if __name__ == '__main__':
