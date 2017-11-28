@@ -1,0 +1,16 @@
+{
+  "src/components/ExampleComponent.react.js": {
+    "description": "",
+    "displayName": "ExampleComponent",
+    "methods": [],
+    "props": {
+      "id": {
+        "type": {
+          "name": "string"
+        },
+        "required": false,
+        "description": ""
+      }
+    }
+  }
+}
