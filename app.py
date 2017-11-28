@@ -49,7 +49,7 @@ con.close()
 
 
 # Data management constants
-STREETS = ['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front']
+STREETS = ['Dundas', 'Queen', 'Richmond', 'Adelaide', 'Wellington', 'Front']
 DIRECTIONS = sorted(BASELINE['direction'].unique())
 DATERANGE = [DATA['date'].min() - relativedelta(days=1),
              DATA['date'].max() + relativedelta(days=1)]
@@ -118,10 +118,10 @@ def filter_table_data(period, day_type):
     filtered = DATA[(DATA['period'] == period) &
                     (DATA['day_type'] == day_type) &
                     (DATA['most_recent'] == 1)]
+
     pivoted = pivot_order(filtered)
-
     #baseline data
-
+    
     filtered_base = BASELINE[(BASELINE['period'] == period) & (BASELINE['day_type'] == day_type)]
     pivoted_baseline = pivot_order(filtered_base)
 
