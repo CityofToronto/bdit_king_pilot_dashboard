@@ -5,6 +5,8 @@ import dash
 class DashResponsive(dash.Dash):
     """Patched version of dash.Dash to add a meta tag to <head>
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def index(self, *args, **kwargs):
         '''Overriding from https://github.com/plotly/dash/blob/master/dash/dash.py#L282
@@ -12,9 +14,7 @@ class DashResponsive(dash.Dash):
         scripts = self._generate_scripts_html()
         css = self._generate_css_dist_html()
         config = self._generate_config_html()
-        title = getattr(self,
-                        'title',
-                        'King Street Transit Pilot: Vehicular Travel Time Monitoring')
+        title = getattr(self, 'title', 'King Street Transit Pilot: Vehicular Travel Time Monitoring')
         return ('''
         <!DOCTYPE html>
         <html>
