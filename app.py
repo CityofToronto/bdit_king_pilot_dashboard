@@ -132,7 +132,7 @@ def filter_table_data(period, day_type, orientation='ew'):
     filtered_base = BASELINE[(BASELINE['period'] == period) &
                              (BASELINE['day_type'] == day_type) &
                              (BASELINE['direction'].isin(DIRECTIONS[orientation]))]
-    pivoted_baseline = pivot_order(filtered_base)
+    pivoted_baseline = pivot_order(filtered_base, orientation)
 
     return (pivoted, pivoted_baseline)
 
