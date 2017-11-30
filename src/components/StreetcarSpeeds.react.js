@@ -33,6 +33,7 @@ var segments = ['Bathurst - Spadina','Spadina - University','University - Yonge'
 
 var tt_data = [];
 
+// Determines the colour of the speed tiles based on speed
 var speedColor = function(speed) {
 	if (speed < 5){ return '#670912';}
 	else if (speed < 10) { return '#FF5468';}
@@ -42,11 +43,13 @@ var speedColor = function(speed) {
 
 // all the transitions
 function updateGraphics() {
+	// Update speed colour tiles
 	selectAll('rect.tiles')
 		.data(dataset)
 		.transition()
 		.duration(1000)
 		.attr('fill',function(d) {return speedColor(d);});
+	// Update speed text
 	selectAll('text.text_speeds')
 		.data(dataset)
 		.transition()
@@ -57,6 +60,7 @@ function updateGraphics() {
 			var i =  interpolateRound(currentValue, d);
 			return function(t) { that.text(i(t) + ' KM/H');};
 		});
+	// Update travel time text
 	selectAll('text.text_tt')
 		.data(tt)
 		.transition()
@@ -80,17 +84,17 @@ function dotProduct(array1, array2) {
 
 function updateDatasets(data) {
 	var tt_subset = data;
-	//sort tt_subset
+	// Sort tt_subset by segment id
 	tt_subset = 
 		tt_subset.sort(function(a,b) {
 			return a.segment_id > b.segment_id;
 		});
-	
+	// Sort tt_subset by direction (EB/WB)
 	tt_subset = 
 		tt_subset.sort(function(a,b) {
 			return a.dir < b.dir;
 		});
-	
+	// Update travel time dataset
 	dataset = [];
 	for (var j =0; j < tt_subset.length; j++) {
 		dataset.push(segmentLengths[j%4] / tt_subset[j].travel_time * 60.0);
@@ -98,30 +102,32 @@ function updateDatasets(data) {
 	
 	var wb_tt = Math.round(dotProduct(dataset.slice(0,4),segmentLengths));
 	var eb_tt = Math.round(dotProduct(dataset.slice(4,8),segmentLengths));
-	
+	// Update travel time display data
 	tt = [[wb_tt,'Westbound'],[eb_tt,'Eastbound']];
 }
 
 class StreetcarSpeeds extends Component {
+	// Initialize component
 	constructor(props) {
 		super(props)
 		this.createSCSTable = this.createSCSTable.bind(this)
 	}
-	
+	// Calls the function if React.Component mounted
 	componentDidMount() {
 		this.createSCSTable()
 	}
-	
+	// Calls the functions whenever a prop changes
 	componentDidUpdate() {
 		updateDatasets(this.props.data);
 		updateGraphics();
 	}
-	
+	// Creates the StreetcarSpeeds table
 	createSCSTable() {
+		// Load prop data
 		tt_data = this.props.data;
-
+		// Loads the default data
 		updateDatasets(tt_data);
-		
+		// Set the dimensions of the svg element
 		var svg = select(this.node)
 			.attr('width', width + margin.left + margin.right)
 			.attr('height', height + margin.top + margin.bottom);
@@ -234,19 +240,18 @@ class StreetcarSpeeds extends Component {
 				.attr('text-anchor', 'middle')
 				.attr('font-family','system-ui')
 	}
-	
+	// What is displayed from the class
     render() {
 		return (
 			<svg ref={node => this.node = node}
 				id={this.props.id}
 				width={960}
-				height={400}
-			>
+				height={400}>
 			</svg>
 		)
 	}
 }
-
+// StreetcarSpeeds props
 StreetcarSpeeds.propTypes = {
     /**
      * The ID used to identify this component in Dash callbacks
