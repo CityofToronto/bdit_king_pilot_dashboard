@@ -318,7 +318,8 @@ html.Div(children=[html.H1(children=TITLE, id='title'),
     dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
                    {'label': 'North-South Streets', 'value': 'ns'}],
              value='ew',
-             id='tabs')
+             id='tabs',
+             style={'font-weight':'bold'})
     , html.Div(id=MAIN_DIV, className='row'),
     html.Div(children=html.H3(['Created by the ',
                                html.A('Big Data Innovation Team',
