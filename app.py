@@ -58,7 +58,10 @@ DATERANGE = [DATA['date'].min() - relativedelta(days=1),
              DATA['date'].max() + relativedelta(days=1)]
 TIMEPERIODS = BASELINE[['day_type','period', 'period_range']].drop_duplicates().sort_values(['day_type', 'period_range'])
 THRESHOLD = 1
-MAX_TIME = 30 #Max travel time to fix y axis of graphs.
+
+#Max travel time to fix y axis of graphs, based on the lowest of the max tt in the data or 20/30 for either graph
+MAX_TIME = dict(ew=min(30, DATA[DATA['direction'].isin(DIRECTIONS['ew'])].tt.max()),
+                ns=min(20, DATA[DATA['direction'].isin(DIRECTIONS['ns'])].tt.max())) 
 
 # Plot appearance
 TITLE = 'King Street Transit Pilot: Vehicular Travel Time Monitoring'
@@ -149,6 +152,12 @@ def filter_graph_data(street, direction, day_type='Weekday', period='AMPK'):
                                  (BASELINE['direction'] == direction)]
     return (filtered, filtered_baseline)
 
+def get_orientation_from_dir(direction):
+    '''Get the orientation of the street based on its direction'''
+    for orientation, direction_list in DIRECTIONS.items():
+        if direction in direction_list:
+            return orientation
+
 ###################################################################################################
 #                                                                                                 #
 #                                         App Layout                                              #
@@ -234,6 +243,8 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     '''Generate a Dash bar chart of average travel times by day
     '''
     after_data, base_data = filter_graph_data(street, direction, day_type, period)
+
+    orientation = get_orientation_from_dir(direction)
     if after_data.empty:
         data = [go.Bar()]
         line = None
@@ -296,7 +307,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                              range=DATERANGE,
                              fixedrange=True),
                   yaxis=dict(title='Travel Time (min)',
-                             range=[0, MAX_TIME],
+                             range=[0, MAX_TIME[orientation]],
                              fixedrange=True),
                   shapes=[line],
                   margin=PLOT['margin'],
