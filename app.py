@@ -226,7 +226,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
     '''
     after_data, base_data = filter_graph_data(street, direction, day_type, period)
     if after_data.empty:
-        data = html.Div(className = 'nodata')
+        data = [go.Bar()]
         line = None
         annotations = None
     else:
@@ -467,7 +467,7 @@ def create_update_street_name(dir_id):
                                (BASELINE['direction'] == DIRECTIONS[dir_id])][['from_intersection',
                                                                                'to_intersection']].iloc[0]
         except IndexError:
-            return html.Div(className = 'nodata')
+            return [html.B(street[0]+': ')]
         else:
             return [html.B(street[0] + ' ' + DIRECTIONS[dir_id] + ': '),
                     from_to['from_intersection'] + ' - ' + from_to['to_intersection']]
