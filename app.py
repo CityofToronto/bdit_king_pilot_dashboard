@@ -14,6 +14,8 @@ import plotly.graph_objs as go
 
 from dash_responsive import DashResponsive
 
+from flask import send_from_directory
+
 ###################################################################################################
 #                                                                                                 #
 #                                       Data Fetching                                             #
@@ -302,6 +304,12 @@ server = app.server
 server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
             
 app.layout = html.Div([
+
+html.Link(rel = 'stylesheet',
+              href = '/css/dashboard.css'),
+html.Link(rel = 'stylesheet',
+              href = '/css/style.css'),
+          
 html.Div(children=[html.H1(children=TITLE, id='title'),
                   ], className='row twelve columns'),
     html.Div([
@@ -344,15 +352,27 @@ html.Div(children=[html.H1(children=TITLE, id='title'),
              className='row'),
     html.Div(id=STATE_DIV_ID, style={'display': 'none'}, children=serialise_state(INITIAL_STATE)),
     html.Div(id=SELECTED_STREET_DIV, style={'display': 'none'}, children=[STREETS[0]])
-    ])
+])
+
+#CSS
+
+app.css.config.serve_locally= True
+app.scripts.config.serve_locally = True
+
+@app.server.route('/css/<path:path>')
+def static_file(path):
+    static_folder = os.path.join(os.getcwd(), 'css')
+    return send_from_directory(static_folder, path)
 
 
-app.css.append_css({
-    'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/dashboard.css'
-})
-app.css.append_css({
-    'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/style.css'
-})
+#==============================================================================
+# app.css.append_css({
+#     'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/dashboard.css'
+# })
+# app.css.append_css({
+#     'external_url': 'https://cityoftoronto.github.io/bdit_king_pilot_dashboard/css/style.css'
+# })
+#==============================================================================
 
 ###################################################################################################
 #                                                                                                 #
