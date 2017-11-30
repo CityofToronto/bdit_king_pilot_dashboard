@@ -11,3 +11,13 @@ corridor_id,corridor_name,street_name,direction,from_intersection,to_intersectio
 10,Wellington WB - Jarvis to Blue Jays Way,Wellington,Westbound,Jarvis,Blue Jays,3
 11,Front EB - Bathurst to Jarvis,Front,Eastbound,Bathurst,Jarvis,4
 12,Front WB - Yonge to Bathurst,Front,Westbound,Yonge,Bathurst,3
+13,Bathurst NB - Front to Dundas,Bathurst,Northbound,Front,Dundas,3
+14,Bathurst SB - Dundas to Front,Bathurst,Southbound,Dundas,Front,3
+15,Spadina NB - Front to Dundas,Spadina,Northbound,Front,Dundas,3
+16,Spadina SB - Dundas to Front,Spadina,Southbound,Dundas,Front,3
+17,University NB - Front to Dundas,University,Northbound,Front,Dundas,3
+18,University SB - Dundas to Front,University,Southbound,Dundas,Front,3
+19,Yonge NB - Front to Dundas,Yonge,Northbound,Front,Dundas,3
+20,Yonge SB - Dundas to Front,Yonge,Southbound,Dundas,Front,3
+21,Jarvis NB - Front to Dundas,Jarvis,Northbound,Front,Dundas,3
+22,Jarvis SB - Dundas to Front,Jarvis,Southbound,Dundas,Front,3
