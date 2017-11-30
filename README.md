@@ -187,7 +187,7 @@ Most of this is explained by the [Dash User Guide](https://plot.ly/dash/getting-
 For our component we created using `d3`, we import it using `import <Dash Environment Name>` or for this case `import dash_components`. This refers to the `dash_components` file in the `<Dash Enviornment>` directory. This folder will contain are bundled version of our components once we prepublish it.
 
 #### Adding Our Component to the Layout
-`app.layout` is used to control what is displayed on the dash. Simply add our component using `dash_components.<Your Component>( id='test', data=<some default data>)` to the `html.Div([...])` and fill any default properties of your function to satify it. These properties refer to the `props` mentioned in your component file and assigning a value here will get passed to them. Make sure you have `<your prop>=<somevalue>` when assigning properties so that the compiler knows which `prop` your referring to.
+`app.layout` is used to control what is displayed on the dash. Simply add our component using `dash_components.<Your Component>( id='test', data=<some default data>)` to the `html.Div([...])` and fill any default properties of your function to satify it. These properties refer to the `props` mentioned in your component file and assigning a value here will get passed to them. Make sure you have `<your prop>=<somevalue>` when assigning properties so that the compiler knows which `prop` your referring to. You can also add [other](https://plot.ly/dash/dash-core-components) [components](https://plot.ly/dash/dash-html-components) by Plotly to your layout and can be set to interact with your component such as with `my-radio`.
 
 #### Modify Our Component's `props`
 The `@app.callback(...)` is used to update a `prop` of a component. The component is defined as the first field with it being the output as `dash.dependencies.Output('<Your Component>', '<prop>')` which is followed by the input `[dash.dependencies.Input('my_radio', 'value'), ...]`. Immediately following `@app.callback(...)` is a function that is used to update the `prop` mentioned in the output. This function takes in the values of the input in order so that the first input's value goes into the first field, and the second input's value goes into the second field of the function. The value returned by the function automatically updates the `prop`. Whenever an input is updated or changed, it triggers the function to update the output. This pattern is also known as the [Model-View-Controller Pattern](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller).
@@ -202,8 +202,18 @@ $ python usage.py
 ```
 To prepublish your component and to display it in your browser at `http://127.0.0.1:8050/`. Optionally you can run `$ npm run prepublish` to display your component in pure JavaScript, but you'll need to update `demo/Demo.react.js` to include it.
 
+### Useful Hints
+Here are few tips on developing you D3 component in Dash:
+- Remove all unused variables from you component, a lot of errors will appear if you don't.
+- Make sure values such as for data are in the correct format.
+- If you want to update your component when it's `props` changes. Make an external function that updates the elements of your component such as `updateGraphics()` in `StreetcarSpeeds.react.js` and is called whenever a prop changes by placing it in `componentDidMount()`. This way you don't have to recreate you component everytime a prop changes.
+- Leave all of the data manipulation to your `usage.py` file.
+
 ## Resources
 [React.js Documentation](https://reactjs.org/docs/react-api.html)
+
 [Elijah Meek's Guide to Interactive Application with React & D3](https://medium.com/@Elijah_Meeks/interactive-applications-with-react-d3-f76f7b3ebc710)
+
 [React-Faux-Dom Documentation](https://github.com/Olical/react-faux-dom)
+
 [Dash User Guide](https://plot.ly/dash/)
