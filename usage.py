@@ -4,6 +4,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 import pandas as pd
 import calendar
+import json
 
 df = pd.read_csv('streetcar_travel_times.csv')
 
@@ -17,8 +18,9 @@ app = dash.Dash('')
 
 app.scripts.config.serve_locally = True
 
+#layout
 app.layout = html.Div([
-	dash_components.StreetcarSpeeds( id='streetcarspeeds'),
+	dash_components.StreetcarSpeeds( id='streetcarspeeds', data=json.loads(df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==9) & (df['time_period']=='AM')].to_json(orient='records'))),
     dcc.RadioItems(
 		id='period_radio',
 		options = [{'label': i, 'value': i} for i in time_periods],
@@ -40,9 +42,7 @@ app.layout = html.Div([
 	 dash.dependencies.Input('month_radio', 'value')])
 def update_scstable(current_period, current_month):
 	tt_subset = df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==current_month) & (df['time_period']==current_period)]
-	return {
-		'data': tt_subset.to_json(orient='records')
-	}
+	return json.loads(tt_subset.to_json(orient='records'))
 
 if __name__ == '__main__':
     app.run_server(debug=True)

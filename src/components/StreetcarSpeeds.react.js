@@ -5,14 +5,12 @@ import {} from 'd3-transition';
 import ReactFauxDOM from 'react-faux-dom';
 import PropTypes from 'prop-types';
 
-//var data_loc = "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/data/streetcar_travel_times.csv";
-
+// styling variables
 var margin = {top: 20, right: 90, bottom: 30, left: 50};
 var width = 960 - margin.left - margin.right;
 var height = 400 - margin.top - margin.bottom;
 		
 var buffer = 10;
-// var headingHeight = 80;
 var boxHeight = 80;
 
 var textBuffer = 7;
@@ -26,32 +24,14 @@ var fontTTSize = 40;
 var tileWidth = (width - margin.left - margin.right - leftBuffer)/5;
 var tileHeight = 15;
 
+// global data variables
 var segmentLengths = [0.65,0.85,0.60,0.50]
 var tt = [0,0];
 var dataset = [];
 
 var segments = ['Bathurst - Spadina','Spadina - University','University - Yonge','Yonge - Jarvis']
 
-// var buttonHeight = 20;
-// var buttonWidth = 50;
-// var buttonBuffer = 5;
-
 var tt_data = [];
-var tt_subset = [];
-// var tt_mon = [];
-
-// var ds_oct_am = [4,10,17,12,8,14,21,25];
-// var ds_oct_pm = [15,12,3,20,16,12,12,4];
-// var ds_nov_am = [6,9,12,16,7,13,15,5];
-// var ds_nov_pm = [12,21,12,13,4,16,4,23];
-// var ds_dec_am = [8,16,13,15,8,9,16,22];
-// var ds_dec_pm = [11,14,17,23,8,21,12,17];
-
-// var months = [];
-// var periods = ["AM","PM"];
-
-// var current_month;
-// var current_period = "AM";
 
 var speedColor = function(speed) {
 	if (speed < 5){ return '#670912';}
@@ -60,16 +40,8 @@ var speedColor = function(speed) {
 	else {return '#4DFA90';}
 }
 
-// function updateButtonColours(selButton, selText, val) {
-	// selectAll(selButton)
-		// .attr("fill", function(d) {if (d==val) {return "black";} else {return "white";}})
-	// selectAll(selText)
-		// .attr("fill", function(d) {if (d==val) {return "white";} else {return "black";}})
-// }
-
 // all the transitions
 function updateGraphics() {
-	updateDatasets()
 	selectAll('rect.tiles')
 		.data(dataset)
 		.transition()
@@ -97,6 +69,7 @@ function updateGraphics() {
 			return function(t) { that.text(i(t));};					
 		});
 }
+
 function dotProduct(array1, array2) {
 	var sum = 0;
 	for (var i=0; i < array1.length; i++) {
@@ -105,16 +78,8 @@ function dotProduct(array1, array2) {
 	return sum;
 }
 
-function updateDatasets() {
-	// dataset_name = "ds_" + current_month.toLowerCase() + "_" + current_period.toLowerCase();
-	// dataset = window[dataset_name];
-	
-	//create tt_subset
-	// tt_subset = [];
-	// for (var i=0; i < tt_data.length; i++) {
-		// if(moment(tt_data[i].mon).format('MMM') == current_month && tt_data[i].time_period == current_period) tt_subset.push(tt_data[i]);
-	// }
-	
+function updateDatasets(data) {
+	var tt_subset = data;
 	//sort tt_subset
 	tt_subset = 
 		tt_subset.sort(function(a,b) {
@@ -148,22 +113,14 @@ class StreetcarSpeeds extends Component {
 	}
 	
 	componentDidUpdate() {
-		updateDatasets();
+		updateDatasets(this.props.data);
 		updateGraphics();
 	}
 	
 	createSCSTable() {
 		tt_data = this.props.data;
-		tt_subset = tt_data;
-		// tt_mon = tt_data.map(function(x) { return x.mon });			
-		// months = tt_mon.filter((v, i, a) => a.indexOf(v) === i);
-		
-		// for (var i=0; i < months.length; i++) {
-			// months[i] = moment(months[i]).format('MMM');
-		// }
-		
-		// current_month = months[0];
-		updateDatasets();
+
+		updateDatasets(tt_data);
 		
 		var svg = select(this.node)
 			.attr('width', width + margin.left + margin.right)
@@ -276,76 +233,6 @@ class StreetcarSpeeds extends Component {
 				.attr('font-size', (fontTTSize-22) + 'px')
 				.attr('text-anchor', 'middle')
 				.attr('font-family','system-ui')
-		
-		// animation boxes
-		// svg.selectAll("buttons_month")
-			// .data(months)
-			// .enter()
-			// .append("rect")
-			// .attr("class","buttons_month")
-			// .attr("x", function(d,i) { return margin.left + leftBuffer + (i) * (buttonWidth+buttonBuffer); })
-			// .attr("y", margin.top + boxHeight*2 + 10)
-			// .attr("width",buttonWidth)
-			// .attr("height",buttonHeight)
-			// .attr("fill", function(d) {if (d==current_month) {return "black";} else {return "white";}})
-			// .attr("stroke","black")
-			// .attr("stroke-width",1)
-			// .on("click", function(d){
-				// if (d != current_month) {
-					// current_month = d;
-					// updateButtonColours("rect.buttons_month","text.text_month",current_month)
-					// updateGraphics()
-				// }
-			// })
-			
-		// svg.selectAll("text_month")
-			// .data(months)
-			// .enter()
-			// .append("text")
-			// .text(function(d) { return d;})
-			// .attr("class","text_month")
-			// .attr("x", function(d,i) { return margin.left + leftBuffer + buttonWidth*0.5 + i*(buttonWidth+buttonBuffer); })
-			// .attr("y", margin.top + boxHeight*2 + 10 + buttonHeight * 0.8)
-			// .attr("width",buttonWidth)
-			// .attr("height",buttonHeight)
-			// .attr("fill", function(d) {if (d==current_month) {return "white";} else {return "black";}})
-			// .attr("font-size", "15 px")
-			// .attr("text-anchor", "middle")
-			// .attr("font-family","system-ui")
-			
-		// svg.selectAll("buttons_period")
-			// .data(periods)
-			// .enter()
-			// .append("rect")
-			// .attr("class","buttons_period")
-			// .attr("x", function(d,i) { return margin.left + leftBuffer + (months.length+1+i) * (buttonWidth+buttonBuffer); })
-			// .attr("y", margin.top + boxHeight*2 + 10)
-			// .attr("width",buttonWidth)
-			// .attr("height",buttonHeight)
-			// .attr("fill", function(d) {if (d==current_period) {return "black";} else {return "white";}})
-			// .attr("stroke","black")
-			// .attr("stroke-width",1)
-			// .on("click", function(d){
-				// if (d != current_period) {
-					// current_period = d;
-					// updateButtonColours("rect.buttons_period","text.text_period",current_period)
-					// updateGraphics()
-				// }
-			// })
-		// svg.selectAll("text_period")
-			// .data(periods)
-			// .enter()
-			// .append("text")
-			// .text(function(d) { return d;})
-			// .attr("class","text_period")
-			// .attr("x", function(d,i) { return margin.left + leftBuffer + buttonWidth*0.5 + (months.length+1+i)*(buttonWidth+buttonBuffer); })
-			// .attr("y", margin.top + boxHeight*2 + 10 + buttonHeight * 0.8)
-			// .attr("width",buttonWidth)
-			// .attr("height",buttonHeight)
-			// .attr("fill", function(d) {if (d==current_period) {return "white";} else {return "black";}})
-			// .attr("font-size", "15 px")
-			// .attr("text-anchor", "middle")
-			// .attr("font-family","system-ui")
 	}
 	
     render() {
