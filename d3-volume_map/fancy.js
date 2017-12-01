@@ -1,30 +1,71 @@
 var testarr = [
-// {direction: "S", x1: 50, y1: 30, x2: 50, y2: 50},
 {direction: "E", x1: 30, y1: 50, x2: 50, y2: 50},
-// {direction: "N", x1: 50, y1: 70, x2: 50, y2: 50},
-// {direction: "W", x1: 70, y1: 50, x2: 50, y2: 50},
-
 {direction: "N", x1: 50, y1: 50, x2: 50, y2: 30},
-// {direction: "W", x1: 50, y1: 50, x2: 30, y2: 50},
-// {direction: "S", x1: 50, y1: 50, x2: 50, y2: 70},
-// {direction: "E", x1: 50, y1: 50, x2: 70, y2: 50},
-
-// {direction: "S", x1: 70, y1: 30, x2: 70, y2: 50},
-// {direction: "E", x1: 50, y1: 30, x2: 70, y2: 30},
-
 {direction: "W", x1: 50, y1: 30, x2: 30, y2: 30},
 {direction: "S", x1: 30, y1: 30, x2: 30, y2: 50},
 ];
+
+
+var testarr = [
+{direction: "S", x1: 50, y1: 30, x2: 50, y2: 50},
+{direction: "E", x1: 30, y1: 50, x2: 50, y2: 50},
+{direction: "N", x1: 50, y1: 70, x2: 50, y2: 50},
+{direction: "W", x1: 70, y1: 50, x2: 50, y2: 50},
+
+{direction: "N", x1: 50, y1: 50, x2: 50, y2: 30},
+{direction: "W", x1: 50, y1: 50, x2: 30, y2: 50},
+{direction: "S", x1: 50, y1: 50, x2: 50, y2: 70},
+{direction: "E", x1: 50, y1: 50, x2: 70, y2: 50},
+
+{direction: "S", x1: 70, y1: 30, x2: 70, y2: 50},
+{direction: "E", x1: 50, y1: 30, x2: 70, y2: 30},
+
+{direction: "W", x1: 50, y1: 30, x2: 30, y2: 30},
+{direction: "S", x1: 30, y1: 30, x2: 30, y2: 50},
+
+{direction: "W", x1:70, y1: 30, x2: 50, y2: 30},
+{direction: "S", x1: 30, y1: 50, x2: 30, y2: 70},
+{direction: "S", x1: 30, y1: 70, x2: 30, y2: 90},
+{direction: "E", x1: 30, y1: 90, x2: 50, y2: 90},
+{direction: "N", x1: 30, y1: 70, x2: 30, y2: 50},
+{direction: "N", x1: 30, y1: 50, x2: 30, y2: 30},
+
+{direction: "E", x1: 50, y1: 90, x2: 70, y2: 90},
+{direction: "N", x1: 70, y1: 90, x2: 70, y2: 70},
+{direction: "N", x1: 70, y1: 70, x2: 70, y2: 50},
+{direction: "N", x1: 70, y1: 50, x2: 70, y2: 30}
+];
+
 
 var testGroup = svgContainer.append("g")
 	.attr("id", "testgroup");
 
 
+function getMin(arr, prop){
+	return arr.reduce((min, obj) => Math.min(min, obj[prop]), arr[0][prop]);
+}
+
+function getMax(arr, prop){
+	return arr.reduce((max, obj) => Math.max(max, obj[prop]), arr[0][prop]);
+}
+
+
+// in csv call
+var minx1 = getMin(testarr, "x1");
+var minx2 = getMin(testarr, "x2");
+var miny1 = getMin(testarr, "y1");
+var miny2 = getMin(testarr, "y2");
+
+var maxx1 = getMax(testarr, "x1");
+var maxx2 = getMax(testarr, "x2");
+var maxy1 = getMax(testarr, "y1");
+var maxy2 = getMax(testarr, "y2");
+
 
 var polywidth = 2.5;
 var path, seglist;
 
-function dirPath(obj, arr) {
+function inside(obj, arr) {
 	if (obj.direction == "S") {
 		// populate seglist
 		seglist = arr.filter(function(seg) {
@@ -160,62 +201,8 @@ function dirPath(obj, arr) {
 
 
 
-function fancy(obj, arr) {
-	path = d3.path();
-	path.moveTo(xScale(obj.x1),yScale(obj.y1));
-	path.lineTo(xScale(obj.x2),yScale(obj.y2));
-	
-	dirPath(obj, arr);
-	
-	return path;
-}
 
-
-
-function generate(arr) {
-	d3.select("#testgroup") // create the ss path elements
-		.selectAll("path")
-		.data(arr)
-		.enter()
-		.append("path")
-		.attr("d", function(obj) {return fancy(obj, arr);})
-		.attr("stroke", "black")
-		.attr("stroke-width", 1)
-		.attr("fill", "red");
-}
-
-
-
-
-
-
-
-
-
-function getMin(arr, prop){
-	return arr.reduce((min, obj) => Math.min(min, obj[prop]), arr[0][prop]);
-}
-
-function getMax(arr, prop){
-	return arr.reduce((max, obj) => Math.max(max, obj[prop]), arr[0][prop]);
-}
-
-
-
-// in csv call
-var minx1 = getMin(testarr, "x1");
-var minx2 = getMin(testarr, "x2");
-var miny1 = getMin(testarr, "y1");
-var miny2 = getMin(testarr, "y2");
-
-var maxx1 = getMax(testarr, "x1");
-var maxx2 = getMax(testarr, "x2");
-var maxy1 = getMax(testarr, "y1");
-var maxy2 = getMax(testarr, "y2");
-
-
-
-function outside(obj) {
+function outside(obj, arr) {
 	// NW corner
 	if (obj.x2 == minx2 && obj.y2 == miny2 && obj.direction == "W") {
 		path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2 - polywidth));
@@ -261,9 +248,46 @@ function outside(obj) {
 		path.closePath();
 	}
 	else {
-		console.log(obj);
+		inside(obj, arr);
 	}
 }
+
+
+
+function fancy(obj, arr) {
+	path = d3.path();
+	path.moveTo(xScale(obj.x1),yScale(obj.y1));
+	path.lineTo(xScale(obj.x2),yScale(obj.y2));
+	
+	outside(obj, arr);
+	
+	return path;
+}
+
+
+
+function generate(arr) {
+	d3.select("#testgroup") // create the ss path elements
+		.selectAll("path")
+		.data(arr)
+		.enter()
+		.append("path")
+		.attr("d", function(obj) {return fancy(obj, arr);})
+		.attr("stroke", "black")
+		.attr("stroke-width", 1)
+		.attr("fill", "red");
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*
