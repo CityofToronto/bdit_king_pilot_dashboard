@@ -409,7 +409,9 @@ tr.notselected:hover td:last-child {
    padding-right : 9px; }
 tr.notselected:hover td {
    padding-bottom: 5px; }
-
+tr.notselected {
+   
+border: 0px solid black;}
 
 
 /* Spacing
