@@ -498,7 +498,7 @@ function outside(obj, arr) {
 		path.closePath();
 	}
 	// Wellington/Front St corner exceptions
-	else if (obj.streetname == "Front2" && obj.segdesc == "Church to Jarvis") {
+	else if (obj.streetname == "Front1" && obj.segdesc == "Church to Jarvis") {
 		path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 + polywidth));
 		path.lineTo(xScale(obj.x1), yScale(obj.y1 + polywidth));
 		path.closePath();
@@ -635,15 +635,18 @@ function labelStreets(arr) {
 		.attr("y", function(obj) {return yScale(obj.y1);})
 		.attr("font_size", fontsize)
 		.attr("fill", fontfill)
-		.attr("text-anchor", function(obj) {if (obj.directions == "NS") {return anchNS;}
+		.attr("text-anchor", function(obj) {if (obj.directions == "NS" || obj.directions == "N" || obj.directions == "S") 
+												{return anchNS;}
 											else {return anchEW;};})
-		.attr("transform", function(obj) {if (obj.directions == "NS")
+		.attr("transform", function(obj) {if (obj.directions == "NS" || obj.directions == "N" || obj.directions == "S")
 											 {return "rotate(270 " 
 											 + xScale(obj.x1) + "," + yScale(obj.y1) + ")";}
 										else {return "";};})
-		.attr("dx", function(obj) {if (obj.directions == "NS") {return dxNS;}
+		.attr("dx", function(obj) {if (obj.directions == "NS" || obj.directions == "N" || obj.directions == "S") 
+										{return dxNS;}
 									else {return dxEW;};})
-		.attr("dy", function(obj) {if (obj.directions == "NS") {return dyNS;}
+		.attr("dy", function(obj) {if (obj.directions == "NS" || obj.directions == "N" || obj.directions == "S") 
+										{return dyNS;}
 									else {return dyEW;};});
 }
 
@@ -657,7 +660,7 @@ var dataURL = "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/data/st
 var vol_data;
 var streets_segments = [];
 d3.csv("streets_lines3.csv", function(sl) {
-	d3.csv("streets_segments3.csv", function(ss) {
+	d3.csv("streets_segments31.csv", function(ss) {
 		d3.csv(dataURL, function(file) {
 			// typify data
 			streets_lines = sl.map(slConverter);
