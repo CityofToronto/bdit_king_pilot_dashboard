@@ -148,6 +148,17 @@ function scaling(arr) {
 
 
 
+/* Get min/max segment coordinates
+***********************************************************************/
+function getMin(arr, prop){
+	return arr.reduce((min, obj) => Math.min(min, obj[prop]), arr[0][prop]);
+}
+
+function getMax(arr, prop){
+	return arr.reduce((max, obj) => Math.max(max, obj[prop]), arr[0][prop]);
+}
+
+
 /* Create tooltip
 ***********************************************************************/
 var divtip = d3.select("body").append("div")	
@@ -287,18 +298,229 @@ function offsetSeg(obj) {
 var slstrokeWidth = 3;
 var sllinecap = "round";
 
-var ssstroke = "grey";
-var ssstrokeWidth = 3;
+var ssstroke = "black";
+var ssstrokeWidth = 1;
 var sslinecap = "butt";
 
-// Create path generator
-var path;
+// Create line path generator
+var lpath;
 function pathFunc(obj) {
+	lpath = d3.path();
+	lpath.moveTo(xScale(obj.x1),yScale(obj.y1));
+	lpath.lineTo(xScale(obj.x2),yScale(obj.y2));
+	return lpath;
+}
+
+// Create polygon path generator
+// get min/max segment coordinates
+var minx1, minx2, miny1, miny2, maxx1, maxx2, maxy1, maxy2;
+var polywidth = 2.5;
+var path, seglist;
+
+function inside(obj, arr) {
+	if (obj.direction == "S") {
+		// populate seglist
+		seglist = arr.filter(function(seg) {
+			return ((obj.x2 == seg.x1) && (obj.y2 == seg.y1) && (seg.direction == "W")) || 
+				((obj.x1 == seg.x2) && (obj.y1 == seg.y2) && (seg.direction == "E"));
+		})
+		
+		// draw polygon path, assuming last position at obj x2 and y2
+		if (seglist.length == 2) {
+			path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2 - polywidth));
+			path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1 + polywidth));
+			path.closePath();
+		}
+		else if (seglist.length == 1) {
+			if ((obj.x2 == seglist[0].x1) && (obj.y2 == seglist[0].y1) && (seglist[0].direction == "W")) {
+				path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2 - polywidth));
+				path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1));
+				path.closePath();
+			}
+			else { 
+			// if ((obj.x1 == seglist[0].x2) && (obj.y1 == seglist[0].y2) && (seglist[0].direction == "E"))
+				path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2));
+				path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1 + polywidth));
+				path.closePath();
+			}
+		}
+		else { // if (seglist.length == 0)
+			path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2));
+			path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1));
+			path.closePath();
+		}
+	}
+	else if (obj.direction == "E") {
+		// populate seglist
+		seglist = arr.filter(function(seg) {
+			return ((obj.x2 == seg.x1) && (obj.y2 == seg.y1) && (seg.direction == "S")) || 
+				((obj.x1 == seg.x2) && (obj.y1 == seg.y2) && (seg.direction == "N"));
+		})
+		
+		// draw polygon path, assuming last position at obj x2 and y2
+		if (seglist.length == 2) {
+			path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2 + polywidth));
+			path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1 + polywidth));
+			path.closePath();
+		}
+		else if (seglist.length == 1) {
+			if ((obj.x2 == seglist[0].x1) && (obj.y2 == seglist[0].y1) && (seglist[0].direction == "S")) {
+				path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2 + polywidth));
+				path.lineTo(xScale(obj.x1), yScale(obj.y1 + polywidth));
+				path.closePath();
+			}
+			else { 
+			// if ((obj.x1 == seglist[0].x2) && (obj.y1 == seglist[0].y2) && (seglist[0].direction == "N"))
+				path.lineTo(xScale(obj.x2), yScale(obj.y2 + polywidth));
+				path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1 + polywidth));
+				path.closePath();
+			}
+		}
+		else { // if (seglist.length == 0)
+			path.lineTo(xScale(obj.x2), yScale(obj.y2 + polywidth));
+			path.lineTo(xScale(obj.x1), yScale(obj.y1 + polywidth));
+			path.closePath();
+		}
+	}
+	else if (obj.direction == "N") {
+		// populate seglist
+		seglist = arr.filter(function(seg) {
+			return ((obj.x2 == seg.x1) && (obj.y2 == seg.y1) && (seg.direction == "E")) || 
+				((obj.x1 == seg.x2) && (obj.y1 == seg.y2) && (seg.direction == "W"));
+		})
+		
+		// draw polygon path, assuming last position at obj x2 and y2
+		if (seglist.length == 2) {
+			path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 + polywidth));
+			path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1 - polywidth));
+			path.closePath();
+		}
+		else if (seglist.length == 1) {
+			if ((obj.x2 == seglist[0].x1) && (obj.y2 == seglist[0].y1) && (seglist[0].direction == "E")) {
+				path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 + polywidth));
+				path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1));
+				path.closePath();
+			}
+			else { 
+			// if ((obj.x1 == seglist[0].x2) && (obj.y1 == seglist[0].y2) && (seglist[0].direction == "W"))
+				path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2));
+				path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1 - polywidth));
+				path.closePath();
+			}
+		}
+		else { // if (seglist.length == 0)
+			path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2));
+			path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1));
+			path.closePath();
+		}
+	}
+	else if (obj.direction == "W") {
+		// populate seglist
+		seglist = arr.filter(function(seg) {
+			return ((obj.x2 == seg.x1) && (obj.y2 == seg.y1) && (seg.direction == "N")) || 
+				((obj.x1 == seg.x2) && (obj.y1 == seg.y2) && (seg.direction == "S"));
+		})
+		
+		// draw polygon path, assuming last position at obj x2 and y2
+		if (seglist.length == 2) {
+			path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 - polywidth));
+			path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1 - polywidth));
+			path.closePath();
+		}
+		else if (seglist.length == 1) {
+			if ((obj.x2 == seglist[0].x1) && (obj.y2 == seglist[0].y1) && (seglist[0].direction == "N")) {
+				path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 - polywidth));
+				path.lineTo(xScale(obj.x1), yScale(obj.y1 - polywidth));
+				path.closePath();
+			}
+			else { 
+			// if ((obj.x1 == seglist[0].x2) && (obj.y1 == seglist[0].y2) && (seglist[0].direction == "S"))
+				path.lineTo(xScale(obj.x2), yScale(obj.y2 - polywidth));
+				path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1 - polywidth));
+				path.closePath();
+			}
+		}
+		else { // if (seglist.length == 0)
+			path.lineTo(xScale(obj.x2), yScale(obj.y2 - polywidth));
+			path.lineTo(xScale(obj.x1), yScale(obj.y1 - polywidth));
+			path.closePath();
+		}
+	}
+	else {
+		console.log(obj);
+	}	
+}
+
+
+function outside(obj, arr) {
+	// NW corner
+	if (obj.x2 == minx2 && obj.y2 == miny2 && obj.direction == "W") {
+		console.log("NW W");
+		path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2 - polywidth));
+		path.lineTo(xScale(obj.x1), yScale(obj.y1 - polywidth));
+		path.closePath();
+	}
+	else if (obj.x1 == minx1 && obj.y1 == miny1 && obj.direction == "S") {
+		console.log("NW S");
+		path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2));
+		path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1 - polywidth));
+		path.closePath();
+	}
+	// SW corner
+	else if (obj.x2 == minx2 && obj.y2 == maxy2 && obj.direction == "S") {
+		console.log("SW S");
+		path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2 + polywidth));
+		path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1));
+		path.closePath();
+	}
+	else if (obj.x1 == minx1 && obj.y1 == maxy1 && obj.direction == "E") {
+		console.log("SW E");
+		path.lineTo(xScale(obj.x2), yScale(obj.y2 + polywidth));
+		path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1 + polywidth));
+		path.closePath();
+	}
+	// NE corner
+	else if (obj.x1 == maxx1 && obj.y1 == miny1 && obj.direction == "W") {
+		console.log("NE W");
+		path.lineTo(xScale(obj.x2), yScale(obj.y2 - polywidth));
+		path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1 - polywidth));
+		path.closePath();
+	}
+	else if (obj.x2 == maxx2 && obj.y2 == miny2 && obj.direction == "N") {
+		console.log("NE N");
+		path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 - polywidth));
+		path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1));
+		path.closePath();
+	}
+	// SE corner
+	else if (obj.x1 == maxx1 && obj.y1 == maxy1 && obj.direction == "N") {
+		console.log("SE N");
+		path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2));
+		path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1 + polywidth));
+		path.closePath();
+	}
+	else if (obj.x2 == maxx2 && obj.y2 == maxy2 && obj.direction == "E") {
+		console.log("SE E");
+		path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 + polywidth));
+		path.lineTo(xScale(obj.x1), yScale(obj.y1 + polywidth));
+		path.closePath();
+	}
+	else {
+		inside(obj, arr);
+	}
+}
+
+function fancy(obj, arr) {
 	path = d3.path();
 	path.moveTo(xScale(obj.x1),yScale(obj.y1));
 	path.lineTo(xScale(obj.x2),yScale(obj.y2));
+	
+	outside(obj, arr);
+	
 	return path;
 }
+
+
 
 // draw all objects in streets_lines
 function slpathGen(arr, group) {
@@ -345,7 +567,7 @@ function sspathGen(ssarr) {
 		.enter()
 		.append("path")
 		.attr("id", function(obj) {return obj.direction + obj.id;})
-		.attr("d", function(obj) {return pathFunc(obj);})
+		.attr("d", function(obj) {return fancy(obj, ssarr);})
 		.attr("stroke", ssstroke)
 		.attr("stroke-width", ssstrokeWidth)
 		.attr("stroke-linecap", sslinecap);
@@ -363,10 +585,10 @@ function sspathUpdate(dataset) {
 	
 	segments.transition() // data transition
 		.duration(1000)
-		.attr("stroke", function(obj) {return pctColour(obj);})
-		.attr("stroke-width", function(obj) {return volWidth(obj);})
+		.attr("fill", function(obj) {return pctColour(obj);})
+		//.attr("stroke-width", function(obj) {return volWidth(obj);})
 		.attr("stroke-linecap", sslinecap)
-		.attr("transform", function(obj) {return offsetSeg(obj);});
+		//.attr("transform", function(obj) {return offsetSeg(obj);});
 	
 	segments.on("mouseover", function(obj) { // tooltip
 			divtip.transition()
@@ -437,6 +659,17 @@ d3.csv("streets_lines3.csv", function(sl) {
 			streets_lines = sl.map(slConverter);
 			streets_segments = ss.map(ssConverter);
 			vol_data = file.map(dataConverter);
+		
+			// get min/max segment coordinates
+			minx1 = getMin(streets_segments, "x1");
+			minx2 = getMin(streets_segments, "x2");
+			miny1 = getMin(streets_segments, "y1");
+			miny2 = getMin(streets_segments, "y2");
+
+			maxx1 = getMax(streets_segments, "x1");
+			maxx2 = getMax(streets_segments, "x2");
+			maxy1 = getMax(streets_segments, "y1");
+			maxy2 = getMax(streets_segments, "y2");
 			
 			// create scale and labels
 			scaling(streets_lines);
