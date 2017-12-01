@@ -108,14 +108,14 @@ var labelGroup = svgContainer.append("g")
 // Create streets_lines no data group
 var slNoData = svgContainer.append("g")
 	.attr("id", "slnodata");
-	
-// Create streets_segments Group
-var ssGroup = svgContainer.append("g")
-	.attr("id", "ssgroup");
 
 // Create streets_lines Group
 var slGroup = svgContainer.append("g")
 	.attr("id", "slgroup");
+	
+// Create streets_segments Group
+var ssGroup = svgContainer.append("g")
+	.attr("id", "ssgroup");
 
 
 
@@ -531,9 +531,9 @@ function slpathGen(arr, group) {
 	if (group == "#slnodata") { // streets with no data are bottom layer and grey
 		d3.select(group)
 			.selectAll("path")
-			.data(arr.filter(function(obj) {return (obj.streetname == "Portland" || 
+			.data(arr.filter(function(obj) {return (obj.streetname == "Portland" || obj.streetname == "Wellington" || 
 					obj.streetname == "Peter/Blue Jays" || obj.streetname == "John" || 
-					obj.streetname == "Simcoe" || obj.streetname == "University" || 
+					obj.streetname == "Simcoe" || obj.streetname == "University" || obj.streetname == "York" ||
 					obj.streetname == "Yonge" || obj.streetname == "Church");}))
 			.enter()
 			.append("path")
@@ -547,11 +547,11 @@ function slpathGen(arr, group) {
 	else { // streets with data are top layer and black
 		d3.select(group)
 			.selectAll("path")
-			.data(arr)
-					//.filter(function(obj) {return !(obj.streetname == "Portland" || 
-					//obj.streetname == "Peter/Blue Jays" || obj.streetname == "John" || 
-					//obj.streetname == "Simcoe" || obj.streetname == "University" || 
-					//obj.streetname == "Yonge" || obj.streetname == "Church");}))
+			.data(arr
+					.filter(function(obj) {return !(obj.streetname == "Portland" || obj.streetname == "Wellington" || 
+					obj.streetname == "Peter/Blue Jays" || obj.streetname == "John" || 
+					obj.streetname == "Simcoe" || obj.streetname == "University" || obj.streetname == "York" ||
+					obj.streetname == "Yonge" || obj.streetname == "Church");}))
 			.enter()
 			.append("path")
 			.attr("id", function(obj) {return obj.streetname;})
@@ -560,7 +560,6 @@ function slpathGen(arr, group) {
 			.attr("stroke-width", slstrokeWidth)
 			.attr("stroke-linecap", sllinecap);
 	};
-	
 }
 
 // draw all objects in streets_segments
