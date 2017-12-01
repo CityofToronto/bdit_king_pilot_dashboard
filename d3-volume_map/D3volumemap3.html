@@ -300,7 +300,7 @@ var sllinecap = "round";
 
 var ssstroke = "black";
 var ssstrokeWidth = 1;
-var sslinecap = "butt";
+//var sslinecap = "butt";
 
 // Create line path generator
 var lpath;
@@ -314,7 +314,7 @@ function pathFunc(obj) {
 // Create polygon path generator
 // get min/max segment coordinates
 var minx1, minx2, miny1, miny2, maxx1, maxx2, maxy1, maxy2;
-var polywidth = 2.5;
+var polywidth = 3;
 var path, seglist;
 
 function inside(obj, arr) {
@@ -455,56 +455,60 @@ function inside(obj, arr) {
 function outside(obj, arr) {
 	// NW corner
 	if (obj.x2 == minx2 && obj.y2 == miny2 && obj.direction == "W") {
-		console.log("NW W");
 		path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2 - polywidth));
 		path.lineTo(xScale(obj.x1), yScale(obj.y1 - polywidth));
 		path.closePath();
 	}
 	else if (obj.x1 == minx1 && obj.y1 == miny1 && obj.direction == "S") {
-		console.log("NW S");
 		path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2));
 		path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1 - polywidth));
 		path.closePath();
 	}
 	// SW corner
 	else if (obj.x2 == minx2 && obj.y2 == maxy2 && obj.direction == "S") {
-		console.log("SW S");
 		path.lineTo(xScale(obj.x2 - polywidth), yScale(obj.y2 + polywidth));
 		path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1));
 		path.closePath();
 	}
 	else if (obj.x1 == minx1 && obj.y1 == maxy1 && obj.direction == "E") {
-		console.log("SW E");
 		path.lineTo(xScale(obj.x2), yScale(obj.y2 + polywidth));
 		path.lineTo(xScale(obj.x1 - polywidth), yScale(obj.y1 + polywidth));
 		path.closePath();
 	}
 	// NE corner
 	else if (obj.x1 == maxx1 && obj.y1 == miny1 && obj.direction == "W") {
-		console.log("NE W");
 		path.lineTo(xScale(obj.x2), yScale(obj.y2 - polywidth));
 		path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1 - polywidth));
 		path.closePath();
 	}
 	else if (obj.x2 == maxx2 && obj.y2 == miny2 && obj.direction == "N") {
-		console.log("NE N");
 		path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 - polywidth));
 		path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1));
 		path.closePath();
 	}
 	// SE corner
 	else if (obj.x1 == maxx1 && obj.y1 == maxy1 && obj.direction == "N") {
-		console.log("SE N");
 		path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2));
 		path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1 + polywidth));
 		path.closePath();
 	}
 	else if (obj.x2 == maxx2 && obj.y2 == maxy2 && obj.direction == "E") {
-		console.log("SE E");
 		path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 + polywidth));
 		path.lineTo(xScale(obj.x1), yScale(obj.y1 + polywidth));
 		path.closePath();
 	}
+	// Wellington/Front St corner exceptions
+	else if (obj.streetname == "Front2" && obj.segdesc == "Church to Jarvis") {
+		path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2 + polywidth));
+		path.lineTo(xScale(obj.x1), yScale(obj.y1 + polywidth));
+		path.closePath();
+	}
+	else if (obj.streetname == "Jarvis" && obj.segdesc == "Wellington to King") {
+		path.lineTo(xScale(obj.x2 + polywidth), yScale(obj.y2));
+		path.lineTo(xScale(obj.x1 + polywidth), yScale(obj.y1 + polywidth));
+		path.closePath();
+	}
+	// otherwise, run function for inside segments
 	else {
 		inside(obj, arr);
 	}
@@ -570,7 +574,7 @@ function sspathGen(ssarr) {
 		.attr("d", function(obj) {return fancy(obj, ssarr);})
 		.attr("stroke", ssstroke)
 		.attr("stroke-width", ssstrokeWidth)
-		.attr("stroke-linecap", sslinecap);
+		.attr("fill", "grey"); // default colour, also no-data colour
 }
 
 function sspathUpdate(dataset) {
@@ -587,7 +591,7 @@ function sspathUpdate(dataset) {
 		.duration(1000)
 		.attr("fill", function(obj) {return pctColour(obj);})
 		//.attr("stroke-width", function(obj) {return volWidth(obj);})
-		.attr("stroke-linecap", sslinecap)
+		//.attr("stroke-linecap", sslinecap)
 		//.attr("transform", function(obj) {return offsetSeg(obj);});
 	
 	segments.on("mouseover", function(obj) { // tooltip

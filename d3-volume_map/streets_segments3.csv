@@ -23,7 +23,7 @@ segment,streetname,direction,segdesc,x1,y1,x2,y2
 22,King,W,Yonge to University,200,50,140,50
 23,King,W,University to Spadina,140,50,60,50
 24,King,W,Spadina to Bathurst,60,50,10,50
-25,Wellington,W,Church to Yonge,230,65,200,65
+25,Wellington,W,Jarvis to Yonge,250,65,200,65
 26,Wellington,W,Yonge to University,200,65,140,65
 27,Wellington,W,University to Blue Jays,140,65,80,65
 29,Front1,E,Bathurst to Spadina,10,80,60,80
@@ -32,8 +32,7 @@ segment,streetname,direction,segdesc,x1,y1,x2,y2
 32,Front1,W,Yonge to University,200,80,140,80
 33,Front1,W,University to Spadina,140,80,60,80
 34,Front1,W,Spadina to Bathurst,60,80,10,80
-35,Front2,E,Yonge to Jarvis,200,80,250,60
-36,Front2,W,Jarvis to Yonge,250,60,200,80
+36,Front2,E,Church to Jarvis,230,65,250,65
 37,Bathurst,S,Queen to Richmond,10,10,10,20
 38,Bathurst,S,Richmond to Adelaide,10,20,10,35
 39,Bathurst,S,Adelaide to King,10,35,10,50
@@ -77,8 +76,9 @@ segment,streetname,direction,segdesc,x1,y1,x2,y2
 77,Jarvis,S,Queen to Richmond,250,10,250,20
 78,Jarvis,S,Richmond to Adelaide,250,20,250,35
 79,Jarvis,S,Adelaide to King,250,35,250,50
-80,Jarvis,S,King to Front,250,50,250,60
-81,Jarvis,N,Front to King,250,60,250,50
+80,Jarvis,S,King to Wellington,250,50,250,65
+81,Jarvis,N,Wellington to King,250,65,250,50
 82,Jarvis,N,King to Adelaide,250,50,250,35
 83,Jarvis,N,Adelaide to Richmond,250,35,250,20
 84,Jarvis,N,Richmond to Queen,250,20,250,10
+35,Front2,E,Yonge to Church,200,80,230,65
