@@ -1,6 +1,8 @@
 # King St. Pilot Internal Dashboard
 Dashboard for King St Pilot for internal management. This dashboard displays average travel times by timeperiod for streets parallel to King over the length of the pilot area.
 
+This branch is for development of [Version 2](https://github.com/CityofToronto/bdit_king_pilot_dashboard/milestone/7 of the internal dashboard.
+
 ## App Organization
 
 The layout of the code is inspired by the Model-View-Controller paradigm, specifically from [this Dash tutorial](https://dev.to/alysivji/interactive-web-based-dashboards-in-python-5hf). In addition, parameters and constants that someone would want to change when forking this are frontloaded in ALL_CAPS variables, in order to make modification easier. The names of DIVs used in callbacks are also stored in variables in order to reduce the risk of bugs since variable names are linted to see if they exist.
