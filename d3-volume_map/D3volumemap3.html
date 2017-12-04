@@ -143,26 +143,30 @@ function scaling(arr) {
 		.range([100, svgW-100]); // 100px SVG whitespace buffer
 	yScale = d3.scaleLinear()
 		.domain([yMin, yMax])
-		.range([150, svgH-100]); // 100px SVG whitespace buffer
+		.range([150, svgH-100]); // 150px SVG whitespace buffer
 }
 
 
 
 /* Get min/max segment coordinates
 ***********************************************************************/
+var minx1, minx2, miny1, miny2, maxx1, maxx2, maxy1, maxy2;
+// takes array of objs and gets min of property across all objs
 function getMin(arr, prop){
 	return arr.reduce((min, obj) => Math.min(min, obj[prop]), arr[0][prop]);
 }
 
+// takes array of objs and gets max of property across all objs
 function getMax(arr, prop){
 	return arr.reduce((max, obj) => Math.max(max, obj[prop]), arr[0][prop]);
 }
 
 
+
 /* Create tooltip
 ***********************************************************************/
-var divtip = d3.select("body").append("div")	
-	.attr("class", "tooltip")				
+var divtip = d3.select("body").append("div")
+	.attr("class", "tooltip")
 	.style("opacity", 0);
 
 
@@ -190,7 +194,6 @@ function buttonChecker() {
 		};
 	});
 	//console.log([current_period,current_month])
-	//return [current_period,current_month];
 }
 
 
@@ -245,62 +248,14 @@ function pctColour(obj) {
 
 
 
-/* Widening segments
-***********************************************************************/
-var offsetVal = (slstrokeWidth / 2) + (ssstrokeWidth / 2) - 0.75;
-
-// scale width function
-var widthScale = d3.scaleLinear()
-	.domain([0, 10000]) // input's min and arbitrary max
-	.range([3, 30]); // output width
-
-// determine width of path based on segment volume
-function volWidth(obj) {
-	var width = 3;
-	if (!(obj.volume >= 0)) { // if not an acceptable volume, set as width default 3
-		return width;
-	}
-	else {
-		width = widthScale(obj.volume); // width as scaled down volume
-		return width;
-	};
-}
-
-function offsetSeg(obj) {
-	ssstrokeWidth = volWidth(obj);
-	offsetVal = (slstrokeWidth / 2) + (ssstrokeWidth / 2);
-	if (obj.direction == "N") {
-		var offsetXN = "translate(" + offsetVal + ",0)";
-		return offsetXN;
-	}
-	else if (obj.direction == "S") {
-		var offsetXS = "translate(-" + offsetVal + ",0)";
-		return offsetXS;
-	}
-	else if (obj.direction == "E") {
-		var offsetYE = "translate(0," + offsetVal + ")";
-		return offsetYE;
-	}
-	else if (obj.direction == "W") {
-		var offsetYW = "translate(0,-" + offsetVal + ")";
-		return offsetYW;
-	}
-	else {
-		return;
-	};
-}
-
-
-
 /* Functions to draw SVGs
 ***********************************************************************/
-//var slstroke = "black";
 var slstrokeWidth = 3;
 var sllinecap = "round";
 
 var ssstroke = "black";
 var ssstrokeWidth = 1;
-//var sslinecap = "butt";
+var fillDefault = "grey";
 
 // Create line path generator
 var lpath;
@@ -312,8 +267,6 @@ function pathFunc(obj) {
 }
 
 // Create polygon path generator
-// get min/max segment coordinates
-var minx1, minx2, miny1, miny2, maxx1, maxx2, maxy1, maxy2;
 var polywidth = 3;
 var path, seglist;
 
@@ -564,7 +517,7 @@ function slpathGen(arr, group) {
 
 // draw all objects in streets_segments
 function sspathGen(ssarr) {
-	d3.select("#ssgroup") // create the ss path elements
+	d3.select("#ssgroup") // create and draw the ss path elements
 		.selectAll("path")
 		.data(ssarr, function(obj) {return obj.direction + obj.id;}) // key for binding
 		.enter()
@@ -573,25 +526,22 @@ function sspathGen(ssarr) {
 		.attr("d", function(obj) {return fancy(obj, ssarr);})
 		.attr("stroke", ssstroke)
 		.attr("stroke-width", ssstrokeWidth)
-		.attr("fill", "grey"); // default colour, also no-data colour
+		.attr("fill", fillDefault); // default colour, also no-data colour
 }
 
 function sspathUpdate(dataset) {
 	buttonChecker(); // update variables current_period and current_month
 	
-	var segments = d3.select("#ssgroup") // create the ss path elements
+	var segments = d3.select("#ssgroup") // bind data to ss paths
 		.selectAll("path")
 		.data(dataset.filter(function(obj) // filter for current period and month
 					{return (obj.time_period == current_period) 
 						&& ((obj.month.getMonth() + 1) == current_month);}), 
 				function(obj) {return obj.direction + obj.id;}) // key for binding
 	
-	segments.transition() // data transition
+	segments.transition() // colour by data with transition
 		.duration(1000)
 		.attr("fill", function(obj) {return pctColour(obj);})
-		//.attr("stroke-width", function(obj) {return volWidth(obj);})
-		//.attr("stroke-linecap", sslinecap)
-		//.attr("transform", function(obj) {return offsetSeg(obj);});
 	
 	segments.on("mouseover", function(obj) { // tooltip
 			divtip.transition()
@@ -611,7 +561,7 @@ function sspathUpdate(dataset) {
 /* Functions to label SVGs
 ***********************************************************************/
 var fontsize = "12px";
-var fontfill = "black";
+var fontfill = "black"; // font colour
 
 var anchEW = "end";
 var anchNS = "start";
@@ -626,21 +576,22 @@ function labelStreets(arr) {
 		.data(arr)
 		.enter()
 		.append("text")
-		.text(function(obj) {if (obj.streetname == "Front1") {return "Front";}
+		.text(function(obj) {if (obj.streetname == "Front1") {return "Front";} // Front exceptions
 							else if (obj.streetname == "Front2") {return "";}
 							else {return obj.streetname;};})
-		.attr("x", function(obj) {if (obj.streetname == "Wellington") {return xScale(10);}
-									else {return xScale(obj.x1);};})
+		.attr("x", function(obj) {return xScale(obj.x1);})
 		.attr("y", function(obj) {return yScale(obj.y1);})
 		.attr("font_size", fontsize)
 		.attr("fill", fontfill)
-		.attr("text-anchor", function(obj) {if (obj.directions == "NS" || obj.directions == "N" || obj.directions == "S") 
-												{return anchNS;}
-											else {return anchEW;};})
-		.attr("transform", function(obj) {if (obj.directions == "NS" || obj.directions == "N" || obj.directions == "S")
-											 {return "rotate(270 " 
-											 + xScale(obj.x1) + "," + yScale(obj.y1) + ")";}
-										else {return "";};})
+		.attr("text-anchor", function(obj) { // rotate NS street labels
+			if (obj.directions == "NS" || obj.directions == "N" || obj.directions == "S") 
+				{return anchNS;}
+			else {return anchEW;};})
+		.attr("transform", function(obj) {
+			if (obj.directions == "NS" || obj.directions == "N" || obj.directions == "S")
+				{return "rotate(270 " 
+				+ xScale(obj.x1) + "," + yScale(obj.y1) + ")";}
+			else {return "";};})
 		.attr("dx", function(obj) {if (obj.directions == "NS" || obj.directions == "N" || obj.directions == "S") 
 										{return dxNS;}
 									else {return dxEW;};})
@@ -653,7 +604,7 @@ function labelStreets(arr) {
 
 /* Draw SVGs
 ***********************************************************************/
-// Load data and execute functions requiring immediate access to data
+// Load data and execute functions requiring immediate access to external data
 var streets_lines = [];
 var dataURL = "https://cityoftoronto.github.io/bdit_king_pilot_dashboard/data/street_volumes.csv";
 var vol_data;
