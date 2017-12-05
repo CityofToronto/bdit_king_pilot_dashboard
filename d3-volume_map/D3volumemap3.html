@@ -6,7 +6,7 @@
 		div.tooltip {	
 			position: absolute;			
 			text-align: center;			
-			width: 100px;					
+			width: 150px;					
 			height: 30px;					
 			padding: 2px;				
 			font: 12px sans-serif;		
@@ -31,17 +31,17 @@
 		</div>
 		
 		<div id="months" class="btn-group" data-toggle="buttons">
+			<label class="btn btn-secondary">
+				<input id="Nov" value="11" type="radio" name="month" autocomplete="off" checked onclick="sspathUpdate(vol_data);"> November 2017
+			</label>
+			<label class="btn btn-secondary">
+				<input id="Dec" value="12" type="radio" name="month" autocomplete="off" onclick="sspathUpdate(vol_data);"> December 2017
+			</label>
 			<label class="btn btn-secondary active">
-				<input id="Sep" value="9" type="radio" name="month" autocomplete="off" checked onclick="sspathUpdate(vol_data);"> September
+				<input id="Jan" value="1" type="radio" name="month" autocomplete="off" onclick="sspathUpdate(vol_data);"> January 2018
 			</label>
 			<label class="btn btn-secondary">
-				<input id="Oct" value="10" type="radio" name="month" autocomplete="off" onclick="sspathUpdate(vol_data);"> October
-			</label>
-			<label class="btn btn-secondary">
-				<input id="Nov" value="11" type="radio" name="month" autocomplete="off" onclick="sspathUpdate(vol_data);"> November
-			</label>
-			<label class="btn btn-secondary">
-				<input id="Dec" value="12" type="radio" name="month" autocomplete="off" onclick="sspathUpdate(vol_data);"> December
+				<input id="Feb" value="2" type="radio" name="month" autocomplete="off" onclick="sspathUpdate(vol_data);"> February 2018
 			</label>
 		</div>
 		
@@ -93,7 +93,7 @@ var dataConverter = function(d) {
 
 /* Setup SVGs
 ***********************************************************************/
-var svgW = 1200;
+var svgW = 1300;
 var svgH = 550;
 
 // Create SVG container
@@ -144,10 +144,10 @@ function scaling(arr) {
 
 	xScale = d3.scaleLinear()
 		.domain([xMin, xMax])
-		.range([100, svgW-100]); // 100px SVG whitespace buffer
+		.range([100, svgW-200]); // left 100px, right 200px whitespace
 	yScale = d3.scaleLinear()
 		.domain([yMin, yMax])
-		.range([150, svgH-100]); // 150px SVG whitespace buffer
+		.range([150, svgH-100]); // top 150px, bottom 100px whitespace
 }
 
 
@@ -179,9 +179,9 @@ var divtip = d3.select("body").append("div")
 ***********************************************************************/
 // loop through radio button values
 var periodIDs = ["AM", "PM"];
-var monthIDs = ["Sep","Oct","Nov","Dec"];
+var monthIDs = ["Nov","Dec","Jan","Feb"];
 var current_period = document.getElementById("AM").value;
-var current_month = document.getElementById("Sep").value;
+var current_month = document.getElementById("Nov").value;
 
 // check which buttons are selected, update and return current period and month
 function buttonChecker() {
@@ -213,15 +213,15 @@ function pctColour(obj) {
 	// given obj, returns a colour string
 	var colour = "";
 	if (obj.pct_change >= 0) { // zero or positive change is increase in volume compared to base; bad
-		if (0 <= obj.pct_change && obj.pct_change < 10) {
+		if (0 <= obj.pct_change && obj.pct_change < 5) {
 			colour = cPos1;
 			return colour;
 		}
-		else if (10 <= obj.pct_change && obj.pct_change < 15) {
+		else if (5 <= obj.pct_change && obj.pct_change < 10) {
 			colour = cPos2;
 			return colour;
 		}
-		else if (15 <= obj.pct_change && obj.pct_change < 20) {
+		else if (10 <= obj.pct_change && obj.pct_change < 20) {
 			colour = cPos3;
 			return colour;
 		}
@@ -231,15 +231,15 @@ function pctColour(obj) {
 		}
 	}
 	else if (obj.pct_change < 0) { // negative change is decrease in volume compared to base; good
-		if (-10 < obj.pct_change && obj.pct_change < 0) {
+		if (-5 < obj.pct_change && obj.pct_change < 0) {
 			colour = cNeg1;
 			return colour;
 		}
-		else if (-15 < obj.pct_change && obj.pct_change <= -10) {
+		else if (-10 < obj.pct_change && obj.pct_change <= -5) {
 			colour = cNeg2;
 			return colour;
 		}
-		else if (-20 < obj.pct_change && obj.pct_change <= -15) {
+		else if (-20 < obj.pct_change && obj.pct_change <= -10) {
 			colour = cNeg3;
 			return colour;
 		}
@@ -491,7 +491,6 @@ function fancy(obj, arr) {
 }
 
 
-
 // draw all objects in streets_lines
 function slpathGen(arr, group) {
 	if (group == "#slnodata") { // streets with no data are bottom layer and grey
@@ -560,7 +559,7 @@ function sspathUpdate(dataset) {
 			divtip.transition()
 				.duration(200)
 				.style("opacity", .9);
-			divtip.html("%Change: " + obj.pct_change + "<br>" + "Volume: " + obj.volume)
+			divtip.html("Volume Change: " + obj.pct_change + "%" + "<br>" + "Actual Volume: " + obj.volume)
 				.style("left", (d3.event.pageX) + "px")
 				.style("top", (d3.event.pageY - 30) + "px");})
 		.on("mouseout", function(obj) {
@@ -618,49 +617,58 @@ function labelStreets(arr) {
 /* Create a legend
 ***********************************************************************/
 // data and variables for legend
-var legendText = ["Percent Change:", 
-	"< &minus;20", "&minus;20 to &minus;15", "&minus;15 to &minus;10", "&minus;10 to 0", 
-	//"< 0", "&ge; 0", 
-	"0 to 10", "10 to 15", "15 to 20", "> 20", "No Data"];
-
-//var legendX = [90, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
-var legendX = [10, 40, 60, 85, 110, 130, 150, 170, 190, 210];
-
-var legendY = svgH - 50;
-var legendColours = [cND, cNeg4, cNeg3, cNeg2, cNeg1, cPos1, cPos2, cPos3, cPos4, cND];
-var legendData = [];
+var legendText = ["Volume Change (%)", 
+	"&minus;20", "&minus;10", "&minus;10 to &minus;5", "&minus;5 to 0", 
+	"0", "5 to 10", "+10", "+20", "No Data"]; // requires length of 10
+var legendX = svgW - 120;
+var legendY = [0, 40, 80, 120, 140, 160, 180, 200, 240, 280]; // requires length of 10
+var legendColours = [cND, cNeg4, cNeg3, cNeg2, cNeg1, cPos1, cPos2, cPos3, cPos4, cND]; // requires length of 10
+var legendData = []; // will be length of 10
 
 // create objects from text, x, y, and colour to put into legendData array
 function createLegend() {
 	legendText.forEach(function(t, i) {
-		legendData.push({text: t, x: xScale(legendX[i]), y: legendY, colour: legendColours[i]});
+		legendData.push({text: t, 
+						x: legendX, 
+						y: legendY[i]+130, // shift legend height
+						colour: legendColours[i]});
 	});
 
 	// display text for legend
 	d3.select("#legendgroup")
 		.selectAll("text")
-		.data(legendData)
+		.data(legendData.filter(function(d) {return d.text == legendText[0] || d.text == legendText[1] ||
+											d.text == legendText[2] || d.text == legendText[5] ||
+											d.text == legendText[7] || d.text == legendText[8] ||
+											d.text == legendText[9];}))
 		.enter()
 		.append("text")
 		.html(function(d) {return d.text;})
-		.attr("x", function(d) {return d.x})
-		.attr("y", legendY)
-		.attr("font-size", 12)
+		.attr("x", function(d) {if (d.text == legendText[0]) {return d.x-40;}
+								else {return d.x;}})
+		.attr("y", function(d) {if (d.text == legendText[1]) {return d.y+20;}
+								else if (d.text == legendText[2]) {return d.y+20;}
+								else if (d.text == legendText[5]) {return d.y-20;}
+								else if (d.text == legendText[7]) {return d.y-20;}
+								else if (d.text == legendText[8]) {return d.y-20;}
+								else {return d.y;}})
+		.attr("font-size", function(d) {if (d.text == legendText[0]) {return 18;}
+								else {return 14;}})
 		.attr("fill", "black")
 		.attr("dy", ".35em");
 
 	// display symbol for legend
 	d3.select("#legendgroup")
 		.selectAll("line")
-		.data(legendData.filter(function(d) {return d.text != "Percent Change:";}))
+		.data(legendData.filter(function(d) {return d.text != legendText[0];}))
 		.enter()
 		.append("line")
-		.attr("x1", function(d) {return d.x-25;})
+		.attr("x1", function(d) {return d.x-40;})
 		.attr("y1", function(d) {return d.y;})
-		.attr("x2", function(d) {return d.x-10;})
+		.attr("x2", function(d) {return d.x-9;})
 		.attr("y2", function(d) {return d.y;})
 		.attr("stroke", function(d) {return d.colour;})
-		.attr("stroke-width", 10);
+		.attr("stroke-width", 40);
 };
 
 
