@@ -5,6 +5,8 @@ import dash_core_components as dcc
 import pandas as pd
 import calendar
 import json
+import os
+from flask import send_from_directory
 
 df = pd.read_csv('streetcar_travel_times.csv')
 
@@ -16,10 +18,15 @@ months = pd.to_datetime(df['mon']).map(lambda t: t.date().month).unique()
 
 app = dash.Dash('')
 
+app.css.config.serve_locally = True
 app.scripts.config.serve_locally = True
 
 #layout
 app.layout = html.Div([
+	html.Link(
+        rel='stylesheet',
+        href='/src/styles.css'
+    ),
 	dash_components.StreetcarSpeeds( id='streetcarspeeds', data=json.loads(df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==9) & (df['time_period']=='AM')].to_json(orient='records'))),
     dcc.RadioItems(
 		id='period_radio',
@@ -34,6 +41,12 @@ app.layout = html.Div([
 		labelStyle={'display': 'inline-block'}
 	)
 ])
+
+@app.server.route('/src/<path:path>')
+def static_file(path):
+    static_folder = os.path.join(os.getcwd(), 'src')
+    return send_from_directory(static_folder, path)
+
 
 # Update StreetCarSpeeds table when period_radio or month_radio value changes
 @app.callback(

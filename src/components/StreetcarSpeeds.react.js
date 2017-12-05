@@ -238,7 +238,7 @@ class StreetcarSpeeds extends Component {
 				.attr('fill', 'black')
 				.attr('font-size', (fontTTSize-22) + 'px')
 				.attr('text-anchor', 'middle')
-				.attr('font-family','system-ui')
+				.attr('class','test')
 	}
 	// What is displayed from the class
     render() {
