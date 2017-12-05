@@ -202,12 +202,56 @@ $ python usage.py
 ```
 To prepublish your component and to display it in your browser at `http://127.0.0.1:8050/`. Optionally you can run `$ npm run prepublish` to display your component in pure JavaScript, but you'll need to update `demo/Demo.react.js` to include it.
 
-### Useful Hints
+### Enable Global Styling
+It is possible to style all components using one stylesheet. All you need to do it modify your `usage.py` file and create classes if you are using `d3`.
+
+Add the following to your `usage.py`:
+
+```
+...
+from flask import send_from_directory
+
+...
+app.css.config.serve_locally = True
+app.scripts.config.serve_locally = True
+...
+
+app.layout = html.Div([
+	html.Link(
+        rel='stylesheet',
+        href='/src/styles.css' # replace this with the location of your stylesheet
+    ),
+	... your other components ...
+])
+
+@app.server.route('/src/<path:path>') # replace this with the home folder of your stylesheet
+def static_file(path):
+    static_folder = os.path.join(os.getcwd(), 'src') # ditto
+    return send_from_directory(static_folder, path)
+...
+
+```
+Then in your `<Component>.react.js` where you create your `d3` elements add `.attr('class', 'test')` to your `d3` element.
+
+For example:
+```
+tt_texts.append('text')
+				.text(function(d) {return d[1].toUpperCase();})
+				.attr('x', function() {return margin.left + leftBuffer + tileWidth * 4.525;})
+				.attr('y', function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight) + boxHeight*1/3;})
+				.attr('fill', 'black')                     # you can still have your own styling in d3
+				.attr('font-size', (fontTTSize-22) + 'px') # but your stylesheet will override it
+				.attr('text-anchor', 'middle')             # if you alter the same property
+				.attr('class','test')                      # add this
+```
+
+### Useful Tips
 Here are few tips on developing you D3 component in Dash:
 - Remove all unused variables from you component, a lot of errors will appear if you don't.
 - Make sure values such as for data are in the correct format.
 - If you want to update your component when it's `props` changes. Make an external function that updates the elements of your component such as `updateGraphics()` in `StreetcarSpeeds.react.js` and is called whenever a prop changes by placing it in `componentDidMount()`. This way you don't have to recreate you component everytime a prop changes.
 - Leave all of the data manipulation to your `usage.py` file.
+- If you modify your style sheet and the browser does not apply the changes, try clearing your cookies. I would recommend working in incognito to avoid having to do this constantly.
 
 ## Resources
 [React.js Documentation](https://reactjs.org/docs/react-api.html)
