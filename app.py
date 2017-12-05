@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from dateutil.relativedelta import relativedelta
 import dash
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, Event
 import dash_core_components as dcc
 import dash_html_components as html
 from psycopg2 import connect
@@ -81,7 +81,9 @@ STREETNAME_DIV = ['street-name-'+str(i) for i in [0, 1]]
 SELECTED_STREET_DIVS = OrderedDict([(orientation, 'selected-street' + orientation) for orientation in STREETS])
 TABLE_DIV_ID = 'div-table'
 TIMEPERIOD_DIV = 'timeperiod'
-CONTROLS = dict(timeperiods='timeperiod-radio',
+CONTROLS = dict(div_id='controls-div',
+                toggle='toggle-controls-button',
+                timeperiods='timeperiod-radio',
                 day_types='day-type-radio')
 GRAPHS = ['eb_graph', 'wb_graph']
 
@@ -232,9 +234,9 @@ def generate_table(state, day_type, period, orientation='ew'):
 
     return html.Table([html.Tr([html.Td(""), html.Td(DIRECTIONS[orientation][0], colSpan=2), html.Td(DIRECTIONS[orientation][1], colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
-                      # Generate a row 
+                      # Generate a row
                       [generate_row(new_row[1], baseline_row[1], row_state, orientation)
-                      # for each street, keeping in mind the state (which row is clicked)
+                       # for each street, keeping in mind the state (which row is clicked)
                        for new_row, baseline_row, row_state
                        in zip(filtered_data.iterrows(),
                               baseline.iterrows(),
@@ -324,71 +326,70 @@ app.title=TITLE
 server = app.server
 
 server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
-            
-app.layout = html.Div([
 
-html.Link(rel = 'stylesheet',
-              href = '/css/dashboard.css'),
-html.Link(rel = 'stylesheet',
-              href = '/css/style.css'),
-          
-html.Div(children=[html.H1(children=TITLE, id='title'),
-                  ], className='row twelve columns'),
-    dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
-                   {'label': 'North-South Streets', 'value': 'ns'}],
-             value='ew',
-             id='tabs',
-             style={'font-weight':'bold'})
-    , html.Div(id=MAIN_DIV, className='row'),
-    html.Div(children=html.H3(['Created by the ',
-                               html.A('Big Data Innovation Team',
-                                      href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
-                               style={'text-align':'right', 'padding-right':'1em'}),
-             className='row'),
-    *[html.Div(id=STATE_DIV_IDS[orientation],
-               style={'display': 'none'},
-               children=serialise_state(state))
-      for orientation, state in INITIAL_STATE.items()],
-    *[html.Div(id=div_id,
-               style={'display': 'none'},
-               children=[STREETS[orientation][0]])
-     for orientation, div_id in SELECTED_STREET_DIVS.items()]
-    ])
+app.layout = html.Div([html.Link(rel='stylesheet',
+                                 href='/css/dashboard.css'),
+                       html.Link(rel='stylesheet',
+                                 href='/css/style.css'),
+                       html.Div(children=[html.H1(children=TITLE, id='title')],
+                                className='row twelve columns'),
+                       dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
+                                      {'label': 'North-South Streets', 'value': 'ns'}],
+                                value='ew',
+                                id='tabs',
+                                style={'font-weight':'bold'}),
+                       html.Div(id=MAIN_DIV, className='row'),
+                       html.Div(children=html.H3(['Created by the ',
+                                                  html.A('Big Data Innovation Team',
+                                                         href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
+                                                         style={'text-align':'right',
+                                                                'padding-right':'1em'}),
+                                className='row'),
+                       *[html.Div(id=STATE_DIV_IDS[orientation],
+                                  style={'display': 'none'},
+                                  children=serialise_state(state))
+                         for orientation, state in INITIAL_STATE.items()],
+                       *[html.Div(id=div_id,
+                                  style={'display': 'none'},
+                                  children=[STREETS[orientation][0]])
+                         for orientation, div_id in SELECTED_STREET_DIVS.items()]
+                      ])
 
 #Elements to include in the "main-"
 STREETS_LAYOUT = [html.Div(children=[
     html.H2(id=TIMEPERIOD_DIV, children='Weekday AM Peak'),
+    html.Button(id=CONTROLS['toggle'], children='Show Filters'),
+    html.Div(id=CONTROLS['div_id'],
+             children=[dcc.RadioItems(id=CONTROLS['timeperiods'],
+                                      value=TIMEPERIODS.iloc[0]['period'],
+                                      className='radio-toolbar'),
+                       dcc.RadioItems(id=CONTROLS['day_types'],
+                                      options=[{'label': day_type,
+                                                'value': day_type,
+                                                'id': day_type}
+                                               for day_type in TIMEPERIODS['day_type'].unique()],
+                                      value=TIMEPERIODS.iloc[0]['day_type'],
+                                      className='radio-toolbar')],
+             style={'display':'none'}),
     html.Div(id=TABLE_DIV_ID, children=generate_table(INITIAL_STATE['ew'], 'Weekday', 'AM Peak')),
     html.Div([html.B('Travel Time', style={'background-color':'#E9A3C9'}),
               ' 1+ min', html.B(' longer'), ' than baseline']),
     html.Div([html.B('Travel Time', style={'background-color':'#A1D76A'}),
               ' 1+ min', html.B(' shorter'), ' than baseline']),
-    dcc.RadioItems(id=CONTROLS['timeperiods'],
-                   value=TIMEPERIODS.iloc[0]['period'],
-                   className='radio-toolbar'),
-    dcc.RadioItems(id=CONTROLS['day_types'],
-                   options=[{'label': day_type,
-                             'value': day_type,
-                             'id': day_type}
-                            for day_type in TIMEPERIODS['day_type'].unique()],
-                   value=TIMEPERIODS.iloc[0]['day_type'],
-                   className='radio-toolbar')
-                   ],
-                           className='four columns'
-                          ),
+    ],
+                           className='four columns'),
                   html.Div(children=[
-                    html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
-                                                            ' Bathurst - Jarvis']),
-                    dcc.Graph(id=GRAPHS[0],
-                              config={'displayModeBar': False}),
-                    html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
-                                                            ' Jarvis - Bathurst']),
-                    dcc.Graph(id=GRAPHS[1],
-                              config={'displayModeBar': False})
-                ],
-                         className='eight columns'
-                        ),
-               ]
+                      html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
+                                                              ' Bathurst - Jarvis']),
+                       dcc.Graph(id=GRAPHS[0],
+                                 config={'displayModeBar': False}),
+                       html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
+                                                               ' Jarvis - Bathurst']),
+                       dcc.Graph(id=GRAPHS[1],
+                                 config={'displayModeBar': False})
+                    ],
+                           className='eight columns')
+]
 
 
 ################################CSS###########################################
@@ -408,6 +409,24 @@ def static_file(path):
 #                                         Controllers                                             #
 #                                                                                                 #
 ###################################################################################################
+
+@app.callback(Output(CONTROLS['div_id'], 'style'),
+              state=[State(CONTROLS['toggle'], 'children')],
+              events=[Event(CONTROLS['toggle'], 'click')])
+def hide_reveal_filters(current_toggle):
+    if current_toggle=='Show Filters':
+        return {'display':'inline'}
+    else:
+        return {'display':'none'}
+
+@app.callback(Output(CONTROLS['toggle'], 'children'),
+              state=[State(CONTROLS['toggle'], 'children')],
+              events=[Event(CONTROLS['toggle'], 'click')])
+def change_button_text(current_toggle):
+    if current_toggle=='Hide Filters':
+        return 'Show Filters'
+    else:
+        return 'Hide Filters'
 
 @app.callback(Output('main-page', 'children'), [Input('tabs', 'value')])
 def display_content(value):
