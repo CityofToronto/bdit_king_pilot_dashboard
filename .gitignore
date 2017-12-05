@@ -100,5 +100,3 @@ ENV/
 # mypy
 .mypy_cache/
 .vscode/settings.json
-ttc/db.cfg
-d3-volume_map/D3volumemap_copy.html
