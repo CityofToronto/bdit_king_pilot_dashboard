@@ -103,3 +103,5 @@ ENV/
 
 #BT Files
 bluetooth/manual_tool/csv/
+*.cfg
+ttc/connect/connect.R
