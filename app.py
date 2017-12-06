@@ -84,7 +84,10 @@ TIMEPERIOD_DIV = 'timeperiod'
 CONTROLS = dict(div_id='controls-div',
                 toggle='toggle-controls-button',
                 timeperiods='timeperiod-radio',
-                day_types='day-type-radio')
+                day_types='day-type-radio',
+                date_range_type='date-range-types')
+DATERANGE_TYPES = OrderedDict([('Last Day', 1),
+                               ('Select Week', 2)])
 GRAPHS = ['eb_graph', 'wb_graph']
 
 
@@ -369,7 +372,14 @@ STREETS_LAYOUT = [html.Div(children=[
                                                 'id': day_type}
                                                for day_type in TIMEPERIODS['day_type'].unique()],
                                       value=TIMEPERIODS.iloc[0]['day_type'],
-                                      className='radio-toolbar')],
+                                      className='radio-toolbar'),
+                       html.Span(dcc.Dropdown(id=CONTROLS['date_range_type'],
+                                    options=[{'label': label,
+                                              'value': value}
+                                             for label, value in DATERANGE_TYPES.items()],
+                                    value=list(DATERANGE_TYPES.values())[0],
+                                    clearable=False),
+                                    title='Select a date range type to filter table data')],
              style={'display':'none'}),
     html.Div(id=TABLE_DIV_ID, children=generate_table(INITIAL_STATE['ew'], 'Weekday', 'AM Peak')),
     html.Div([html.B('Travel Time', style={'background-color':'#E9A3C9'}),
