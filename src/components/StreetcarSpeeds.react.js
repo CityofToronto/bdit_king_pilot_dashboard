@@ -6,9 +6,9 @@ import ReactFauxDOM from 'react-faux-dom';
 import PropTypes from 'prop-types';
 
 // styling variables
-var margin = {top: 20, right: 90, bottom: 30, left: 50};
-var width = 960 - margin.left - margin.right;
-var height = 400 - margin.top - margin.bottom;
+var margin = {top: 20, right: 10, bottom: 20, left: 10};
+var width = 750 - margin.left - margin.right;
+var height = 200 - margin.top - margin.bottom;
 		
 var buffer = 10;
 var boxHeight = 80;
@@ -18,7 +18,7 @@ var leftBuffer = 20;
 var segmentBuffer = 10;
 
 var fontSpeedSize = 18;
-var fontSegmentSize = 12;
+//var fontSegmentSize = 12;
 var fontTTSize = 40;
 
 var tileWidth = (width - margin.left - margin.right - leftBuffer)/5;
@@ -128,10 +128,17 @@ class StreetcarSpeeds extends Component {
 		// Loads the default data
 		updateDatasets(tt_data);
 		// Set the dimensions of the svg element
+		var svg_width = width + margin.left + margin.right;
+		var svg_height = height + margin.top + margin.bottom;
 		var svg = select(this.node)
-			.attr('width', width + margin.left + margin.right)
-			.attr('height', height + margin.top + margin.bottom);
-		
+			.classed("svg-container", true)
+			.append('svg')
+			.attr('id', this.props.id)
+//			.attr('width', width + margin.left + margin.right)
+//			.attr('height', height + margin.top + margin.bottom)
+			.attr('preserveAspectRatio','xMinYMin')
+			.attr('viewBox', '0 0 '+svg_width+' '+svg_height)
+			.attr('class', 'svg-content-responsive');
 		// bars
 		svg.selectAll('tiles')
 			.data(dataset)
@@ -158,9 +165,7 @@ class StreetcarSpeeds extends Component {
 										else {return margin.top + boxHeight + buffer/2 + tileHeight + textBuffer + fontSpeedSize*7/10;} 
 										})
 			.attr('fill', 'black')
-			.attr('font-size', fontSpeedSize + 'px')
 			.attr('text-anchor', 'middle')
-			.attr('font-family','system-ui')
 			
 		// segment name and line seperators
 		svg.selectAll('text_segments')
@@ -172,9 +177,7 @@ class StreetcarSpeeds extends Component {
 			.attr('x', function(d,i) { return margin.left + leftBuffer + i * tileWidth + tileWidth/2; })
 			.attr('y', margin.top + boxHeight - buffer/2 - tileHeight - textBuffer - fontSpeedSize - segmentBuffer)
 			.attr('fill', 'black')
-			.attr('font-size', fontSegmentSize + 'px')
 			.attr('text-anchor', 'middle')
-			.attr('font-family','system-ui')
 		
 		svg.selectAll('line_segments')
 			.data(segments)
@@ -217,42 +220,39 @@ class StreetcarSpeeds extends Component {
 				.attr('x', function() {return margin.left + leftBuffer + tileWidth * 4.475;})
 				.attr('y', function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight);})
 				.attr('fill', 'black')
-				.attr('font-size', fontTTSize + 'px')
 				.attr('text-anchor', 'end')
-				.attr('font-family','system-ui')
-				.attr('font-weight','bold')
 				
 		tt_texts.append('text')
 			.text('MIN')
+				.attr('class','text_min')
 				.attr('x', function() {return margin.left + leftBuffer + tileWidth * 4.525;})
 				.attr('y', function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight);})
 				.attr('fill', 'black')
 				.attr('font-size', (fontTTSize-14) + 'px')
-				.attr('text-anchor', 'start')
-				.attr('font-family','system-ui')
 		
-			tt_texts.append('text')
-				.text(function(d) {return d[1].toUpperCase();})
+		tt_texts.append('text')
+			.text(function(d) {return d[1].toUpperCase();})
+				.attr('class','text_dir')
 				.attr('x', function() {return margin.left + leftBuffer + tileWidth * 4.525;})
 				.attr('y', function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight) + boxHeight*1/3;})
 				.attr('fill', 'black')
-				.attr('font-size', (fontTTSize-22) + 'px')
 				.attr('text-anchor', 'middle')
-				.attr('class','test')
 	}
 	// What is displayed from the class
     render() {
 		return (
-			<svg ref={node => this.node = node}
-				id={this.props.id}
-				width={960}
-				height={400}>
-			</svg>
+			<div className={this.props.div_class} ref={node => this.node = node}>
+			</div>
 		)
 	}
 }
 // StreetcarSpeeds props
 StreetcarSpeeds.propTypes = {
+	/**
+     * The ID used to identify this component in Dash callbacks
+     */
+    div_class: PropTypes.string,
+	
     /**
      * The ID used to identify this component in Dash callbacks
      */

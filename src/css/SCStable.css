@@ -1,0 +1,37 @@
+.text_speeds {
+	font-size: 0.9em;
+}
+
+.text_segments {
+	font-size: 0.7em;
+}
+
+.text_tt {
+	font-size: 2.3em;
+	font-weight: bold;
+}
+
+.text_min {
+	font-size: 1.5em;
+}
+	
+.text_dir {
+	font-size: 1.1em;
+}
+
+.svg-container {
+    display: inline-block;
+    position: relative;
+	vertical-align: top;
+	width:50%;
+	height:50%;
+	padding-bottom: 15%;
+    overflow: hidden;
+}
+ 
+.svg-content-responsive {
+    display: block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+}
