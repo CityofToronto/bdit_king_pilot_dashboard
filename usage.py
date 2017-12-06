@@ -28,6 +28,8 @@ app = dash.Dash('')
 app.css.config.serve_locally = True
 app.scripts.config.serve_locally = True
 
+server = app.server
+
 #layout
 app.layout = html.Div([
 	html.Link(
