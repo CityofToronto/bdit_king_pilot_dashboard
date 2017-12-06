@@ -183,7 +183,7 @@ var monthIDs = ["Nov","Dec","Jan","Feb"];
 var current_period = document.getElementById("AM").value;
 var current_month = document.getElementById("Nov").value;
 
-// check which buttons are selected, update and return current period and month
+// check which buttons are selected, updates current period and month
 function buttonChecker() {
 	periodIDs.forEach(function(buttonID) {
 		if (document.getElementById(buttonID).checked == true) {
@@ -541,21 +541,26 @@ function sspathGen(ssarr) {
 		.attr("fill", fillDefault); // default colour, also no-data colour
 }
 
+//update segment polygons by binding data
 function sspathUpdate(dataset) {
-	buttonChecker(); // update variables current_period and current_month
+	// update variables current_period and current_month
+	buttonChecker();
 	
-	var segments = d3.select("#ssgroup") // bind data to ss paths
+	// bind data to ss paths
+	var segments = d3.select("#ssgroup")
 		.selectAll("path")
 		.data(dataset.filter(function(obj) // filter for current period and month
 					{return (obj.time_period == current_period) 
 						&& ((obj.month.getMonth() + 1) == current_month);}), 
 				function(obj) {return obj.direction + obj.id;}) // key for binding
 	
-	segments.transition() // colour by data with transition
+	// colour by data with transition
+	segments.transition()
 		.duration(1000)
 		.attr("fill", function(obj) {return pctColour(obj);})
 	
-	segments.on("mouseover", function(obj) { // tooltip
+	// tooltip
+	segments.on("mouseover", function(obj) {
 			divtip.transition()
 				.duration(200)
 				.style("opacity", .9);
