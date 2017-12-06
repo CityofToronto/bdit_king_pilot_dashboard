@@ -52,7 +52,7 @@ con.close()
 
 # Data management constants
 
-STREETS = OrderedDict(ew=['Dundas', 'Queen', 'Adelaide', 'Richmond', 'Wellington', 'Front'],
+STREETS = OrderedDict(ew=['Dundas', 'Queen', 'Richmond', 'Adelaide', 'Wellington', 'Front'],
                       ns=['Bathurst', 'Spadina', 'University', 'Yonge', 'Jarvis'])
 DIRECTIONS = OrderedDict(ew=['Eastbound', 'Westbound'],
                          ns=['Northbound', 'Southbound'])
