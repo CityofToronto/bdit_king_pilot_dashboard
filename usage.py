@@ -10,11 +10,18 @@ from flask import send_from_directory
 
 df = pd.read_csv('streetcar_travel_times.csv')
 
-#periods
-time_periods = ['AM', 'PM']
+###################################################################################################
+#                                                                                                 #
+#                                        Constants                                                #
+#                                                                                                 #
+###################################################################################################
 
-#months
-months = pd.to_datetime(df['mon']).map(lambda t: t.date().month).unique()
+# Data management constants
+TIME_PERIODS = ['AM', 'PM']
+MONTHS = pd.to_datetime(df['mon']).map(lambda t: t.date().month).unique()
+
+# Dashboard appearance
+TITLE = 'King Street Transit Pilot: Dashboard'
 
 app = dash.Dash('')
 
@@ -24,25 +31,42 @@ app.scripts.config.serve_locally = True
 #layout
 app.layout = html.Div([
 	html.Link(
-        rel='stylesheet',
-        href='/src/styles.css'
-    ),
-	dash_components.StreetcarSpeeds( id='streetcarspeeds', data=json.loads(df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==9) & (df['time_period']=='AM')].to_json(orient='records'))),
-    dcc.RadioItems(
+		rel='stylesheet',
+		href='/src/css/dashboard.css'
+	),
+	html.Link(
+		rel='stylesheet',
+		href='/src/css/style.css'
+	),
+	html.Div(children=[
+		html.H1(children=TITLE, id='title')
+	], className='row twelve columns'),
+	html.Div(children=[
+		html.H2(id='streetcarspeedDiv', children='Weekday AM Peak'),
+		html.Div(children=[
+			dash_components.StreetcarSpeeds( id='streetcarspeeds', data=json.loads(df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==9) & (df['time_period']=='AM')].to_json(orient='records'))),
+			dash_components.StreetcarSpeeds( id='streetcarspeeds', data=json.loads(df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==9) & (df['time_period']=='AM')].to_json(orient='records')))
+		]),
+		html.Div(children=[
+			dash_components.StreetcarSpeeds( id='streetcarspeeds', data=json.loads(df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==9) & (df['time_period']=='AM')].to_json(orient='records'))),
+			dash_components.StreetcarSpeeds( id='streetcarspeeds', data=json.loads(df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==9) & (df['time_period']=='AM')].to_json(orient='records')))
+		])
+	], className='row twelve columns'),
+	dcc.RadioItems(
 		id='period_radio',
-		options = [{'label': i, 'value': i} for i in time_periods],
-		value=time_periods[0],
+		options = [{'label': i, 'value': i} for i in TIME_PERIODS],
+		value=TIME_PERIODS[0],
 		labelStyle={'display': 'inline-block'}
 	),
 	dcc.RadioItems(
 		id='month_radio',
-		options = [{'label': calendar.month_abbr[i], 'value': i} for i in months],
-		value=months[0],
+		options = [{'label': calendar.month_abbr[i], 'value': i} for i in MONTHS],
+		value=MONTHS[0],
 		labelStyle={'display': 'inline-block'}
 	)
 ])
 
-@app.server.route('/src/<path:path>')
+@app.server.route('/src/css/<path:path>')
 def static_file(path):
     static_folder = os.path.join(os.getcwd(), 'src')
     return send_from_directory(static_folder, path)
