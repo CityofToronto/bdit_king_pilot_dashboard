@@ -22,7 +22,6 @@ from flask import send_from_directory
 #                                                                                                 #
 ###################################################################################################
 
-
 database_url = os.getenv("DATABASE_URL")
 if database_url is not None:
     con = connect(database_url)
@@ -174,7 +173,7 @@ def generate_row_class(clicked):
         return 'notselected'
     
 def intstr(integer):
-    if integer > 0:
+    if integer > 0: #ignores nan
         return str(integer)
     else:
         return integer
@@ -248,7 +247,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
 
     orientation = get_orientation_from_dir(direction)
     if after_data.empty:
-        data = [go.Bar()]
+        figdiv = html.Div(className = 'nodata')
         line = None
         annotations = None
     else:
@@ -301,22 +300,35 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                 'y1': base_data.iloc[0]['tt'],
                 'line': BASELINE_LINE
                }
-    layout = dict(font={'family': FONT_FAMILY},
-                  autosize=True,
-                  height=225,
-                  barmode='relative',
-                  xaxis=dict(title='Date',
-                             range=DATERANGE,
-                             fixedrange=True),
-                  yaxis=dict(title='Travel Time (min)',
-                             range=[0, MAX_TIME[orientation]],
-                             fixedrange=True),
-                  shapes=[line],
-                  margin=PLOT['margin'],
-                  annotations=annotations,
-                  legend={'xanchor':'right'}
-                  )
-    return {'layout': layout, 'data': data}
+        layout = dict(font={'family': FONT_FAMILY},
+                      autosize=True,
+                      height=225,
+                      barmode='relative',
+                      xaxis=dict(title='Date',
+                                 range=DATERANGE,
+                                 fixedrange=True),
+                      yaxis=dict(title='Travel Time (min)',
+                                 range=[0, MAX_TIME[orientation]],
+                                 fixedrange=True),
+                      shapes=[line],
+                      margin=PLOT['margin'],
+                      annotations=annotations,
+                      legend={'xanchor':'right'}
+                      )
+        figdiv = html.Div(dcc.Graph(id = direction, figure = ({'layout': layout, 'data': data})))
+    return figdiv
+#==============================================================================
+# [
+#                     html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
+#                                                             ' Bathurst - Jarvis']),
+#                     html.Div(dcc.Graph(id = direction, figure = ({'layout': layout, 'data': data}))),
+#                     html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
+#                                                             ' Jarvis - Bathurst']),
+#                     
+#                 ]
+#==============================================================================
+                         
+                        
 
 app = DashResponsive()
 app.config['suppress_callback_exceptions'] = True
@@ -376,18 +388,12 @@ STREETS_LAYOUT = [html.Div(children=[
                    ],
                            className='four columns'
                           ),
-                  html.Div(children=[
-                    html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
-                                                            ' Bathurst - Jarvis']),
-                    dcc.Graph(id=GRAPHS[0],
-                              config={'displayModeBar': False}),
-                    html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
-                                                            ' Jarvis - Bathurst']),
-                    dcc.Graph(id=GRAPHS[1],
-                              config={'displayModeBar': False})
-                ],
-                         className='eight columns'
-                        ),
+    html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
+                                                ' Bathurst - Jarvis']),
+    html.Div(id = 'graphdiv0', className='eight columns'),
+    html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
+                                                ' Jarvis - Bathurst']),
+    html.Div(id = 'graphdiv1', className='eight columns')
                ]
 
 
@@ -525,7 +531,7 @@ def create_update_street_name(dir_id):
                                (BASELINE['direction'] == DIRECTIONS[orientation][dir_id])][['from_intersection',
                                                                                'to_intersection']].iloc[0]
         except IndexError:
-            return [html.B(street[0]+': ')]
+            return html.Div(className = 'nodata')
         else:
             return [html.B(street[0] + ' ' + DIRECTIONS[orientation][dir_id] + ': '),
                     from_to['from_intersection'] + ' - ' + from_to['to_intersection']]
@@ -535,7 +541,7 @@ def create_update_street_name(dir_id):
 def create_update_graph(graph_number):
     '''Dynamically create callback functions to update graphs based on a graph number
     '''
-    @app.callback(Output(GRAPHS[graph_number], 'figure'),
+    @app.callback(Output('graphdiv' + str(graph_number), 'children'),
                   [*[Input(div_id, 'children') for div_id in SELECTED_STREET_DIVS.values()],
                    Input(CONTROLS['timeperiods'], 'value'),
                    Input(CONTROLS['day_types'], 'value'),
@@ -567,4 +573,3 @@ def update_timeperiod(timeperiod, day_type):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-
