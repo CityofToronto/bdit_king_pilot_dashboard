@@ -6,7 +6,7 @@ import ReactFauxDOM from 'react-faux-dom';
 import PropTypes from 'prop-types';
 
 // styling variables
-var margin = {top: 20, right: 10, bottom: 20, left: 10};
+var margin = {top: 0, right: 0, bottom: 0, left: 0};
 var width = 750 - margin.left - margin.right;
 var height = 200 - margin.top - margin.bottom;
 		
@@ -14,7 +14,7 @@ var buffer = 10;
 var boxHeight = 80;
 
 var textBuffer = 7;
-var leftBuffer = 20;
+var leftBuffer = 0;
 var segmentBuffer = 10;
 
 var fontSpeedSize = 18;
@@ -128,10 +128,10 @@ class StreetcarSpeeds extends Component {
 		// Loads the default data
 		updateDatasets(tt_data);
 		// Set the dimensions of the svg element
-		var svg_width = width + margin.left + margin.right;
-		var svg_height = height + margin.top + margin.bottom;
+		var svg_width = width + margin.left/2 + margin.right/2;
+		var svg_height = height + margin.top/2 + margin.bottom/2;
 		var svg = select(this.node)
-			.classed("svg-container", true)
+			.classed('svg-container', true)
 			.append('svg')
 			.attr('id', this.props.id)
 //			.attr('width', width + margin.left + margin.right)
