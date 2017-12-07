@@ -170,6 +170,8 @@ app = dash.Dash('')
 app.css.config.serve_locally = True
 app.scripts.config.serve_locally = True
 
+server = app.server
+
 # main div contents
 STREETCAR_LAYOUT = [html.Div(children=[
 						html.Div(children=[
