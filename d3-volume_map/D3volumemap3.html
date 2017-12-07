@@ -596,6 +596,7 @@ function labelStreets(arr) {
 		.text(function(obj) {if (obj.streetname == "Front1") {return "Front";} // Front exceptions
 							else if (obj.streetname == "Front2") {return "";}
 							else {return obj.streetname;};})
+		.attr("class", "labels-text")
 		.attr("x", function(obj) {return xScale(obj.x1);})
 		.attr("y", function(obj) {return yScale(obj.y1);})
 		.attr("font_size", fontsize)
@@ -649,6 +650,7 @@ function createLegend() {
 		.enter()
 		.append("text")
 		.html(function(d) {return d.text;})
+		.attr("class", "legend-text")
 		.attr("x", function(d) {if (d.text == legendText[0]) {return d.x-40;}
 								else {return d.x;}})
 		.attr("y", function(d) {if (d.text == legendText[1]) {return d.y+20;}
