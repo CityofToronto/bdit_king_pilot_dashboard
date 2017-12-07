@@ -240,7 +240,7 @@ def generate_table(state, day_type, period, orientation='ew'):
                               state.values())]
                       , id='data_table')
 
-def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
+def generate_graph(street, direction, graph_name, day_type='Weekday', period='AMPK'):
     '''Generate a Dash bar chart of average travel times by day
     '''
     after_data, base_data = filter_graph_data(street, direction, day_type, period)
@@ -315,7 +315,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                       annotations=annotations,
                       legend={'xanchor':'right'}
                       )
-        figdiv = html.Div(dcc.Graph(id = direction, figure = ({'layout': layout, 'data': data})))
+        figdiv = html.Div(dcc.Graph(id = graph_name, figure = ({'layout': layout, 'data': data})))
     return figdiv
                                           
 
@@ -544,7 +544,7 @@ def create_update_graph(graph_number):
         #Use the input for the selected street from the orientation of the current tab
         *selected_streets, period, day_type, orientation = args
         street = selected_streets[list(SELECTED_STREET_DIVS.keys()).index(orientation)]
-        return generate_graph(street[0], DIRECTIONS[orientation][graph_number], period=period, day_type=day_type)
+        return generate_graph(street[0], DIRECTIONS[orientation][graph_number], GRAPHS[graph_number], period=period, day_type=day_type, )
     update_graph.__name__ = 'update_graph_' + GRAPHS[graph_number]
     return update_graph
 
