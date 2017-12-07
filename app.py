@@ -33,14 +33,24 @@ else:
     dbset = CONFIG['DBSETTINGS']
     con = connect(**dbset)
 
-DATA = pandasql.read_sql('''SELECT street, direction, dt AS date, day_type, category, period, round(tt,1) tt, 
-                         rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS most_recent
-                         FROM king_pilot.dash_daily''', con)
+DATA = pandasql.read_sql('''WITH weeks AS(SELECT week, row_number() OVER() as week_number 
+                            FROM (SELECT DISTINCT ON(date_trunc('week', dt)::DATE) date_trunc('week', dt)::DATE as week
+                          FROM king_pilot.dash_daily
+                          WHERE dt >= '2017-11-13' )a
+                          ORDER BY week)
+                         SELECT street, direction, dt AS date, day_type, category, period, round(tt,1) tt, 
+                         rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS most_recent,
+                         week, week_number
+                         FROM king_pilot.dash_daily
+                         LEFT OUTER JOIN weeks ON dt >= week AND dt < week + INTERVAL '1 week'
+                         ''', con)
 BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_intersection, 
                              day_type, period, period_range, round(tt,1) tt 
                              FROM king_pilot.dash_baseline ''',
                              con)
-
+WEEKS = DATA[['week', 'week_number']].drop_duplicates()
+WEEKS['label'] = 'Week ' + WEEKS['week_number'].astype(str) + ': ' + WEEKS['week'].astype(str)
+WEEKS.sort_values(by='week_number', inplace=True)
 con.close()
 
 ###################################################################################################
@@ -85,7 +95,9 @@ CONTROLS = dict(div_id='controls-div',
                 toggle='toggle-controls-button',
                 timeperiods='timeperiod-radio',
                 day_types='day-type-radio',
-                date_range_type='date-range-types')
+                date_range_type='date-range-types',
+                date_range='date-range-dropbown',
+                date_range_span='date-range-span')
 DATERANGE_TYPES = OrderedDict([('Last Day', 1),
                                ('Select Week', 2)])
 GRAPHS = ['eb_graph', 'wb_graph']
@@ -164,12 +176,23 @@ def get_orientation_from_dir(direction):
     for orientation, direction_list in DIRECTIONS.items():
         if direction in direction_list:
             return orientation
-
+        
 ###################################################################################################
 #                                                                                                 #
 #                                         App Layout                                              #
 #                                                                                                 #
 ###################################################################################################
+
+
+def generate_date_ranges(range_type=1):
+    '''Generate an array of dropdown menu options depending on the date range type
+    '''
+
+    if range_type == 1:
+        # Weeks
+        return [{'label': row.label,
+                 'value': row.week_number}
+                for row in WEEKS.itertuples()]
 
 def generate_row_class(clicked):
     '''Assigns class to clicked row'''
@@ -373,13 +396,20 @@ STREETS_LAYOUT = [html.Div(children=[
                                                for day_type in TIMEPERIODS['day_type'].unique()],
                                       value=TIMEPERIODS.iloc[0]['day_type'],
                                       className='radio-toolbar'),
-                       html.Span(dcc.Dropdown(id=CONTROLS['date_range_type'],
+                       html.Span(children=[
+                           html.Span(dcc.Dropdown(id=CONTROLS['date_range_type'],
                                     options=[{'label': label,
                                               'value': value}
                                              for label, value in DATERANGE_TYPES.items()],
                                     value=list(DATERANGE_TYPES.values())[0],
                                     clearable=False),
-                                    title='Select a date range type to filter table data')],
+                                    title='Select a date range type to filter table data'),
+                           html.Span(dcc.Dropdown(id=CONTROLS['date_range'],
+                                                  options=generate_date_ranges(),
+                                                  value = 1,
+                                                  clearable=False),
+                                     id=CONTROLS['date_range_span'],
+                                     style={'display':'none'})])],
              style={'display':'none'}),
     html.Div(id=TABLE_DIV_ID, children=generate_table(INITIAL_STATE['ew'], 'Weekday', 'AM Peak')),
     html.Div([html.B('Travel Time', style={'background-color':'#E9A3C9'}),
@@ -424,7 +454,15 @@ def static_file(path):
               state=[State(CONTROLS['toggle'], 'children')],
               events=[Event(CONTROLS['toggle'], 'click')])
 def hide_reveal_filters(current_toggle):
-    if current_toggle=='Show Filters':
+    if current_toggle == 'Show Filters':
+        return {'display':'inline'}
+    else:
+        return {'display':'none'}
+
+@app.callback(Output(CONTROLS['date_range_span'], 'style'),
+              [Input(CONTROLS['date_range_type'], 'value')])
+def hide_reveal_date_range(date_range_value):
+    if date_range_value == 2:
         return {'display':'inline'}
     else:
         return {'display':'none'}
