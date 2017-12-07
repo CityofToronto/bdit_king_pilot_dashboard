@@ -317,18 +317,7 @@ def generate_graph(street, direction, day_type='Weekday', period='AMPK'):
                       )
         figdiv = html.Div(dcc.Graph(id = direction, figure = ({'layout': layout, 'data': data})))
     return figdiv
-#==============================================================================
-# [
-#                     html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
-#                                                             ' Bathurst - Jarvis']),
-#                     html.Div(dcc.Graph(id = direction, figure = ({'layout': layout, 'data': data}))),
-#                     html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
-#                                                             ' Jarvis - Bathurst']),
-#                     
-#                 ]
-#==============================================================================
-                         
-                        
+                                          
 
 app = DashResponsive()
 app.config['suppress_callback_exceptions'] = True
@@ -390,10 +379,10 @@ STREETS_LAYOUT = [html.Div(children=[
                           ),
     html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
                                                 ' Bathurst - Jarvis']),
-    html.Div(id = 'graphdiv0', className='eight columns'),
+    html.Div(id = GRAPHS[0], className='eight columns'),
     html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
                                                 ' Jarvis - Bathurst']),
-    html.Div(id = 'graphdiv1', className='eight columns')
+    html.Div(id = GRAPHS[1], className='eight columns')
                ]
 
 
@@ -541,7 +530,7 @@ def create_update_street_name(dir_id):
 def create_update_graph(graph_number):
     '''Dynamically create callback functions to update graphs based on a graph number
     '''
-    @app.callback(Output('graphdiv' + str(graph_number), 'children'),
+    @app.callback(Output(GRAPHS[graph_number], 'children'),
                   [*[Input(div_id, 'children') for div_id in SELECTED_STREET_DIVS.values()],
                    Input(CONTROLS['timeperiods'], 'value'),
                    Input(CONTROLS['day_types'], 'value'),
