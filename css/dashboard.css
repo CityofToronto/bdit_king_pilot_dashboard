@@ -394,7 +394,7 @@ tr {
    padding: 4px;
 }
 tr.notselected:hover {
-   border: 2px solid black;
+   outline: 2px solid black;
    padding: 2px;
 }
 tr.selected {
@@ -404,11 +404,11 @@ tr.selected td:first-child {
 tr.selected td:last-child {
    padding-right : 8px; }
 tr.notselected:hover td:first-child {
-   padding-left : 9px; }
+   padding-left : 10px; }
 tr.notselected:hover td:last-child {
-   padding-right : 9px; }
+   padding-right : 10px; }
 tr.notselected:hover td {
-   padding-bottom: 5px; }
+   padding-bottom: 6px; }
 tr.notselected {
    
 border: 0px solid black;}
