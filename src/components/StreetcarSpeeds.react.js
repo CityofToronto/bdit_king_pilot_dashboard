@@ -131,7 +131,7 @@ class StreetcarSpeeds extends Component {
 		var svg_width = width + margin.left + margin.right;
 		var svg_height = height + margin.top + margin.bottom;
 		var svg = select(this.node)
-			.classed("svg-container", true)
+			.classed('svg-container', true)
 			.append('svg')
 			.attr('id', this.props.id)
 //			.attr('width', width + margin.left + margin.right)

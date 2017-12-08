@@ -1,17 +1,8 @@
 {
   "name": "dash-components",
   "version": "0.0.1",
-  "description": "Components for King Street Pilot Dashboard",
+  "description": "Dash UI component suite",
   "main": "lib/index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/CityofToronto/dash-components.git"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/CityofToronto/dash-components/issues"
-  },
-  "homepage": "https://github.com/CityofToronto/dash-components",
   "scripts": {
     "copy-lib": "copyfiles -u 1 lib/* dash_components",
     "demo": "builder run demo",
@@ -26,15 +17,18 @@
     "uninstall-local": "pip uninstall dash-components -y"
   },
   "dependencies": {
-    "builder": "^3.2.2",
+    "builder": "3.2.2",
     "copyfiles": "^1.2.0",
     "d3": "^4.12.0",
+    "d3-array": "^1.2.1",
     "d3-interpolate": "^1.1.6",
+    "d3-path": "^1.0.5",
     "d3-request": "^1.0.6",
+    "d3-scale": "^1.0.7",
     "d3-selection": "^1.2.0",
+    "d3-time-format": "^2.1.1",
     "d3-transition": "^1.1.1",
     "dash-components-archetype": "^0.2.11",
-    "moment": "^2.19.2",
     "prop-types": "^15.5.9",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",

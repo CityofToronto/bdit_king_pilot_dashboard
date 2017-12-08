@@ -48,5 +48,48 @@
         "description": "The data used to fill the component. Must be in JSON format."
       }
     }
+  },
+  "src/components/VolumeMap.react.js": {
+    "description": "",
+    "displayName": "VolumeMap",
+    "methods": [
+      {
+        "name": "createVolumeMap",
+        "docblock": null,
+        "modifiers": [],
+        "params": [],
+        "returns": null
+      }
+    ],
+    "props": {
+      "id": {
+        "type": {
+          "name": "string"
+        },
+        "required": false,
+        "description": "The ID used to identify this component in Dash callbacks"
+      },
+      "sl_data": {
+        "type": {
+          "name": "object"
+        },
+        "required": false,
+        "description": "The data used to generate the street lines. Must be in JSON format"
+      },
+      "ss_data": {
+        "type": {
+          "name": "object"
+        },
+        "required": false,
+        "description": "The data used to generate the street segments. Must be in JSON format."
+      },
+      "volume_data": {
+        "type": {
+          "name": "object"
+        },
+        "required": false,
+        "description": "The data that contains volume info for the street segments. Must be in JSON format."
+      }
+    }
   }
 }

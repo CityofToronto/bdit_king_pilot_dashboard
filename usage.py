@@ -8,7 +8,11 @@ import json
 import os
 from flask import send_from_directory
 
-df = pd.read_csv('streetcar_travel_times.csv')
+streetcar_df = pd.read_csv('streetcar_travel_times.csv')
+
+street_volumes_df = pd.read_csv('street_volumes.csv')
+street_segments_df = pd.read_csv('streets_segments31.csv')
+streetlines_df = pd.read_csv('streets_lines3.csv')
 
 ###################################################################################################
 #                                                                                                 #
@@ -18,7 +22,7 @@ df = pd.read_csv('streetcar_travel_times.csv')
 
 # Data management constants
 TIME_PERIODS = ['AM', 'PM']
-MONTHS = pd.to_datetime(df['mon']).map(lambda t: t.date().month).unique()
+MONTHS = pd.to_datetime(streetcar_df['mon']).map(lambda t: t.date().month).unique()
 
 # Dashboard appearance
 TITLE = 'King Street Transit Pilot: Dashboard'
@@ -34,7 +38,14 @@ app.layout = html.Div([
 		rel='stylesheet',
 		href='/src/css/SCStable.css'
 	),
-	dash_components.StreetcarSpeeds(id='streetcarspeeds', div_class='scscontainer', data=json.loads(df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==9) & (df['time_period']=='AM')].to_json(orient='records'))),
+	html.Div(
+	dash_components.StreetcarSpeeds(id='streetcarspeeds', div_class='scscontainer', data=json.loads(streetcar_df[(pd.to_datetime(streetcar_df['mon']).map(lambda t: t.date().month)==9) & (streetcar_df['time_period']=='AM')].to_json(orient='records')))
+	),
+	html.Div(
+	dash_components.VolumeMap(id='volumemap', sl_data=json.loads(streetlines_df.to_json(orient='records')),
+												ss_data=json.loads(street_segments_df.to_json(orient='records')),
+												volume_data=json.loads(street_volumes_df[(pd.to_datetime(street_volumes_df['mon']).map(lambda t: t.date().month)==11) & (street_volumes_df['time_period']=='AM')].to_json(orient='records')))
+	),
 	dcc.RadioItems(
 		id='period_radio',
 		options = [{'label': i, 'value': i} for i in TIME_PERIODS],
@@ -47,6 +58,7 @@ app.layout = html.Div([
 		value=MONTHS[0],
 		labelStyle={'display': 'inline-block'}
 	)
+	
 ])
 
 @app.server.route('/src/<path:path>')
@@ -61,7 +73,7 @@ def static_file(path):
 	[dash.dependencies.Input('period_radio', 'value'),
 	 dash.dependencies.Input('month_radio', 'value')])
 def update_scstable(current_period, current_month):
-	tt_subset = df[(pd.to_datetime(df['mon']).map(lambda t: t.date().month)==current_month) & (df['time_period']==current_period)]
+	tt_subset = streetcar_df[(pd.to_datetime(streetcar_df['mon']).map(lambda t: t.date().month)==current_month) & (streetcar_df['time_period']==current_period)]
 	return json.loads(tt_subset.to_json(orient='records'))
 
 if __name__ == '__main__':
