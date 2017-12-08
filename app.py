@@ -47,7 +47,7 @@ BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_
                              day_type, period, period_range, round(tt,1) tt 
                              FROM king_pilot.dash_baseline ''',
                              con)
-WEEKS = DATA[['week', 'week_number']].drop_duplicates()
+WEEKS = DATA[['week', 'week_number']].drop_duplicates().dropna()
 WEEKS['label'] = 'Week ' + WEEKS['week_number'].astype(str) + ': ' + WEEKS['week'].astype(str)
 WEEKS.sort_values(by='week_number', inplace=True)
 con.close()
@@ -126,11 +126,15 @@ def serialise_state(clicks_dict):
     '''
     return json.dumps(clicks_dict)
 
-def pivot_order(df, orientation = 'ew'):
+def pivot_order(df, orientation = 'ew', date_range_type=1):
     '''Pivot the dataframe around street directions and order by STREETS global var
     '''
-    if 'date' in df.columns:
+    if date_range_type == 1 and 'date' in df.columns:
         pivoted = df.pivot_table(index=['street', 'date'],
+                                 columns='direction',
+                                 values='tt').reset_index()
+    elif 'date' in df.columns:
+        pivoted = df.pivot_table(index=['street'],
                                  columns='direction',
                                  values='tt').reset_index()
     else:
@@ -139,15 +143,23 @@ def pivot_order(df, orientation = 'ew'):
     pivoted.street.cat.set_categories(STREETS[orientation], inplace=True)
     return pivoted.sort_values(['street']).round(1)
 
-def filter_table_data(period, day_type, orientation='ew'):
+def filter_table_data(period, day_type, orientation='ew', daterange_type=1, date_range_id=1):
     '''Return data aggregated and filtered by period
     '''
+
+    if daterange_type == 1:
+        date_filter = DATA['most_recent'] == 1
+    elif daterange_type == 2:
+        #Weeks
+        date_filter = DATA['week_number'] == date_range_id
+
     #current data
     filtered = DATA[(DATA['period'] == period) &
                     (DATA['day_type'] == day_type) &
                     (DATA['direction'].isin(DIRECTIONS[orientation])) &
-                    (DATA['most_recent'] == 1)]
-    pivoted = pivot_order(filtered, orientation)
+                    (date_filter)]
+    pivoted = pivot_order(filtered, orientation, daterange_type)
+
     #baseline data
     filtered_base = BASELINE[(BASELINE['period'] == period) &
                              (BASELINE['day_type'] == day_type) &
@@ -239,7 +251,7 @@ def generate_row(df_row, baseline_row, row_state, orientation='ew'):
                    className=generate_row_class(row_state['clicked']),
                    n_clicks=row_state['n_clicks'])
 
-def generate_table(state, day_type, period, orientation='ew'):
+def generate_table(state, day_type, period, orientation='ew', daterange_type=1, date_range_id=1):
     """Generate HTML table of streets and before-after values
     
         :param state:
@@ -250,12 +262,18 @@ def generate_table(state, day_type, period, orientation='ew'):
             Timeperiod name
         :param orientation:
             Filter of street orientations: East-West or...
-        
+        :param daterange_type:
+
+        :param daterange:
+            
     """
 
-    filtered_data, baseline = filter_table_data(period, day_type, orientation)
+    filtered_data, baseline = filter_table_data(period, day_type, orientation, daterange_type, date_range_id)
     #Current date for the data, to replace "After" header
-    day = filtered_data['date'].iloc[0].strftime('%a %b %d')
+    if daterange_type == 1:
+        day = filtered_data['date'].iloc[0].strftime('%a %b %d')
+    elif daterange_type == 2:
+        day = 'Week ' + str(date_range_id)
 
     return html.Table([html.Tr([html.Td(""), html.Td(DIRECTIONS[orientation][0], colSpan=2), html.Td(DIRECTIONS[orientation][1], colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
@@ -498,15 +516,18 @@ def assign_default_timperiod(day_type='Weekday'):
 @app.callback(Output(TABLE_DIV_ID, 'children'),
               [Input(CONTROLS['timeperiods'], 'value'),
                Input(CONTROLS['day_types'], 'value'),
-               Input('tabs', 'value')],
+               Input(CONTROLS['date_range_type'], 'value'),
+               Input(CONTROLS['date_range'], 'value'),
+               Input('tabs', 'value'),
+               ],
               [State(div_id, 'children') for div_id in STATE_DIV_IDS.values()])
-def update_table(period, day_type, orientation, *state_data):
+def update_table(period, day_type, daterange_type, date_range_id, orientation, *state_data):
     '''Generate HTML table of before-after travel times based on selected
     day type, time period, and remember which row was previously selected
     '''
     state_index = list(STREETS.keys()).index(orientation)
     state_data_dict = deserialise_state(state_data[state_index])
-    table = generate_table(state_data_dict, day_type, period, orientation)
+    table = generate_table(state_data_dict, day_type, period, orientation, daterange_type, date_range_id)
     return table
 
 
