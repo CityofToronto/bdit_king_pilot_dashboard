@@ -83,7 +83,7 @@ TIMEPERIOD_DIV = 'timeperiod'
 CONTROLS = dict(timeperiods='timeperiod-radio',
                 day_types='day-type-radio')
 GRAPHS = ['eb_graph', 'wb_graph']
-
+GRAPHDIVS = ['eb_graph_div', 'wb_graph_div']
 
 INITIAL_STATE = {orientation:OrderedDict([(street,
                                            dict(n_clicks=(1 if i == 0 else 0),
@@ -379,10 +379,10 @@ STREETS_LAYOUT = [html.Div(children=[
                           ),
     html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
                                                 ' Bathurst - Jarvis']),
-    html.Div(id = GRAPHS[0], className='eight columns'),
+    html.Div(id = GRAPHDIVS[0], className='eight columns'),
     html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
                                                 ' Jarvis - Bathurst']),
-    html.Div(id = GRAPHS[1], className='eight columns')
+    html.Div(id = GRAPHDIVS[1], className='eight columns')
                ]
 
 
@@ -530,7 +530,7 @@ def create_update_street_name(dir_id):
 def create_update_graph(graph_number):
     '''Dynamically create callback functions to update graphs based on a graph number
     '''
-    @app.callback(Output(GRAPHS[graph_number], 'children'),
+    @app.callback(Output(GRAPHDIVS[graph_number], 'children'),
                   [*[Input(div_id, 'children') for div_id in SELECTED_STREET_DIVS.values()],
                    Input(CONTROLS['timeperiods'], 'value'),
                    Input(CONTROLS['day_types'], 'value'),
