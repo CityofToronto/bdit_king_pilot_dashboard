@@ -315,7 +315,9 @@ def generate_graph(street, direction, graph_name, day_type='Weekday', period='AM
                       annotations=annotations,
                       legend={'xanchor':'right'}
                       )
-        figdiv = html.Div(dcc.Graph(id = graph_name, figure = ({'layout': layout, 'data': data})))
+        figdiv = html.Div(dcc.Graph(id = graph_name,
+                                    figure = ({'layout': layout, 'data': data}),
+                                    config={'displayModeBar': False}))
     return figdiv
                                           
 
