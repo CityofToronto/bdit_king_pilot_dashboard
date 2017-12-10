@@ -240,49 +240,38 @@ def generate_table(state, day_type, period, orientation='ew'):
                               state.values())]
                       , id='data_table')
 
-def generate_graph(street, direction, graph_name, day_type='Weekday', period='AMPK'):
+def generate_graph_data(data, **kwargs):
+    return dict(x=data['date'],
+                y=data['tt'],
+                text=data['tt'].round(),
+                hoverinfo='x+y',
+                textposition='inside',
+                type='bar',
+                insidetextfont=dict(color='rgba(255,255,255,1)',
+                                    size=12),
+                **kwargs)
+
+def generate_figure(street, direction, day_type='Weekday', period='AMPK', daterange_type=1, date_range_id=1):
     '''Generate a Dash bar chart of average travel times by day
     '''
     after_data, base_data = filter_graph_data(street, direction, day_type, period)
 
     orientation = get_orientation_from_dir(direction)
     if after_data.empty:
-        figdiv = html.Div(className = 'nodata')
-        line = None
-        annotations = None
+        return None
     else:
         baseline_days = after_data[after_data['category'] == 'Baseline']
         if baseline_days.empty:
-            data = [go.Bar(x=after_data['date'],
-                           y=after_data['tt'],
-                           text=after_data['tt'].round(),
-                           hoverinfo='x+y',
-                           textposition='inside',
-                           insidetextfont=dict(color='rgba(255,255,255,1)',
-                                               size=12),
-                           marker=dict(color=PLOT_COLORS['pilot']))]
+            data = [generate_graph_data(after_data,
+                                        marker=dict(color=PLOT_COLORS['pilot']))]
         else:
             pilot_days = after_data[after_data['category'] == 'Pilot']
-            pilot_data = dict(x=pilot_days['date'],
-                              y=pilot_days['tt'],
-                              text=pilot_days['tt'].round(),
-                              hoverinfo='x+y',
-                              textposition='inside',
-                              insidetextfont=dict(color='rgba(255,255,255,1)',
-                                                  size=12),
-                              marker=dict(color=PLOT_COLORS['pilot']),
-                              type='bar',
-                              name='Pilot')
-            baseline_data = dict(x=baseline_days['date'],
-                                 y=baseline_days['tt'],
-                                 text=baseline_days['tt'].round(),
-                                 hoverinfo='x+y',
-                                 textposition='inside',
-                                 insidetextfont=dict(color='rgba(255,255,255,1)',
-                                                     size=12),
-                                 marker=dict(color=PLOT_COLORS['baseline']),
-                                 type='bar',
-                                 name='Baseline')
+            pilot_data = generate_graph_data(pilot_days,
+                                             marker=dict(color=PLOT_COLORS['pilot']),
+                                             name='Pilot')
+            baseline_data = generate_graph_data(baseline_days,
+                                                marker=dict(color=PLOT_COLORS['baseline']),
+                                                name='Baseline')
             data = [baseline_data, pilot_data]
         annotations = [dict(x=-0.008,
                             y=base_data.iloc[0]['tt'] + 2,
@@ -315,12 +304,8 @@ def generate_graph(street, direction, graph_name, day_type='Weekday', period='AM
                       annotations=annotations,
                       legend={'xanchor':'right'}
                       )
-        figdiv = html.Div(dcc.Graph(id = graph_name,
-                                    figure = ({'layout': layout, 'data': data}),
-                                    config={'displayModeBar': False}))
-    return figdiv
+    return {'layout': layout, 'data': data}
                                           
-
 app = DashResponsive()
 app.config['suppress_callback_exceptions'] = True
 app.title=TITLE
@@ -546,7 +531,15 @@ def create_update_graph(graph_number):
         #Use the input for the selected street from the orientation of the current tab
         *selected_streets, period, day_type, orientation = args
         street = selected_streets[list(SELECTED_STREET_DIVS.keys()).index(orientation)]
-        return generate_graph(street[0], DIRECTIONS[orientation][graph_number], GRAPHS[graph_number], period=period, day_type=day_type, )
+        figure = generate_figure(street[0],
+                                 DIRECTIONS[orientation][graph_number],
+                                 period=period,
+                                 day_type=day_type)
+        if figure: 
+            return html.Div(dcc.Graph(id = GRAPHS[graph_number], figure = figure))
+        else:
+            return html.Div(className = 'nodata')
+
     update_graph.__name__ = 'update_graph_' + GRAPHS[graph_number]
     return update_graph
 
