@@ -80,7 +80,8 @@ BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
 PLOT = dict(margin={'t':10, 'b': 40, 'r': 40, 'l': 40, 'pad': 8})
 PLOT_COLORS = dict(pilot='rgba(22, 87, 136, 100)',
-                   baseline='rgba(128, 128, 128, 1.0)')
+                   baseline='rgba(128, 128, 128, 1.0)',
+                   selected='rgba(135, 71, 22, 1.0)')
 FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
 # IDs for divs
@@ -143,15 +144,21 @@ def pivot_order(df, orientation = 'ew', date_range_type=1):
     pivoted.street.cat.set_categories(STREETS[orientation], inplace=True)
     return pivoted.sort_values(['street']).round(1)
 
-def filter_table_data(period, day_type, orientation='ew', daterange_type=1, date_range_id=1):
-    '''Return data aggregated and filtered by period
+def selected_data(data, daterange_type=1, date_range_id=1):
+    '''Returns a boolean column indicating whether the provided data was selected or not
     '''
-
     if daterange_type == 1:
         date_filter = DATA['most_recent'] == 1
     elif daterange_type == 2:
         #Weeks
         date_filter = DATA['week_number'] == date_range_id
+    return date_filter
+
+def filter_table_data(period, day_type, orientation='ew', daterange_type=1, date_range_id=1):
+    '''Return data aggregated and filtered by period
+    '''
+
+    date_filter = selected_data(DATA, daterange_type, date_range_id)
 
     #current data
     filtered = DATA[(DATA['period'] == period) &
@@ -168,19 +175,31 @@ def filter_table_data(period, day_type, orientation='ew', daterange_type=1, date
 
     return (pivoted, pivoted_baseline)
 
-def filter_graph_data(street, direction, day_type='Weekday', period='AMPK'):
+def filter_graph_data(street, direction, day_type='Weekday', period='AMPK',
+                      daterange_type=1, date_range_id=1):
     '''Filter dataframes by street, direction, day_type, and period
     Returns a filtered baseline, and a filtered current dataframe
     '''
-    filtered = DATA[(DATA['street'] == street) &
-                    (DATA['period'] == period) &
-                    (DATA['day_type'] == day_type) &
-                    (DATA['direction'] == direction)]
-    filtered_baseline = BASELINE[(BASELINE['street'] == street) &
-                                 (BASELINE['period'] == period) &
-                                 (BASELINE['day_type'] == day_type) &
-                                 (BASELINE['direction'] == direction)]
-    return (filtered, filtered_baseline)
+    filtered_daily = DATA[(DATA['street'] == street) &
+                          (DATA['period'] == period) &
+                          (DATA['day_type'] == day_type) &
+                          (DATA['direction'] == direction)]
+
+    base_line = BASELINE[(BASELINE['street'] == street) &
+                         (BASELINE['period'] == period) &
+                         (BASELINE['day_type'] == day_type) &
+                         (BASELINE['direction'] == direction)]
+
+    base_line_data = filtered_daily[filtered_daily['category'] == 'Baseline']
+
+    selected_filter = selected_data(filtered_daily, daterange_type, date_range_id)
+
+    pilot_data = filtered_daily[(filtered_daily['category'] == 'Pilot') &
+                                ~(selected_filter)]
+
+    pilot_data_selected = filtered_daily[(filtered_daily['category'] == 'Pilot') &
+                                         (selected_filter)]
+    return (base_line, base_line_data, pilot_data, pilot_data_selected)
 
 def get_orientation_from_dir(direction):
     '''Get the orientation of the street based on its direction'''
@@ -297,59 +316,65 @@ def generate_graph_data(data, **kwargs):
                                     size=12),
                 **kwargs)
 
-def generate_figure(street, direction, day_type='Weekday', period='AMPK', daterange_type=1, date_range_id=1):
+def generate_figure(street, direction, day_type='Weekday', period='AMPK',
+                    daterange_type=1, date_range_id=1):
     '''Generate a Dash bar chart of average travel times by day
     '''
-    after_data, base_data = filter_graph_data(street, direction, day_type, period)
+    base_line, base_df, after_df, selected_df = filter_graph_data(street,
+                                                                  direction,
+                                                                  day_type,
+                                                                  period,
+                                                                  daterange_type,
+                                                                  date_range_id)
 
     orientation = get_orientation_from_dir(direction)
-    if after_data.empty:
+    if after_df.empty:
         return None
-    else:
-        baseline_days = after_data[after_data['category'] == 'Baseline']
-        if baseline_days.empty:
-            data = [generate_graph_data(after_data,
-                                        marker=dict(color=PLOT_COLORS['pilot']))]
-        else:
-            pilot_days = after_data[after_data['category'] == 'Pilot']
-            pilot_data = generate_graph_data(pilot_days,
-                                             marker=dict(color=PLOT_COLORS['pilot']),
-                                             name='Pilot')
-            baseline_data = generate_graph_data(baseline_days,
-                                                marker=dict(color=PLOT_COLORS['baseline']),
-                                                name='Baseline')
-            data = [baseline_data, pilot_data]
-        annotations = [dict(x=-0.008,
-                            y=base_data.iloc[0]['tt'] + 2,
-                            text='Baseline',
-                            font={'color':BASELINE_LINE['color']},
-                            xref='paper',
-                            yref='yaxis',
-                            showarrow=False
-                            )]
-        line = {'type':'line',
-                'x0': 0,
-                'x1': 1,
-                'xref': 'paper',
-                'y0': base_data.iloc[0]['tt'],
-                'y1': base_data.iloc[0]['tt'],
-                'line': BASELINE_LINE
-               }
-        layout = dict(font={'family': FONT_FAMILY},
-                      autosize=True,
-                      height=225,
-                      barmode='relative',
-                      xaxis=dict(title='Date',
-                                 range=DATERANGE,
-                                 fixedrange=True),
-                      yaxis=dict(title='Travel Time (min)',
-                                 range=[0, MAX_TIME[orientation]],
-                                 fixedrange=True),
-                      shapes=[line],
-                      margin=PLOT['margin'],
-                      annotations=annotations,
-                      legend={'xanchor':'right'}
-                      )
+    pilot_data = generate_graph_data(after_df,
+                                     marker=dict(color=PLOT_COLORS['pilot']),
+                                     name='Pilot')
+    pilot_data_selected = generate_graph_data(selected_df,
+                                              marker=dict(color=PLOT_COLORS['selected']),
+                                              name='Selected')
+    data = [pilot_data_selected, pilot_data]
+
+    if not base_df.empty:
+        baseline_data = generate_graph_data(base_df,
+                                            marker=dict(color=PLOT_COLORS['baseline']),
+                                            name='Baseline')
+        data.append(baseline_data)
+    
+    annotations = [dict(x=-0.008,
+                        y=base_line.iloc[0]['tt'] + 2,
+                        text='Baseline',
+                        font={'color':BASELINE_LINE['color']},
+                        xref='paper',
+                        yref='yaxis',
+                        showarrow=False
+                        )]
+    line = {'type':'line',
+            'x0': 0,
+            'x1': 1,
+            'xref': 'paper',
+            'y0': base_line.iloc[0]['tt'],
+            'y1': base_line.iloc[0]['tt'],
+            'line': BASELINE_LINE
+            }
+    layout = dict(font={'family': FONT_FAMILY},
+                  autosize=True,
+                  height=225,
+                  barmode='relative',
+                  xaxis=dict(title='Date',
+                              range=DATERANGE,
+                              fixedrange=True),
+                  yaxis=dict(title='Travel Time (min)',
+                              range=[0, MAX_TIME[orientation]],
+                              fixedrange=True),
+                  shapes=[line],
+                  margin=PLOT['margin'],
+                  annotations=annotations,
+                  legend={'xanchor':'right'}
+                  )
     return {'layout': layout, 'data': data}
                                           
 app = DashResponsive()
@@ -450,19 +475,19 @@ def static_file(path):
 #                                                                                                 #
 ###################################################################################################
 
+@app.callback(Output('main-page', 'children'), [Input('tabs', 'value')])
+def display_content(value):
+
+    if value == 'ew':
+        return STREETS_LAYOUT
+    elif value == 'ns':
+        return STREETS_LAYOUT
+
 @app.callback(Output(CONTROLS['div_id'], 'style'),
               state=[State(CONTROLS['toggle'], 'children')],
               events=[Event(CONTROLS['toggle'], 'click')])
 def hide_reveal_filters(current_toggle):
     if current_toggle == 'Show Filters':
-        return {'display':'inline'}
-    else:
-        return {'display':'none'}
-
-@app.callback(Output(CONTROLS['date_range_span'], 'style'),
-              [Input(CONTROLS['date_range_type'], 'value')])
-def hide_reveal_date_range(date_range_value):
-    if date_range_value == 2:
         return {'display':'inline'}
     else:
         return {'display':'none'}
@@ -476,13 +501,6 @@ def change_button_text(current_toggle):
     else:
         return 'Hide Filters'
 
-@app.callback(Output('main-page', 'children'), [Input('tabs', 'value')])
-def display_content(value):
-
-    if value == 'ew':
-        return STREETS_LAYOUT
-    elif value == 'ns':
-        return STREETS_LAYOUT
 
 @app.callback(Output(CONTROLS['timeperiods'], 'options'),
               [Input(CONTROLS['day_types'], 'value')]) 
@@ -517,6 +535,30 @@ def update_table(period, day_type, daterange_type, date_range_id, orientation, *
     table = generate_table(state_data_dict, day_type, period, orientation, daterange_type, date_range_id)
     return table
 
+@app.callback(Output(CONTROLS['date_range_span'], 'style'),
+              [Input(CONTROLS['date_range_type'], 'value')])
+def hide_reveal_date_range(date_range_value):
+    if date_range_value == 2:
+        return {'display':'inline'}
+    else:
+        return {'display':'none'}
+
+def create_selected_data(graph_num):
+    @app.callback(Output(GRAPHS[graph_num], 'figure'),
+                  [Input(CONTROLS['date_range_type'], 'value'),
+                   Input(CONTROLS['date_range'], 'value')],
+                  [State(CONTROLS['day_types'], 'value'),
+                   State(CONTROLS['timeperiods'], 'value'),
+                   State('tabs', 'value'),
+                   *[State(div_id, 'children') for div_id in SELECTED_STREET_DIVS.values()]])
+    def update_selected_data(daterange_type, date_range_id, day_type, period, orientation, *selected_streets):
+        street = selected_streets[list(SELECTED_STREET_DIVS.keys()).index(orientation)]
+        direction = DIRECTIONS['orientation'][graph_num]
+        return generate_figure(street, direction, day_type, period, daterange_type, date_range_id)
+    update_selected_data.__name__ = 'update_selected_data_'+GRAPHS[graph_num]
+    return update_selected_data
+
+[create_selected_data(graph_num) for graph_num, __ in enumerate(GRAPHS)]
 
 def create_row_update_function(streetname, orientation):
     '''Create a callback function for a given streetname
@@ -602,36 +644,42 @@ def create_update_street_name(dir_id):
 
 [create_update_street_name(i) for i in [0,1]]
 
-def create_update_graph(graph_number):
+def create_update_graph_div(graph_number):
     '''Dynamically create callback functions to update graphs based on a graph number
     '''
     @app.callback(Output(GRAPHDIVS[graph_number], 'children'),
-                  [*[Input(div_id, 'children') for div_id in SELECTED_STREET_DIVS.values()],
-                   Input(CONTROLS['timeperiods'], 'value'),
+                  [Input(CONTROLS['timeperiods'], 'value'),
                    Input(CONTROLS['day_types'], 'value'),
-                   Input('tabs', 'value')])
-    def update_graph(*args):
+                   Input('tabs', 'value'),
+                   *[Input(div_id, 'children') for div_id in SELECTED_STREET_DIVS.values()]],
+                  [State(CONTROLS['date_range_type'], 'value'),
+                   State(CONTROLS['date_range'], 'value')])
+    def update_graph(period, day_type, orientation, *args):
         '''Update the graph for a street direction based on the selected:
          - street
          - time period
          - day type
         '''
+        *selected_streets, daterange_type, date_range = args
         #Use the input for the selected street from the orientation of the current tab
-        *selected_streets, period, day_type, orientation = args
         street = selected_streets[list(SELECTED_STREET_DIVS.keys()).index(orientation)]
         figure = generate_figure(street[0],
                                  DIRECTIONS[orientation][graph_number],
                                  period=period,
-                                 day_type=day_type)
+                                 day_type=day_type,
+                                 daterange_type=daterange_type,
+                                 date_range_id=date_range)
         if figure: 
-            return html.Div(dcc.Graph(id = GRAPHS[graph_number], figure = figure))
+            return html.Div(dcc.Graph(id = GRAPHS[graph_number],
+                                      figure = figure,
+                                      config={'displayModeBar': False}))
         else:
             return html.Div(className = 'nodata')
 
     update_graph.__name__ = 'update_graph_' + GRAPHS[graph_number]
     return update_graph
 
-[create_update_graph(i) for i in range(len(GRAPHS))]
+[create_update_graph_div(i) for i in range(len(GRAPHS))]
 
 @app.callback(Output(TIMEPERIOD_DIV, 'children'),
               [Input(CONTROLS['timeperiods'], 'value'),
