@@ -39,6 +39,9 @@ BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_
                              day_type, period, period_range, round(tt,1) tt 
                              FROM king_pilot.dash_baseline ''',
                              con)
+GHOST = pandasql.read_sql('''SELECT street, direction, dt AS date, day_type, period, round(tt,1) tt 
+                             FROM king_pilot_dev.dash_ghost ''',
+                             con)
 
 con.close()
 
@@ -70,7 +73,9 @@ BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
 PLOT = dict(margin={'t':10, 'b': 40, 'r': 40, 'l': 40, 'pad': 8})
 PLOT_COLORS = dict(pilot='rgba(22, 87, 136, 100)',
-                   baseline='rgba(128, 128, 128, 1.0)')
+                   baseline='rgba(128, 128, 128, 1.0)',
+                   ghost_bar='rgba(255, 255, 255, 0.1)',
+                   ghost_line='rgba(166, 206, 227, 100)')
 FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
 # IDs for divs
@@ -151,7 +156,12 @@ def filter_graph_data(street, direction, day_type='Weekday', period='AMPK'):
                                  (BASELINE['period'] == period) &
                                  (BASELINE['day_type'] == day_type) &
                                  (BASELINE['direction'] == direction)]
-    return (filtered, filtered_baseline)
+    filtered_ghost = GHOST[(GHOST['street'] == street) &
+                                 (GHOST['period'] == period) &
+                                 (GHOST['day_type'] == day_type) &
+                                 (GHOST['direction'] == direction)]
+    
+    return (filtered, filtered_baseline, filtered_ghost)
 
 def get_orientation_from_dir(direction):
     '''Get the orientation of the street based on its direction'''
@@ -243,67 +253,63 @@ def generate_table(state, day_type, period, orientation='ew'):
 def generate_graph_data(data, **kwargs):
     return dict(x=data['date'],
                 y=data['tt'],
-                text=data['tt'].round(),
-                hoverinfo='x+y',
-                textposition='inside',
                 type='bar',
-                insidetextfont=dict(color='rgba(255,255,255,1)',
-                                    size=12),
                 **kwargs)
 
 def generate_figure(street, direction, day_type='Weekday', period='AMPK', daterange_type=1, date_range_id=1):
     '''Generate a Dash bar chart of average travel times by day
     '''
-    after_data, base_data = filter_graph_data(street, direction, day_type, period)
+    after_data, base_data, ghost_data = filter_graph_data(street, direction, day_type, period)
 
     orientation = get_orientation_from_dir(direction)
     if after_data.empty:
         return None
-    else:
-        baseline_days = after_data[after_data['category'] == 'Baseline']
-        if baseline_days.empty:
-            data = [generate_graph_data(after_data,
-                                        marker=dict(color=PLOT_COLORS['pilot']))]
-        else:
-            pilot_days = after_data[after_data['category'] == 'Pilot']
-            pilot_data = generate_graph_data(pilot_days,
-                                             marker=dict(color=PLOT_COLORS['pilot']),
-                                             name='Pilot')
-            baseline_data = generate_graph_data(baseline_days,
-                                                marker=dict(color=PLOT_COLORS['baseline']),
-                                                name='Baseline')
-            data = [baseline_data, pilot_data]
-        annotations = [dict(x=-0.008,
-                            y=base_data.iloc[0]['tt'] + 2,
-                            text='Baseline',
-                            font={'color':BASELINE_LINE['color']},
-                            xref='paper',
-                            yref='yaxis',
-                            showarrow=False
-                            )]
-        line = {'type':'line',
-                'x0': 0,
-                'x1': 1,
-                'xref': 'paper',
-                'y0': base_data.iloc[0]['tt'],
-                'y1': base_data.iloc[0]['tt'],
-                'line': BASELINE_LINE
-               }
-        layout = dict(font={'family': FONT_FAMILY},
-                      autosize=True,
-                      height=225,
-                      barmode='relative',
-                      xaxis=dict(title='Date',
-                                 range=DATERANGE,
-                                 fixedrange=True),
-                      yaxis=dict(title='Travel Time (min)',
-                                 range=[0, MAX_TIME[orientation]],
-                                 fixedrange=True),
-                      shapes=[line],
-                      margin=PLOT['margin'],
-                      annotations=annotations,
-                      legend={'xanchor':'right'}
-                      )
+    data = [generate_graph_data(after_data,
+                                marker=dict(color=PLOT_COLORS['pilot']),
+                                name = 'Pilot',
+                                text=after_data['tt'].round(),
+                                hoverinfo='x+y',
+                                textposition='inside',
+                                insidetextfont=dict(color='rgba(255,255,255,1)',
+                                                    size=12)),
+            generate_graph_data(ghost_data,
+                                marker = dict(color = PLOT_COLORS['ghost_bar'],
+                                              line = dict(width = 2, 
+                                                          color = PLOT_COLORS['ghost_line'])),
+                                hoverinfo = 'skip',
+                                name = 'Ghost')]
+
+    annotations = [dict(x=-0.008,
+                        y=base_data.iloc[0]['tt'] + 2,
+                        font={'color':BASELINE_LINE['color']},
+                        xref='paper',
+                        yref='yaxis',
+                        showarrow=False
+                        )]
+    line = {'type':'line',
+            'x0': 0,
+            'x1': 1,
+            'xref': 'paper',
+            'y0': base_data.iloc[0]['tt'],
+            'y1': base_data.iloc[0]['tt'],
+            'line': BASELINE_LINE
+           }
+    layout = dict(font={'family': FONT_FAMILY},
+                  autosize=True,
+                  height=225,
+                  barmode='relative',
+                  xaxis=dict(title='Date',
+                             range=DATERANGE,
+                             fixedrange=True),
+                  yaxis=dict(title='Travel Time (min)',
+                             range=[0, MAX_TIME[orientation]],
+                             fixedrange=True),
+                  shapes=[line],
+                  margin=PLOT['margin'],
+                  annotations=annotations,
+                  legend={'xanchor':'right'},
+                  showlegend = False
+                  )
     return {'layout': layout, 'data': data}
                                           
 app = DashResponsive()
@@ -536,7 +542,7 @@ def create_update_graph(graph_number):
                                  period=period,
                                  day_type=day_type)
         if figure: 
-            return html.Div(dcc.Graph(id = GRAPHS[graph_number], figure = figure))
+            return html.Div(dcc.Graph(id = GRAPHS[graph_number], figure = figure, config = dict(displayModeBar = False)))
         else:
             return html.Div(className = 'nodata')
 
