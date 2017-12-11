@@ -39,7 +39,7 @@ app.layout = html.Div([
 		href='/src/css/SCStable.css'
 	),
 	html.Div(
-	dash_components.StreetcarSpeeds(id='streetcarspeeds', div_class='scscontainer', data=json.loads(streetcar_df[(pd.to_datetime(streetcar_df['mon']).map(lambda t: t.date().month)==9) & (streetcar_df['time_period']=='AM')].to_json(orient='records')))
+	dash_components.StreetcarSpeeds(id='streetcarspeeds', data=json.loads(streetcar_df[(pd.to_datetime(streetcar_df['mon']).map(lambda t: t.date().month)==9) & (streetcar_df['time_period']=='AM')].to_json(orient='records')))
 	),
 	html.Div(
 	dash_components.VolumeMap(id='volumemap', sl_data=json.loads(streetlines_df.to_json(orient='records')),

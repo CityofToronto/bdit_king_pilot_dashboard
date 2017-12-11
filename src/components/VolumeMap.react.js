@@ -93,11 +93,7 @@ function getMax(arr, prop){
 
 
 
-/* Create tooltip
-***********************************************************************/
-var divtip = select('body').append('div')
-	.attr('class', 'tooltip')
-	.style('opacity', 0);
+
 
 
 // buttons should only be managed by Dash
@@ -410,7 +406,7 @@ function fancy(obj, arr) {
 	
 	outside(obj, arr);
 	
-	return path;
+	return pathgen;
 }
 
 
@@ -464,6 +460,7 @@ function sspathGen(ssarr) {
 		.attr('fill', fillDefault); // default colour, also no-data colour
 }
 
+var divtip;
 //update segment polygons by binding data
 function sspathUpdate(dataset) {
 	// update variables current_period and current_month
@@ -491,7 +488,7 @@ function sspathUpdate(dataset) {
 				.style('opacity', .9);
 			divtip.html('Volume Change: ' + obj.pct_change + '%' + '<br>' + 'Actual Volume: ' + obj.volume)
 				.style('left', (event.pageX) + 'px')
-				.style('top', (event.pageY - 30) + 'px');})
+				.style('top', (event.pageY - 350) + 'px');})
 		.on('mouseout', function() {
 			divtip.transition()
 				.duration(500)
@@ -677,6 +674,11 @@ class VolumeMap extends Component {
 		slpathGen(streets_lines, '#slgroup');
 		sspathGen(streets_segments);
 		
+		/* Create tooltip
+		***********************************************************************/
+		divtip = select(this.node).append('div')
+			.attr('class', 'tooltip')
+			.style('opacity', 0);
 		// initial data view
 		//buttonChecker();
 		sspathUpdate(vol_data);
