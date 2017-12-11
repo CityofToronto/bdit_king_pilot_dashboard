@@ -448,7 +448,7 @@ STREETS_LAYOUT = [html.Div(children=[
                                     clearable=False),
                                     title='Select a date range type to filter table data'),
                            html.Span(dcc.Dropdown(id=CONTROLS['date_range'],
-                                                  options=generate_date_ranges(),
+                                                  options=generate_date_ranges(range_type=2),
                                                   value = 1,
                                                   clearable=False),
                                      id=CONTROLS['date_range_span'],
