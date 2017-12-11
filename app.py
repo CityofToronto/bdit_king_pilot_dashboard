@@ -32,24 +32,25 @@ else:
     dbset = CONFIG['DBSETTINGS']
     con = connect(**dbset)
 
-DATA = pandasql.read_sql('''WITH weeks AS(SELECT week, row_number() OVER() as week_number 
-                            FROM (SELECT DISTINCT ON(date_trunc('week', dt)::DATE) date_trunc('week', dt)::DATE as week
-                          FROM king_pilot.dash_daily
-                          WHERE dt >= '2017-11-13' )a
-                          ORDER BY week)
+DATA = pandasql.read_sql('''
                          SELECT street, direction, dt AS date, day_type, category, period, round(tt,1) tt, 
                          rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS most_recent,
-                         week, week_number
-                         FROM king_pilot.dash_daily
-                         LEFT OUTER JOIN weeks ON dt >= week AND dt < week + INTERVAL '1 week'
+                         week_number, month_number 
+                         FROM king_pilot.dash_daily_dev
+                         LEFT OUTER JOIN king_pilot.pilot_weeks weeks ON dt >= week AND dt < week + INTERVAL '1 week'
+                         LEFT OUTER JOIN king_pilot.pilot_months months ON dt >= month AND dt < month + INTERVAL '1 month'
                          ''', con)
 BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_intersection, 
                              day_type, period, period_range, round(tt,1) tt 
-                             FROM king_pilot.dash_baseline ''',
+                             FROM king_pilot.dash_baseline_dev ''',
                              con)
-WEEKS = DATA[['week', 'week_number']].drop_duplicates().dropna()
+WEEKS = pandasql.read_sql('''SELECT * FROM king_pilot.pilot_weeks 
+                         ''', con)
+MONTHS = pandasql.read_sql('''SELECT * FROM king_pilot.pilot_months
+                         ''', con, parse_dates=['month'])
 WEEKS['label'] = 'Week ' + WEEKS['week_number'].astype(str) + ': ' + WEEKS['week'].astype(str)
 WEEKS.sort_values(by='week_number', inplace=True)
+MONTHS['label'] = 'Month ' + MONTHS['month_number'].astype(str) + ': ' + MONTHS['month'].dt.strftime("%b '%y")
 con.close()
 
 ###################################################################################################
@@ -99,7 +100,8 @@ CONTROLS = dict(div_id='controls-div',
                 date_range='date-range-dropbown',
                 date_range_span='date-range-span')
 DATERANGE_TYPES = OrderedDict([('Last Day', 1),
-                               ('Select Week', 2)])
+                               ('Select Week', 2),
+                               ('Select Month', 3)])
 GRAPHS = ['eb_graph', 'wb_graph']
 GRAPHDIVS = ['eb_graph_div', 'wb_graph_div']
 
@@ -152,6 +154,8 @@ def selected_data(data, daterange_type=1, date_range_id=1):
     elif daterange_type == 2:
         #Weeks
         date_filter = DATA['week_number'] == date_range_id
+    elif daterange_type == 3:
+        date_filter = DATA['month_number'] == date_range_id
     return date_filter
 
 def filter_table_data(period, day_type, orientation='ew', daterange_type=1, date_range_id=1):
@@ -218,11 +222,17 @@ def generate_date_ranges(range_type=1):
     '''Generate an array of dropdown menu options depending on the date range type
     '''
 
-    if range_type == 1:
+    if range_type == 2:
         # Weeks
         return [{'label': row.label,
                  'value': row.week_number}
                 for row in WEEKS.itertuples()]
+    elif range_type == 3:
+        return [{'label': row.label,
+                 'value': row.month_number}
+                for row in MONTHS.itertuples()]
+    else:
+        return None
 
 def generate_row_class(clicked):
     '''Assigns class to clicked row'''
@@ -272,7 +282,7 @@ def generate_row(df_row, baseline_row, row_state, orientation='ew'):
 
 def generate_table(state, day_type, period, orientation='ew', daterange_type=1, date_range_id=1):
     """Generate HTML table of streets and before-after values
-    
+
         :param state:
             Dictionary of table's state: {street: (n_clicks, clicked)}
         :param day_type:
@@ -293,6 +303,8 @@ def generate_table(state, day_type, period, orientation='ew', daterange_type=1, 
         day = filtered_data['date'].iloc[0].strftime('%a %b %d')
     elif daterange_type == 2:
         day = 'Week ' + str(date_range_id)
+    elif daterange_type == 3:
+        day = 'Month ' + str(date_range_id)
 
     return html.Table([html.Tr([html.Td(""), html.Td(DIRECTIONS[orientation][0], colSpan=2), html.Td(DIRECTIONS[orientation][1], colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
@@ -501,7 +513,6 @@ def change_button_text(current_toggle):
     else:
         return 'Hide Filters'
 
-
 @app.callback(Output(CONTROLS['timeperiods'], 'options'),
               [Input(CONTROLS['day_types'], 'value')]) 
 def generate_radio_options(day_type='Weekday'):
@@ -538,10 +549,15 @@ def update_table(period, day_type, daterange_type, date_range_id, orientation, *
 @app.callback(Output(CONTROLS['date_range_span'], 'style'),
               [Input(CONTROLS['date_range_type'], 'value')])
 def hide_reveal_date_range(date_range_value):
-    if date_range_value == 2:
+    if date_range_value > 1:
         return {'display':'inline'}
     else:
         return {'display':'none'}
+
+@app.callback(Output(CONTROLS['date_range'], 'options'),
+              [Input(CONTROLS['date_range_type'], 'value')])
+def hide_reveal_date_range(date_range_value):
+    return generate_date_ranges(range_type=date_range_value)
 
 def create_selected_data(graph_num):
     @app.callback(Output(GRAPHS[graph_num], 'figure'),
@@ -553,8 +569,8 @@ def create_selected_data(graph_num):
                    *[State(div_id, 'children') for div_id in SELECTED_STREET_DIVS.values()]])
     def update_selected_data(daterange_type, date_range_id, day_type, period, orientation, *selected_streets):
         street = selected_streets[list(SELECTED_STREET_DIVS.keys()).index(orientation)]
-        direction = DIRECTIONS['orientation'][graph_num]
-        return generate_figure(street, direction, day_type, period, daterange_type, date_range_id)
+        direction = DIRECTIONS[orientation][graph_num]
+        return generate_figure(street[0], direction, day_type, period, daterange_type, date_range_id)
     update_selected_data.__name__ = 'update_selected_data_'+GRAPHS[graph_num]
     return update_selected_data
 
