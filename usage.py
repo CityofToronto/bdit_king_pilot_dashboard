@@ -11,9 +11,17 @@ import json
 import os
 from flask import send_from_directory
 
+# Streetcar data
 streetcar_df = pd.read_csv('streetcar_travel_times.csv')
 car_df = pd.read_csv('car_travel_times.csv')
+
+# Car data
 car_df['mon'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S').date() for i in car_df['mon']]
+
+# Car Volume Map data
+street_volumes_df = pd.read_csv('street_volumes.csv')
+street_segments_df = pd.read_csv('streets_segments31.csv')
+street_lines_df = pd.read_csv('streets_lines3.csv')
 
 ###################################################################################################
 #                                                                                                 #
@@ -76,6 +84,12 @@ def filter_sc_graph_data(period):
 # Data for streetcar table
 def filter_sc_table_data(month, period):
 	filtered = streetcar_df[(pd.to_datetime(streetcar_df['mon']).map(lambda t: t.date().month)==month) & (streetcar_df['time_period']==period)]
+	filtered_json = json.loads(filtered.to_json(orient='records'))
+	return filtered_json
+
+# Data for volume map
+def filter_vol_data(month, period):
+	filtered = street_volumes_df[(pd.to_datetime(street_volumes_df['mon']).map(lambda t: t.date().month)==month) & (street_volumes_df['time_period']==period)]
 	filtered_json = json.loads(filtered.to_json(orient='records'))
 	return filtered_json
 
@@ -184,11 +198,11 @@ STREETCAR_LAYOUT = [html.Div(children=[
 							], className='four-half columns'),
 							html.Div(children=[
 								html.H3(children=PM_PEAK_LABEL),
-								dash_components.StreetcarSpeeds( id='pm-baseline-scs-table', data=filter_sc_table_data(9, 'AM')),
-								dash_components.StreetcarSpeeds( id='pm-scs-table', data=filter_sc_table_data(9, 'AM')),
+								dash_components.StreetcarSpeeds( id='pm-baseline-scs-table', data=filter_sc_table_data(9, 'PM')),
+								dash_components.StreetcarSpeeds( id='pm-scs-table', data=filter_sc_table_data(9, 'PM')),
 								html.Div(dcc.Graph(id='pm-tt-graph', figure=generate_sc_graph('PM')), style={'border-style':'solid', 'border-width': '1px'})
 							], className='four-half columns')
-						]),
+						], className='row'),
 						dcc.RadioItems(
 							id='streetcar-period-radio',
 							options = [{'label': i, 'value': i} for i in TIME_PERIODS],
@@ -222,12 +236,24 @@ CAR_LAYOUT = [html.Div(children=[
 								className='two columns')
 					], className='row', style={'padding-left':'5%'})
 				]),
+				html.Div(children=[
+					dash_components.VolumeMap(id='volume-map', sl_data=json.loads(street_lines_df.to_json(orient='records')),
+					ss_data=json.loads(street_segments_df.to_json(orient='records')),
+					volume_data=filter_vol_data(9, 'AM'))
+				], className='row'),
 				dcc.RadioItems(
-                    id = 'car-period-radio',
-                    options=[{'label' : timebucket, 'value' : timebucket} for timebucket in car_df['time_period'].unique()],
-                    value = 'AM'
-                )
-			])]
+					id='car-period-radio',
+					options = [{'label': i, 'value': i} for i in TIME_PERIODS],
+					value=TIME_PERIODS[0],
+					labelStyle={'display': 'inline-block'}
+				),
+				dcc.RadioItems(
+					id='car-month-radio',
+					options = [{'label': calendar.month_abbr[i], 'value': i} for i in MONTHS],
+					value=MONTHS[0],
+					labelStyle={'display': 'inline-block'}
+				)]
+			)]
 
 #layout
 app.layout = html.Div([
@@ -241,7 +267,7 @@ app.layout = html.Div([
 	),
 	html.Link(
 		rel='stylesheet',
-		href='/src/css/SCStable.css'
+		href='/src/css/components.css'
 	),
 	html.Div(children=[
 		html.H1(children=TITLE, id='title')
@@ -282,44 +308,25 @@ def display_content(value):
 		return CAR_LAYOUT
 
 # Streetcar tab
-	
+
 @app.callback(
-	dash.dependencies.Output('am-baseline-scs-table', 'data'),
-	[dash.dependencies.Input('streetcar-period-radio', 'value'),
-	 dash.dependencies.Input('streetcar-month-radio', 'value')])
-def update_am_baseline_scstable(current_period, current_month):
-	filtered_data = filter_sc_table_data(current_month, current_period);
+	Output('am-scs-table', 'data'),
+	[Input('streetcar-month-radio', 'value')])
+def update_am_scs_scstable(current_month):
+	filtered_data = filter_sc_table_data(current_month, 'AM');
 	return filtered_data
 
 @app.callback(
-	dash.dependencies.Output('am-scs-table', 'data'),
-	[dash.dependencies.Input('streetcar-period-radio', 'value'),
-	 dash.dependencies.Input('streetcar-month-radio', 'value')])
-def update_am_scs_scstable(current_period, current_month):
-	filtered_data = filter_sc_table_data(current_month, current_period);
+	Output('pm-scs-table', 'data'),
+	[Input('streetcar-month-radio', 'value')])
+def update_pm_baseline_scstable(current_month):
+	filtered_data = filter_sc_table_data(current_month, 'PM');
 	return filtered_data
-
-@app.callback(
-	dash.dependencies.Output('pm-scs-table', 'data'),
-	[dash.dependencies.Input('streetcar-period-radio', 'value'),
-	 dash.dependencies.Input('streetcar-month-radio', 'value')])
-def update_pm_baseline_scstable(current_period, current_month):
-	filtered_data = filter_sc_table_data(current_month, current_period);
-	return filtered_data
-
-@app.callback(
-	dash.dependencies.Output('pm-baseline-scs-table', 'data'),
-	[dash.dependencies.Input('streetcar-period-radio', 'value'),
-	 dash.dependencies.Input('streetcar-month-radio', 'value')])
-def update_pm_scstable(current_period, current_month):
-	filtered_data = filter_sc_table_data(current_month, current_period);
-	return filtered_data
-
 	
 # Car tab
 @app.callback(
-    dash.dependencies.Output('ctt-peak-label', 'children'),
-    [dash.dependencies.Input('car-period-radio', 'value')])
+    Output('ctt-peak-label', 'children'),
+    [Input('car-period-radio', 'value')])
 def update_dundas(value):
 	if value == 'AM':
 		return AM_PEAK_LABEL
@@ -327,40 +334,48 @@ def update_dundas(value):
 		return PM_PEAK_LABEL
 
 @app.callback(
-    dash.dependencies.Output(STREETS[0] + '-tf-graph', 'figure'),
-    [dash.dependencies.Input('car-period-radio', 'value')])
+    Output(STREETS[0] + '-tf-graph', 'figure'),
+    [Input('car-period-radio', 'value')])
 def update_dundas(value):
     return generate_tf_graph(STREETS[0], value)
 
 @app.callback(
-    dash.dependencies.Output(STREETS[1] + '-tf-graph', 'figure'),
-    [dash.dependencies.Input('car-period-radio', 'value')])
+    Output(STREETS[1] + '-tf-graph', 'figure'),
+    [Input('car-period-radio', 'value')])
 def update_queen(value):
     return generate_tf_graph(STREETS[1], value)
 
 @app.callback(
-    dash.dependencies.Output(STREETS[2] + '-tf-graph', 'figure'),
-    [dash.dependencies.Input('car-period-radio', 'value')])
+    Output(STREETS[2] + '-tf-graph', 'figure'),
+    [Input('car-period-radio', 'value')])
 def update_adelaide(value):
     return generate_tf_graph(STREETS[2], value)
 
 @app.callback(
-    dash.dependencies.Output(STREETS[3] + '-tf-graph', 'figure'),
-    [dash.dependencies.Input('car-period-radio', 'value')])
+    Output(STREETS[3] + '-tf-graph', 'figure'),
+    [Input('car-period-radio', 'value')])
 def update_front(value):
     return generate_tf_graph(STREETS[3], value)
 
 @app.callback(
-    dash.dependencies.Output(STREETS[4] + '-tf-graph', 'figure'),
-    [dash.dependencies.Input('car-period-radio', 'value')])
+	Output(STREETS[4] + '-tf-graph', 'figure'),
+    [Input('car-period-radio', 'value')])
 def update_richmond(value):
     return generate_tf_graph(STREETS[4], value)
 
 @app.callback(
-    dash.dependencies.Output(STREETS[5] + '-tf-graph', 'figure'),
-    [dash.dependencies.Input('car-period-radio', 'value')])
+	Output(STREETS[5] + '-tf-graph', 'figure'),
+    [Input('car-period-radio', 'value')])
 def update_wellington(value):
 	return generate_tf_graph(STREETS[5], value)
-	
+
+@app.callback(
+	Output('volume-map', 'volume_data'),
+    [Input('car-month-radio', 'value'),
+	Input('car-period-radio', 'value'),])
+def update_vol_map(current_month, current_period):
+	filtered_data = filter_vol_data(current_month, current_period);
+	return filtered_data
+
 if __name__ == '__main__':
     app.run_server(debug=True)

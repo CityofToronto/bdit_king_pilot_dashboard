@@ -1,0 +1,20 @@
+line,streetname,directions,x1,y1,x2,y2
+1,Queen,EW,10,10,250,10
+2,Richmond,W,10,20,250,20
+3,Adelaide,E,10,35,250,35
+4,King,EW,10,50,250,50
+5,Wellington,W,10,65,250,65
+6,Front1,EW,10,80,200,80
+7,Front2,EW,200,80,230,65
+8,Bathurst,NS,10,10,10,80
+9,Portland,NS,30,10,30,80
+10,Spadina,NS,60,10,60,80
+11,Peter/Blue Jays,NS,80,10,80,80
+12,John,NS,100,10,100,80
+13,Simcoe,S,130,10,130,80
+14,University,NS,140,10,140,80
+15,York,N,150,10,150,80
+16,Bay,NS,180,10,180,80
+17,Yonge,NS,200,10,200,80
+18,Church,NS,230,10,230,65
+19,Jarvis,NS,250,10,250,65
