@@ -36,7 +36,7 @@ app.scripts.config.serve_locally = True
 app.layout = html.Div([
 	html.Link(
 		rel='stylesheet',
-		href='/src/css/SCStable.css'
+		href='/src/css/components.css'
 	),
 	html.Div(
 	dash_components.StreetcarSpeeds(id='streetcarspeeds', data=json.loads(streetcar_df[(pd.to_datetime(streetcar_df['mon']).map(lambda t: t.date().month)==9) & (streetcar_df['time_period']=='AM')].to_json(orient='records')))

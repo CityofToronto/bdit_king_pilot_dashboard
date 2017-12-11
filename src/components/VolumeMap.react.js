@@ -92,38 +92,6 @@ function getMax(arr, prop){
 }
 
 
-
-
-
-
-// buttons should only be managed by Dash
-/* Data filter functions
-***********************************************************************/
-// loop through radio button values
-// var periodIDs = ['AM', 'PM'];
-// var monthIDs = ['Nov','Dec','Jan','Feb'];
-// var current_period = document.getElementById('AM').value;
-// var current_month = document.getElementById('Nov').value;
-
-// // check which buttons are selected, updates current period and month
-// function buttonChecker() {
-	// periodIDs.forEach(function(buttonID) {
-		// if (document.getElementById(buttonID).checked == true) {
-			// current_period = document.getElementById(buttonID).value;
-			// //console.log(current_period);
-		// }
-	// });
-	// monthIDs.forEach(function(buttonID) {
-		// if (document.getElementById(buttonID).checked == true) {
-			// current_month = document.getElementById(buttonID).value;
-			// //console.log(current_month);
-		// }
-	// });
-	// //console.log([current_period,current_month])
-// }
-
-
-
 /* Colouring segments
 ***********************************************************************/
 var cNeg4 = '#4d9221', cNeg3 = '#7fbc41', cNeg2 = '#b8e186', cNeg1 = '#e6f5d0';
@@ -482,13 +450,16 @@ function sspathUpdate(dataset) {
 		.attr('fill', function(obj) {return pctColour(obj);})
 	
 	// tooltip
-	segments.on('mouseover', function(obj) {
+	segments.on('mouseover', function() {
+				divtip.style('display', 'inline');
+			})
+		.on('mousemove', function(obj) {
 			divtip.transition()
 				.duration(200)
 				.style('opacity', .9);
 			divtip.html('Volume Change: ' + obj.pct_change + '%' + '<br>' + 'Actual Volume: ' + obj.volume)
 				.style('left', (event.pageX) + 'px')
-				.style('top', (event.pageY - 350) + 'px');})
+				.style('top', (event.pageY) + 'px');})
 		.on('mouseout', function() {
 			divtip.transition()
 				.duration(500)
@@ -622,15 +593,15 @@ class VolumeMap extends Component {
 		var file = this.props.volume_data;
 		// Create SVG container
 		var svgContainer = select(this.node)
-			.classed('svg-container', true)
+			.classed('svg-container volumemap-padding', true)
 			.append('svg')
 			.attr('id', this.props.id)
-			.attr('width', svgW)
-			.attr('height', svgH);
-			// .attr('preserveAspectRatio','xMinYMin')
-			// .attr('viewBox', '0 0 '+svg_width+' '+svg_height)
-			// .attr('class', 'svg-content-responsive');
-			
+			// .attr('width', svgW)
+			// .attr('height', svgH);
+			.attr('preserveAspectRatio','xMinYMin')
+			.attr('viewBox', '0 0 '+svgW+' '+svgH)
+			.attr('class', 'svg-content-responsive');
+		
 		// Create Label Group
 		svgContainer.append('g')
 			.attr('id', 'labelgroup');
