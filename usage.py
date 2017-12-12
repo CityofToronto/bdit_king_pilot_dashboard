@@ -23,6 +23,13 @@ street_volumes_df = pd.read_csv('street_volumes.csv')
 street_segments_df = pd.read_csv('streets_segments31.csv')
 street_lines_df = pd.read_csv('streets_lines3.csv')
 
+# Headway reliability # MOCK DATA
+headway_data = [{'id': 0, 'dir': 'EB', 'period': 'AM', 'hw_before': 65, 'hw_after': 70},
+			{'id': 1, 'dir': 'EB', 'period': 'PM', 'hw_before': 62, 'hw_after': 72},
+			{'id': 2, 'dir': 'WB', 'period': 'AM', 'hw_before': 32, 'hw_after': 46},
+			{'id': 3, 'dir': 'WB', 'period': 'PM', 'hw_before': 45, 'hw_after': 72}]
+headway_df = pd.DataFrame(headway_data)
+
 ###################################################################################################
 #                                                                                                 #
 #                                        Constants                                                #
@@ -52,7 +59,7 @@ AFTER_FIGS = {period : {street :go.Bar(
 								width = .3)
 								for street in STREETS} for period in ('AM', 'PM')}
 YRNG = [0, car_df['travel_time'].max()] #All graphs have the same y axis
-								
+
 # Dashboard appearance
 TITLE = 'King Street Transit Pilot: Dashboard'
 MAIN_DIV = 'main-page'
@@ -92,6 +99,10 @@ def filter_vol_data(month, period):
 	filtered = street_volumes_df[(pd.to_datetime(street_volumes_df['mon']).map(lambda t: t.date().month)==month) & (street_volumes_df['time_period']==period)]
 	filtered_json = json.loads(filtered.to_json(orient='records'))
 	return filtered_json
+
+def filter_hw_data(period, dir):
+	data = headway_df[(headway_df['dir']==dir) & (headway_df['period']==period)]
+	return data
 
 ###################################################################################################
 #                                                                                                 #
@@ -142,9 +153,9 @@ def generate_tf_graph(street, period):
             strdiffEB = str(diffEB)+ ' min'
         else:
             strdiffEB = '< 1 min'
-    layout = go.Layout(title = street, titlefont = dict(size = 20),
-						xaxis = dict(title = 'Before/After', titlefont = dict(size = 15)),
-						yaxis = dict(title = 'Travel Time', titlefont = dict( size = 15), range = YRNG),
+    layout = go.Layout(title = street, titlefont = dict(size = 15),
+						xaxis = dict(title = 'Direction', titlefont = dict(size = 12)),
+						yaxis = dict(title = 'Travel Time', titlefont = dict( size = 12), range = YRNG),
 						autosize = True,
 						height = 250,
 						margin=go.Margin(
@@ -154,6 +165,9 @@ def generate_tf_graph(street, period):
 									t=50,
 									pad=4
 								),
+						hovermode="closest",
+						showlegend=False,
+						legend=dict(x=0, y=-1.5, orientation="h"),
 						annotations = [])
     if WB and EB:
         layout['barmode'] = 'group'
@@ -167,7 +181,7 @@ def generate_tf_graph(street, period):
                                         showarrow = False,
                                         font = dict(
                                                color = "black",
-                                               size = 18,
+                                               size = 16,
                                                family = 'arial narrow')))
     if EB:
         layout['annotations'].append(dict(x = 'EB',
@@ -176,8 +190,35 @@ def generate_tf_graph(street, period):
                                         xanchor = 'centre',
                                         yref = 'top',
                                         showarrow = False,
-                                        font = dict(color = "black", size = 18, family = 'arial narrow')))
+                                        font = dict(color = "black", size = 16, family = 'arial narrow')))
     return {'data' : [BEFORE_FIGS[period][street], AFTER_FIGS[period][street]], 'layout' : layout}
+
+def generate_schr_graph(period, dir):
+	filtered_data = filter_hw_data(period, dir)
+	before = filtered_data['hw_before'].values[0]
+	after = filtered_data['hw_after'].values[0]
+	
+	values = [before, after]
+	fmt_values = [str(before) + '%', str(after) + '%']
+	labels = ['Before', 'After']
+	data = [go.Bar(x=labels, y=values, text=fmt_values, textposition = 'outside', marker=dict(color=['rgba(255,165,0, 0.6)', 'rgba(30,144,255, 0.6)']))]
+	layout = go.Layout(title = period + ' PEAK PERIOD', titlefont = dict(size=15),
+			xaxis = dict(title = dir, titlefont = dict(size=12)),
+			yaxis = dict(title = 'Headway Reliability %', titlefont = dict( size = 12), range = [0, 100]),
+			autosize = True,
+			height = 250,
+			margin=go.Margin(
+						l=40,
+						r=0,
+						b=50,
+						t=50,
+						pad=4
+					),
+			hovermode="closest",
+			showlegend=False,
+			barmode = 'group')
+	figure = {'layout': layout, 'data': data}
+	return figure
 	
 app = dash.Dash('')
 
@@ -201,18 +242,28 @@ STREETCAR_LAYOUT = [html.Div(children=[
 								dash_components.StreetcarSpeeds( id='pm-baseline-scs-table', data=filter_sc_table_data(9, 'PM')),
 								dash_components.StreetcarSpeeds( id='pm-scs-table', data=filter_sc_table_data(9, 'PM')),
 								html.Div(dcc.Graph(id='pm-tt-graph', figure=generate_sc_graph('PM')), style={'border-style':'solid', 'border-width': '1px'})
-							], className='four-half columns')
+							], className='four-half columns'),
+							html.Div(children=[
+								html.Div(dcc.Graph(id='am-wb-schr-graph', figure=generate_schr_graph('AM', 'WB'))),
+								html.Div(dcc.Graph(id='am-eb-schr-graph', figure=generate_schr_graph('AM', 'EB')))
+							], className='one-half columns'),
+							html.Div(children=[
+								html.Div(dcc.Graph(id='pm-wb-schr-graph', figure=generate_schr_graph('PM', 'WB'))),
+								html.Div(dcc.Graph(id='pm-eb-schr-graph', figure=generate_schr_graph('PM', 'EB')))
+							], className='one-half columns')
 						], className='row'),
 						dcc.RadioItems(
 							id='streetcar-period-radio',
 							options = [{'label': i, 'value': i} for i in TIME_PERIODS],
 							value=TIME_PERIODS[0],
+							className='radio-toolbar',
 							labelStyle={'display': 'inline-block'}
 						),
 						dcc.RadioItems(
 							id='streetcar-month-radio',
 							options = [{'label': calendar.month_abbr[i], 'value': i} for i in MONTHS],
 							value=MONTHS[0],
+							className='radio-toolbar',
 							labelStyle={'display': 'inline-block'}
 						)]
 					)]
@@ -234,23 +285,30 @@ CAR_LAYOUT = [html.Div(children=[
 								className='two columns'),
 						html.Div(dcc.Graph(id = STREETS[5] + '-tf-graph'),
 								className='two columns')
-					], className='row', style={'padding-left':'5%'})
+					], className='row', style={'padding-left':'2%'})
 				]),
+				html.H2(children='TRAFFIC VOLUMES'),
 				html.Div(children=[
+					html.Div(className='one columns'),
+					html.Div(children=[
 					dash_components.VolumeMap(id='volume-map', sl_data=json.loads(street_lines_df.to_json(orient='records')),
-					ss_data=json.loads(street_segments_df.to_json(orient='records')),
-					volume_data=filter_vol_data(9, 'AM'))
+												ss_data=json.loads(street_segments_df.to_json(orient='records')),
+												volume_data=filter_vol_data(9, 'AM'))
+					], className='ten columns'),
+					html.Div(className='one columns')
 				], className='row'),
 				dcc.RadioItems(
 					id='car-period-radio',
 					options = [{'label': i, 'value': i} for i in TIME_PERIODS],
 					value=TIME_PERIODS[0],
+					className='radio-toolbar',
 					labelStyle={'display': 'inline-block'}
 				),
 				dcc.RadioItems(
 					id='car-month-radio',
 					options = [{'label': calendar.month_abbr[i], 'value': i} for i in MONTHS],
 					value=MONTHS[0],
+					className='radio-toolbar',
 					labelStyle={'display': 'inline-block'}
 				)]
 			)]
@@ -340,33 +398,36 @@ def update_dundas(value):
     return generate_tf_graph(STREETS[0], value)
 
 @app.callback(
-    Output(STREETS[1] + '-tf-graph', 'figure'),
+	Output(STREETS[1] + '-tf-graph', 'figure'),
     [Input('car-period-radio', 'value')])
-def update_queen(value):
-    return generate_tf_graph(STREETS[1], value)
+def update_richmond(value):
+    return generate_tf_graph(STREETS[1], value)	
 
 @app.callback(
-    Output(STREETS[2] + '-tf-graph', 'figure'),
+	Output(STREETS[2] + '-tf-graph', 'figure'),
     [Input('car-period-radio', 'value')])
-def update_adelaide(value):
-    return generate_tf_graph(STREETS[2], value)
+def update_wellington(value):
+	return generate_tf_graph(STREETS[2], value)
 
 @app.callback(
     Output(STREETS[3] + '-tf-graph', 'figure'),
     [Input('car-period-radio', 'value')])
-def update_front(value):
+def update_queen(value):
     return generate_tf_graph(STREETS[3], value)
 
 @app.callback(
-	Output(STREETS[4] + '-tf-graph', 'figure'),
+    Output(STREETS[4] + '-tf-graph', 'figure'),
     [Input('car-period-radio', 'value')])
-def update_richmond(value):
+def update_adelaide(value):
     return generate_tf_graph(STREETS[4], value)
 
 @app.callback(
-	Output(STREETS[5] + '-tf-graph', 'figure'),
+    Output(STREETS[5] + '-tf-graph', 'figure'),
     [Input('car-period-radio', 'value')])
-def update_wellington(value):
+def update_front(value):
+	# tf_graph = generate_tf_graph(STREETS[5], value)
+	# tf_graph["layout"].showlegend = True
+	# return tf_graph
 	return generate_tf_graph(STREETS[5], value)
 
 @app.callback(

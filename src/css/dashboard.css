@@ -139,6 +139,7 @@ h2 { font-size: 1.6rem; line-height: 1.1; letter-spacing: -.1rem; margin-bottom:
 
   .one.column,
   .one.columns                    { width: 4.66666666667%; }
+  .one-half.columns		 { width: 8.9%; }
   .two.columns                    { width: 13.3333333333%; }
   .three.columns                  { width: 22%;            }
   .four.columns                   { width: 30.6666666667%; }
