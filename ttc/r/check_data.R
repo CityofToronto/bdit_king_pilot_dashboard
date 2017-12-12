@@ -12,6 +12,7 @@ drv <- dbDriver("PostgreSQL")
 source("connect/connect.R")
 
 ########################################
+# HEATMAPS - Check for Coverage Gaps
 ########################################
 
 line_number <- 504
