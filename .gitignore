@@ -101,3 +101,5 @@ ENV/
 .mypy_cache/
 .vscode/settings.json
 ttc/db.cfg
+ttc/r/.Rhistory
+ttc/r/connect/connect.R
