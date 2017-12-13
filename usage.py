@@ -15,7 +15,7 @@ from flask import send_from_directory
 streetcar_df = pd.read_csv('streetcar_travel_times.csv')
 car_df = pd.read_csv('car_travel_times.csv')
 
-# Car data
+# Car data # NEED MOCK DATA FOR BASELINE
 car_df['mon'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S').date() for i in car_df['mon']]
 
 # Car Volume Map data
@@ -23,11 +23,29 @@ street_volumes_df = pd.read_csv('street_volumes.csv')
 street_segments_df = pd.read_csv('streets_segments31.csv')
 street_lines_df = pd.read_csv('streets_lines3.csv')
 
-# Headway reliability # MOCK DATA
-headway_data = [{'id': 0, 'dir': 'EB', 'period': 'AM', 'hw_before': 65, 'hw_after': 70},
-			{'id': 1, 'dir': 'EB', 'period': 'PM', 'hw_before': 62, 'hw_after': 72},
-			{'id': 2, 'dir': 'WB', 'period': 'AM', 'hw_before': 32, 'hw_after': 46},
-			{'id': 3, 'dir': 'WB', 'period': 'PM', 'hw_before': 45, 'hw_after': 72}]
+# Headway reliability # MOCK DATA REPLACE WITH ACTUAL CSV LATER
+baseline_headway_data = [{'id': 0, 'dir': 'EB', 'mon': '09/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 30},
+			{'id': 1, 'dir': 'EB', 'mon': '10/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 22},
+			{'id': 2, 'dir': 'WB', 'mon': '11/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 39},
+			{'id': 3, 'dir': 'WB', 'mon': '12/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 42}]
+
+headway_data = [{'id': 0, 'dir': 'EB', 'mon': '09/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 74},
+			{'id': 1, 'dir': 'EB', 'mon': '09/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 72},
+			{'id': 4, 'dir': 'WB', 'mon': '09/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 41},
+			{'id': 5, 'dir': 'WB', 'mon': '09/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 26},
+			{'id': 2, 'dir': 'EB', 'mon': '10/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 62},
+			{'id': 3, 'dir': 'EB', 'mon': '10/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 45},
+			{'id': 2, 'dir': 'WB', 'mon': '10/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 52},
+			{'id': 3, 'dir': 'WB', 'mon': '10/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 62},
+			{'id': 0, 'dir': 'EB', 'mon': '11/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 50},
+			{'id': 1, 'dir': 'EB', 'mon': '11/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 74},
+			{'id': 4, 'dir': 'WB', 'mon': '11/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 43},
+			{'id': 5, 'dir': 'WB', 'mon': '11/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 36},
+			{'id': 0, 'dir': 'EB', 'mon': '12/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 60},
+			{'id': 1, 'dir': 'EB', 'mon': '12/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 70},
+			{'id': 6, 'dir': 'WB', 'mon': '12/01/2017  12:00:00 AM', 'period': 'AM', 'hw': 52},
+			{'id': 7, 'dir': 'WB', 'mon': '12/01/2017  12:00:00 AM', 'period': 'PM', 'hw': 76}]
+baseline_headway_df = pd.DataFrame(baseline_headway_data)
 headway_df = pd.DataFrame(headway_data)
 
 ###################################################################################################
@@ -48,14 +66,14 @@ BEFORE_FIGS = {period : {street : go.Bar(
 								x = car_df.loc[(car_df['corridor'] == street) & (car_df['mon'] <= MIDDATE) & (car_df['time_period'] == period)].groupby(['dir'])['travel_time'].mean().index,
 								y = car_df.loc[(car_df['corridor'] == street) & (car_df['mon'] <= MIDDATE) & (car_df['time_period'] == period)].groupby(['dir'])['travel_time'].mean(),
 								name = 'Before',
-								marker = dict(color = 'rgb(0,58,114)'), #bar color. Also accepts list of colors corresponding to each column
+								marker = dict(color = 'rgba(255,165,0, 0.6)'), #bar color. Also accepts list of colors corresponding to each column
 								width = .3)
 								for street in STREETS} for period in ('AM', 'PM')}
-AFTER_FIGS = {period : {street :go.Bar(
+AFTER_FIGS = {period : {street : go.Bar(
 								x = car_df.loc[(car_df['corridor'] == street) & (car_df['mon'] >= MIDDATE) & (car_df['time_period'] == period)].groupby(['dir'])['travel_time'].mean().index,
 								y = car_df.loc[(car_df['corridor'] == street) & (car_df['mon'] >= MIDDATE) & (car_df['time_period'] == period)].groupby(['dir'])['travel_time'].mean(),
 								name = 'After',
-								marker = dict(color = 'rgb(200,114,58)'), #bar color. Also accepts list of colors corresponding to each column
+								marker = dict(color = 'rgba(30,144,255, 0.6)'), #bar color. Also accepts list of colors corresponding to each column
 								width = .3)
 								for street in STREETS} for period in ('AM', 'PM')}
 YRNG = [0, car_df['travel_time'].max()] #All graphs have the same y axis
@@ -100,9 +118,11 @@ def filter_vol_data(month, period):
 	filtered_json = json.loads(filtered.to_json(orient='records'))
 	return filtered_json
 
-def filter_hw_data(period, dir):
-	data = headway_df[(headway_df['dir']==dir) & (headway_df['period']==period)]
-	return data
+def filter_hw_data(period, dir, month):
+	baseline_data = baseline_headway_df[(baseline_headway_df['dir']==dir) & (baseline_headway_df['period']==period)]
+	data = headway_df[(headway_df['dir']==dir) & (headway_df['period']==period) & (pd.to_datetime(headway_df['mon']).map(lambda t: t.date().month)==month)]
+	combined_data = [baseline_data, data]
+	return combined_data
 
 ###################################################################################################
 #                                                                                                 #
@@ -113,17 +133,23 @@ def filter_hw_data(period, dir):
 # Streetcar graph
 def generate_sc_graph(period):
 	data = filter_sc_graph_data(period)
-	layout = dict(xaxis = dict(title="Month"),
-            yaxis = dict(title="Travel Time (min)"),
+	layout = dict(title = period + ' TRAVEL TIMES', titlefont = dict(size=14),
+			xaxis = dict(title="MONTH", titlefont = dict(size = 12), showline=True, showgrid=False, linecolor='black', linewidth=1, ticks='outside', tickfont = dict(size=10)),
+            yaxis = dict(title="TRAVEL TIME (min)", titlefont = dict(size = 12), tickfont = dict(size=10)),
 			autosize=True,
 			height=250,
 			margin=go.Margin(
-				l=75,
-				r=0,
-				b=75,
-				t=0,
+				l=70,
+				r=30,
+				b=60,
+				t=50,
 				pad=4
-			))
+			),
+			showlegend=False)
+	annotations = []
+	annotations.append(dict(x=data[0].x.iloc[-1], y=data[0].y.iloc[-1], xanchor='left', yanchor='middle', text='WB', showarrow=False))
+	annotations.append(dict(x=data[1].x.iloc[-1], y=data[1].y.iloc[-1], xanchor='left', yanchor='middle', text='EB', showarrow=False))
+	layout['annotations'] = annotations
 	figure = {'layout': layout, 'data': data}
 	return figure
 
@@ -153,15 +179,15 @@ def generate_tf_graph(street, period):
             strdiffEB = str(diffEB)+ ' min'
         else:
             strdiffEB = '< 1 min'
-    layout = go.Layout(title = street, titlefont = dict(size = 15),
-						xaxis = dict(title = 'Direction', titlefont = dict(size = 12)),
-						yaxis = dict(title = 'Travel Time', titlefont = dict( size = 12), range = YRNG),
+    layout = go.Layout(title = street.upper(), titlefont = dict(size = 14),
+						xaxis = dict(title = 'DIRECTION', titlefont = dict(size = 12), tickfont = dict(size=10)),
+						yaxis = dict(title = 'TRAVEL TIME', titlefont = dict(size = 12), range = YRNG, tickfont = dict(size=10)),
 						autosize = True,
 						height = 250,
 						margin=go.Margin(
 									l=40,
 									r=0,
-									b=50,
+									b=35,
 									t=50,
 									pad=4
 								),
@@ -193,24 +219,29 @@ def generate_tf_graph(street, period):
                                         font = dict(color = "black", size = 16, family = 'arial narrow')))
     return {'data' : [BEFORE_FIGS[period][street], AFTER_FIGS[period][street]], 'layout' : layout}
 
-def generate_schr_graph(period, dir):
-	filtered_data = filter_hw_data(period, dir)
-	before = filtered_data['hw_before'].values[0]
-	after = filtered_data['hw_after'].values[0]
+# Streetcar Headway Reliability graph
+def generate_schr_graph(period, dir, mon):
+	filtered_data = filter_hw_data(period, dir, mon)
+	# Get baseline data
+	baseline_data = filtered_data[0]
+	before = baseline_data['hw'].values[0]
+	# Get current data
+	current_data = filtered_data[1]
+	after = current_data['hw'].values[0]
 	
 	values = [before, after]
 	fmt_values = [str(before) + '%', str(after) + '%']
-	labels = ['Before', 'After']
-	data = [go.Bar(x=labels, y=values, text=fmt_values, textposition = 'outside', marker=dict(color=['rgba(255,165,0, 0.6)', 'rgba(30,144,255, 0.6)']))]
-	layout = go.Layout(title = period + ' PEAK PERIOD', titlefont = dict(size=15),
-			xaxis = dict(title = dir, titlefont = dict(size=12)),
-			yaxis = dict(title = 'Headway Reliability %', titlefont = dict( size = 12), range = [0, 100]),
+	labels = ['BEFORE', 'AFTER']
+	data = [go.Bar(x=labels, y=values, text=fmt_values, textfont = dict(size=15, color='white'), textposition = 'inside', marker=dict(color=['rgba(255,165,0, 0.6)', 'rgba(30,144,255, 0.6)']))]
+	layout = go.Layout(title = period + ' PEAK PERIOD', titlefont = dict(size=14),
+			xaxis = dict(title = 'WESTBOUND' if dir == 'WB' else 'EASTBOUND', titlefont = dict(size=12), tickfont = dict(size=10)),
+			yaxis = dict(title = 'RELIABILITY %', titlefont = dict(size = 12), range = [0, 100], tickfont = dict(size=10)),
 			autosize = True,
 			height = 250,
 			margin=go.Margin(
 						l=40,
 						r=0,
-						b=50,
+						b=35,
 						t=50,
 						pad=4
 					),
@@ -228,29 +259,40 @@ app.scripts.config.serve_locally = True
 server = app.server
 
 # main div contents
+# Streetcar Tab
 STREETCAR_LAYOUT = [html.Div(children=[
 						html.Div(children=[
-							html.H2(children='AVERAGE STREETCAR TRAVEL TIME'),
 							html.Div(children=[
-								html.H3(children=AM_PEAK_LABEL),
-								dash_components.StreetcarSpeeds( id='am-baseline-scs-table', data=filter_sc_table_data(9, 'AM')),
-								dash_components.StreetcarSpeeds( id='am-scs-table', data=filter_sc_table_data(9, 'AM')),
-								html.Div(dcc.Graph(id='am-tt-graph', figure=generate_sc_graph('AM')), style={'border-style':'solid', 'border-width': '1px'})
-							], className='four-half columns'),
+								html.Div(children=[
+									html.H2(children='AVERAGE STREETCAR TRAVEL TIME', style={'margin-left':'0px'})
+								], className='nine columns'),
+								html.Div(children=[
+									html.H3(children=AM_PEAK_LABEL),
+									dash_components.StreetcarSpeeds( id='am-baseline-scs-table', data=filter_sc_table_data(9, 'AM')),
+									dash_components.StreetcarSpeeds( id='am-scs-table', data=filter_sc_table_data(9, 'AM')),
+									html.Div(dcc.Graph(id='am-tt-graph', figure=generate_sc_graph('AM')), style={'border-style':'solid', 'border-width': '1px'})
+								], className='six columns'),
+								html.Div(children=[
+									html.H3(children=PM_PEAK_LABEL),
+									dash_components.StreetcarSpeeds( id='pm-baseline-scs-table', data=filter_sc_table_data(9, 'PM')),
+									dash_components.StreetcarSpeeds( id='pm-scs-table', data=filter_sc_table_data(9, 'PM')),
+									html.Div(dcc.Graph(id='pm-tt-graph', figure=generate_sc_graph('PM')), style={'border-style':'solid', 'border-width': '1px'})
+								], className='six columns')
+							], className='nine columns', style={'margin-left':0}),
 							html.Div(children=[
-								html.H3(children=PM_PEAK_LABEL),
-								dash_components.StreetcarSpeeds( id='pm-baseline-scs-table', data=filter_sc_table_data(9, 'PM')),
-								dash_components.StreetcarSpeeds( id='pm-scs-table', data=filter_sc_table_data(9, 'PM')),
-								html.Div(dcc.Graph(id='pm-tt-graph', figure=generate_sc_graph('PM')), style={'border-style':'solid', 'border-width': '1px'})
-							], className='four-half columns'),
-							html.Div(children=[
-								html.Div(dcc.Graph(id='am-wb-schr-graph', figure=generate_schr_graph('AM', 'WB'))),
-								html.Div(dcc.Graph(id='am-eb-schr-graph', figure=generate_schr_graph('AM', 'EB')))
-							], className='one-half columns'),
-							html.Div(children=[
-								html.Div(dcc.Graph(id='pm-wb-schr-graph', figure=generate_schr_graph('PM', 'WB'))),
-								html.Div(dcc.Graph(id='pm-eb-schr-graph', figure=generate_schr_graph('PM', 'EB')))
-							], className='one-half columns')
+								html.Div(children=[
+									html.H2(children='STREETCAR HEADWAY RELIABILITY', style={'margin-left':'0px'}),
+									html.H4(children='% of streetcars within acceptable headway')
+								], className='three columns'),
+								html.Div(children=[
+									html.Div(dcc.Graph(id='am-wb-schr-graph', figure=generate_schr_graph('AM', 'WB', 9))),
+									html.Div(dcc.Graph(id='am-eb-schr-graph', figure=generate_schr_graph('AM', 'EB', 9)))
+								], className='one-half columns'),
+								html.Div(children=[
+									html.Div(dcc.Graph(id='pm-wb-schr-graph', figure=generate_schr_graph('PM', 'WB', 9))),
+									html.Div(dcc.Graph(id='pm-eb-schr-graph', figure=generate_schr_graph('PM', 'EB', 9)))
+								], className='one-half columns')
+							], className='three colums')
 						], className='row'),
 						dcc.RadioItems(
 							id='streetcar-period-radio',
@@ -267,10 +309,12 @@ STREETCAR_LAYOUT = [html.Div(children=[
 							labelStyle={'display': 'inline-block'}
 						)]
 					)]
-
+# Car Tab
 CAR_LAYOUT = [html.Div(children=[
 				html.Div(children=[
-					html.H2(children='CAR TRAVEL TIME'),
+					html.Div(children=[
+						html.H2(children='CAR TRAVEL TIME', style={'margin-left':'0px'})
+					], className='column'),
 					html.Div(children=[
 						html.H3(id='ctt-peak-label', children=AM_PEAK_LABEL),
 						html.Div(dcc.Graph(id = STREETS[0] + '-tf-graph'),
@@ -287,7 +331,9 @@ CAR_LAYOUT = [html.Div(children=[
 								className='two columns')
 					], className='row', style={'padding-left':'2%'})
 				]),
-				html.H2(children='TRAFFIC VOLUMES'),
+				html.Div(children=[
+						html.H2(children='TRAFFIC VOLUMES', style={'margin-left':'0px'})
+					], className='column'),
 				html.Div(children=[
 					html.Div(className='one columns'),
 					html.Div(children=[
@@ -333,7 +379,7 @@ app.layout = html.Div([
 	dcc.Tabs(tabs=[{'label': 'Streetcars', 'value': 'streetcar'},
 					{'label': 'Cars', 'value': 'car'}],
 					value='streetcar', id='tabs', style={'font-weight':'bold'}),
-	html.Div(id=MAIN_DIV, className='row', children=STREETCAR_LAYOUT),
+	html.Div(id=MAIN_DIV, className='row', children=STREETCAR_LAYOUT), # Contents loaded via controllers. Default Streetcar tab.
 	html.Div(children=html.H3(['Created by the ',
 						html.A('Big Data Innovation Team',
 						href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
@@ -365,8 +411,9 @@ def display_content(value):
 	elif value == 'car':
 		return CAR_LAYOUT
 
-# Streetcar tab
+############## Streetcar tab ######################################################################
 
+# Streetcar Speed tables controllers
 @app.callback(
 	Output('am-scs-table', 'data'),
 	[Input('streetcar-month-radio', 'value')])
@@ -380,8 +427,39 @@ def update_am_scs_scstable(current_month):
 def update_pm_baseline_scstable(current_month):
 	filtered_data = filter_sc_table_data(current_month, 'PM');
 	return filtered_data
-	
-# Car tab
+
+# Streetcar Headway Reliability controllers
+@app.callback(
+	Output('am-wb-schr-graph', 'figure'),
+	[Input('streetcar-month-radio', 'value')])
+def update_am_wb_schr_graph(current_month):
+	figure = generate_schr_graph('AM', 'WB', current_month);
+	return figure
+
+@app.callback(
+	Output('am-eb-schr-graph', 'figure'),
+	[Input('streetcar-month-radio', 'value')])
+def update_am_eb_schr_graph(current_month):
+	figure = generate_schr_graph('AM', 'EB', current_month);
+	return figure
+
+@app.callback(
+	Output('pm-wb-schr-graph', 'figure'),
+	[Input('streetcar-month-radio', 'value')])
+def update_pm_wb_schr_graph(current_month):
+	figure = generate_schr_graph('PM', 'WB', current_month);
+	return figure
+
+@app.callback(
+	Output('pm-eb-schr-graph', 'figure'),
+	[Input('streetcar-month-radio', 'value')])
+def update_pm_eb_schr_graph(current_month):
+	figure = generate_schr_graph('PM', 'EB', current_month);
+	return figure
+
+################# Car tab ##########################################################################
+
+# Car Travel Time graph controllers
 @app.callback(
     Output('ctt-peak-label', 'children'),
     [Input('car-period-radio', 'value')])
@@ -430,10 +508,11 @@ def update_front(value):
 	# return tf_graph
 	return generate_tf_graph(STREETS[5], value)
 
+# Volume Map controller
 @app.callback(
 	Output('volume-map', 'volume_data'),
     [Input('car-month-radio', 'value'),
-	Input('car-period-radio', 'value'),])
+	Input('car-period-radio', 'value')])
 def update_vol_map(current_month, current_period):
 	filtered_data = filter_vol_data(current_month, current_period);
 	return filtered_data

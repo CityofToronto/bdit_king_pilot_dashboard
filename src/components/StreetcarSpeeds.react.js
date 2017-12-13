@@ -151,7 +151,7 @@ class StreetcarSpeeds extends Component {
 			.attr('height',tileHeight)
 			.attr('fill',function(d) {return speedColor(d);})
 			.attr('stroke','black')
-			.attr('stroke-width',1)
+			.attr('stroke-width',0)
 		
 		// km/h text
 		svg.selectAll('text_speeds '+this.props.id)
