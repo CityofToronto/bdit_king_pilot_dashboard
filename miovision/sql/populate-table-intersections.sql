@@ -12,4 +12,4 @@ UPDATE miovision.intersections
 SET street_main = TRIM(substring(intersection_name FROM '([a-zA-Z]*)'));
 
 UPDATE miovision.intersections
-SET street_cross = TRIM(substring(intersection_name FROM '\/ ([a-zA-Z]*)'));
+SET street_cross = TRIM(substring(intersection_name FROM '\/ (.*)'));
