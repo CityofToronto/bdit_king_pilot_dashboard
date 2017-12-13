@@ -102,4 +102,5 @@ ENV/
 .vscode/settings.json
 ttc/db.cfg
 ttc/r/.Rhistory
-ttc/r/connect/connect.R
+ttc/r/connect/*
+ttc/r/png/*
