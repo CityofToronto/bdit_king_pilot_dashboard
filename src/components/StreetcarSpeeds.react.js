@@ -6,7 +6,7 @@ import ReactFauxDOM from 'react-faux-dom';
 import PropTypes from 'prop-types';
 
 // styling variables
-var margin = {top: 0, right: 0, bottom: 0, left: 0};
+var margin = {top: 1, right: 1, bottom: 1, left: 1};
 var width = 750 - margin.left - margin.right;
 var height = 200 - margin.top - margin.bottom;
 		
@@ -18,7 +18,7 @@ var leftBuffer = 0;
 var segmentBuffer = 10;
 
 var fontSpeedSize = 18;
-//var fontSegmentSize = 12;
+var fontSegmentSize = 12;
 var fontTTSize = 40;
 
 var tileWidth = (width - margin.left - margin.right - leftBuffer)/5;
@@ -44,13 +44,13 @@ var speedColor = function(speed) {
 // all the transitions
 function updateGraphics(id) {
 	// Update speed colour tiles
-	selectAll('rect.tiles')
+	selectAll('rect.tiles.'+id)
 		.data(dataset)
 		.transition()
 		.duration(1000)
 		.attr('fill',function(d) {return speedColor(d);});
 	// Update speed text
-	selectAll('text.text_speeds'+id)
+	selectAll('text.text_speeds.'+id)
 		.data(dataset)
 		.transition()
 		.duration(1000)
@@ -61,7 +61,7 @@ function updateGraphics(id) {
 			return function(t) { that.text(i(t) + ' KM/H');};
 		});
 	// Update travel time text
-	selectAll('text.text_tt'+id)
+	selectAll('text.text_tt.'+id)
 		.data(tt)
 		.transition()
 		.duration(500)
@@ -140,42 +140,44 @@ class StreetcarSpeeds extends Component {
 			.attr('viewBox', '0 0 '+svg_width+' '+svg_height)
 			.attr('class', 'svg-content-responsive');
 		// bars
-		svg.selectAll('tiles'+this.props.id)
+		svg.selectAll('tiles.'+this.props.id)
 			.data(dataset)
 			.enter()
 			.append('rect')
-			.attr('class','tiles'+this.props.id)
+			.attr('class','tiles '+this.props.id)
 			.attr('x', function(d,i) { return margin.left + leftBuffer + (i%4) * tileWidth; })
 			.attr('y', function(d,i) { if (i<=3){ return margin.top + boxHeight - buffer/2 - tileHeight;} else {return margin.top + boxHeight + buffer/2;} })
 			.attr('width',tileWidth)
 			.attr('height',tileHeight)
 			.attr('fill',function(d) {return speedColor(d);})
 			.attr('stroke','black')
-			.attr('stroke-width',1)
+			.attr('stroke-width',0)
 		
 		// km/h text
-		svg.selectAll('text_speeds'+this.props.id)
+		svg.selectAll('text_speeds '+this.props.id)
 			.data(dataset)
 			.enter()
 			.append('text')
 			.text(function(d) { return Math.round(d) + ' KM/H';})
-			.attr('class','text_speeds'+this.props.id)
+			.attr('class','text_speeds '+this.props.id)
 			.attr('x', function(d,i) { return margin.left + leftBuffer + (i%4) * tileWidth + tileWidth/2; })
 			.attr('y', function(d,i) { 	if (i<=3){ return margin.top + boxHeight - buffer/2 - tileHeight - textBuffer;} 
 										else {return margin.top + boxHeight + buffer/2 + tileHeight + textBuffer + fontSpeedSize*7/10;} 
 										})
+			.attr('font-size', fontSpeedSize + 'px')
 			.attr('fill', 'black')
 			.attr('text-anchor', 'middle')
 			
 		// segment name and line seperators
-		svg.selectAll('text_segments'+this.props.id)
+		svg.selectAll('text_segments '+this.props.id)
 			.data(segments)
 			.enter()
 			.append('text')
 			.text(function(d) { return d.toUpperCase();})
-			.attr('class','text_segments'+this.props.id)
+			.attr('class','text_segments '+this.props.id)
 			.attr('x', function(d,i) { return margin.left + leftBuffer + i * tileWidth + tileWidth/2; })
 			.attr('y', margin.top + boxHeight - buffer/2 - tileHeight - textBuffer - fontSpeedSize - segmentBuffer)
+			.attr('font-size', fontSegmentSize + 'px')
 			.attr('fill', 'black')
 			.attr('text-anchor', 'middle')
 		
@@ -183,7 +185,7 @@ class StreetcarSpeeds extends Component {
 			.data(segments)
 			.enter()
 			.append('line')
-			.attr('class','line_segments'+this.props.id)
+			.attr('class','line_segments '+this.props.id)
 			.attr('x1',function(d,i) { return margin.left+leftBuffer+(i+1)*tileWidth;})
 			.attr('x2',function(d,i) { return margin.left+leftBuffer+(i+1)*tileWidth;})
 			.attr('y1',margin.top)
@@ -210,7 +212,7 @@ class StreetcarSpeeds extends Component {
 			.attr('stroke-width',0.5)	
 		
 		// travel time summaries
-		var tt_texts = svg.selectAll('text.tt'+this.props.id)
+		var tt_texts = svg.selectAll('text.tt.'+this.props.id)
 				.data(tt)
 				.enter()
 		
@@ -219,22 +221,24 @@ class StreetcarSpeeds extends Component {
 				.attr('class','text_tt'+this.props.id)
 				.attr('x', function() {return margin.left + leftBuffer + tileWidth * 4.475;})
 				.attr('y', function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight);})
+				.attr('font-size', fontTTSize + 'px')
 				.attr('fill', 'black')
 				.attr('text-anchor', 'end')
 				
 		tt_texts.append('text')
 			.text('MIN')
-				.attr('class','text_min'+this.props.id)
+				.attr('class','text_min '+this.props.id)
 				.attr('x', function() {return margin.left + leftBuffer + tileWidth * 4.525;})
 				.attr('y', function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight);})
-				.attr('fill', 'black')
 				.attr('font-size', (fontTTSize-14) + 'px')
+				.attr('fill', 'black')
 		
 		tt_texts.append('text')
 			.text(function(d) {return d[1].toUpperCase();})
-				.attr('class','text_dir'+this.props.id)
+				.attr('class','text_dir '+this.props.id)
 				.attr('x', function() {return margin.left + leftBuffer + tileWidth * 4.525;})
 				.attr('y', function(d,i) {return margin.top + boxHeight/2 + i * (boxHeight) + boxHeight*1/3;})
+				.attr('font-size', (fontTTSize-22) + 'px')
 				.attr('fill', 'black')
 				.attr('text-anchor', 'middle')
 	}

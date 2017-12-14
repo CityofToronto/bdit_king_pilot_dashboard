@@ -591,6 +591,14 @@ class VolumeMap extends Component {
 		var sl = this.props.sl_data;
 		var ss = this.props.ss_data;
 		var file = this.props.volume_data;
+		
+		/* Create tooltip
+		***********************************************************************/
+		divtip = select(this.node.parentNode)
+			.append('div')
+			.attr('class', 'tooltip')
+			.style('opacity', 0);
+		
 		// Create SVG container
 		var svgContainer = select(this.node)
 			.classed('svg-container volumemap-padding', true)
@@ -645,11 +653,7 @@ class VolumeMap extends Component {
 		slpathGen(streets_lines, '#slgroup');
 		sspathGen(streets_segments);
 		
-		/* Create tooltip
-		***********************************************************************/
-		divtip = select(this.node).append('div')
-			.attr('class', 'tooltip')
-			.style('opacity', 0);
+		
 		// initial data view
 		//buttonChecker();
 		sspathUpdate(vol_data);

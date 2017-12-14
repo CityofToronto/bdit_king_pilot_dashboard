@@ -51,3 +51,7 @@
 #day-type-radio label:hover {
   background-color:  rgba(22, 87, 136, 0.5);
 }
+
+.modebar{
+      display: none !important;
+}
