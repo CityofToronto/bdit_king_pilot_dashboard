@@ -71,11 +71,13 @@ MAX_TIME = dict(ew=min(30, DATA[DATA['direction'].isin(DIRECTIONS['ew'])].tt.max
 TITLE = 'King Street Transit Pilot: Vehicular Travel Time Monitoring'
 BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
+AXIS_LINE = {'color' : 'rgba(0, 0, 0, 1)',
+             'width' : 2}
 PLOT = dict(margin={'t':10, 'b': 40, 'r': 40, 'l': 40, 'pad': 8})
 PLOT_COLORS = dict(pilot='rgba(22, 87, 136, 100)',
                    baseline='rgba(128, 128, 128, 1.0)',
                    ghost_bar='rgba(255, 255, 255, 0.1)',
-                   ghost_line='rgba(166, 206, 227, 100)')
+                   ghost_line='rgba(166, 206, 227, 50)')
 FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
 # IDs for divs
@@ -286,13 +288,21 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK', datera
                         yref='yaxis',
                         showarrow=False
                         )]
-    line = {'type':'line',
+    base_line = {'type':'line', #baseline line
             'x0': 0,
             'x1': 1,
             'xref': 'paper',
             'y0': base_data.iloc[0]['tt'],
             'y1': base_data.iloc[0]['tt'],
             'line': BASELINE_LINE
+           }
+    axis_line = {'type':'line', #axis line
+            'x0': 0,
+            'x1': 1,
+            'xref': 'paper',
+            'y0': 0,
+            'y1': 0,
+            'line': AXIS_LINE
            }
     layout = dict(font={'family': FONT_FAMILY},
                   autosize=True,
@@ -304,7 +314,7 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK', datera
                   yaxis=dict(title='Travel Time (min)',
                              range=[0, MAX_TIME[orientation]],
                              fixedrange=True),
-                  shapes=[line],
+                  shapes=[base_line, axis_line],
                   margin=PLOT['margin'],
                   annotations=annotations,
                   legend={'xanchor':'right'},
