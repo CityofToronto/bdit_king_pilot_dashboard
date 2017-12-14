@@ -107,3 +107,4 @@ bluetooth/manual_tool/csv/
 ttc/r/connect/*
 ttc/r/png/*
 *.Rhistory
+miovision/r/connect/connect.R

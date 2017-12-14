@@ -1,0 +1,59 @@
+---
+title: "Exploratory Analysis - Miovision Counts"
+author: "Aakash Harpalani"
+date: "Thursday, December 14, 2017"
+output: github_document
+---
+
+### Setup
+
+Loading libraries:
+```{r, message=FALSE, warning=FALSE}
+library(RPostgreSQL)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+```
+
+Establishing connections and credentials:
+```{r}
+drv <- dbDriver("PostgreSQL")
+source("connect/connect.R")
+```
+
+### Analysis
+
+Set intersection of interest:
+```{r}
+intersection_id = 1
+```
+
+Retrieve 15-min count data:
+```{r}
+strSQL <-
+  paste0("SELECT intersection_name FROM miovision.intersections WHERE intersection_uid = ",intersection_id)
+intersection_name <- dbGetQuery(con, strSQL)
+
+strSQL <-
+  paste0("SELECT datetime_bin, classification, leg, movement, volume ",
+         "FROM miovision.volumes_15min ",
+         "INNER JOIN miovision.classifications USING (classification_uid) ",
+         "INNER JOIN miovision.movements USING (movement_uid) ",
+         "WHERE intersection_uid = ",intersection_id," ",
+         "ORDER BY datetime_bin, classification_uid, leg, movement ")
+data <- dbGetQuery(con, strSQL)
+```
+
+Overall volumes, by class:
+```{r}
+vol_by_class <- data %>%
+  group_by(datetime_bin, classification) %>%
+  summarize(total_volume = sum(volume))
+head(vol_by_class)
+```
+
+```{r}
+ggplot(data = vol_by_class, aes(x=datetime_bin, y=total_volume)) +
+  geom_line() +
+  facet_grid(classification ~ .)
+````
