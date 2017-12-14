@@ -68,9 +68,60 @@ head(vol_by_class)
     ## 6 2017-10-11 15:00:00           Pedestrians           33
 
 ``` r
+lights_by_dir <- data %>%
+  group_by(datetime_bin, leg, movement) %>%
+  filter(classification == 'Lights') %>%
+  summarize(total_volume = sum(volume))
+head(lights_by_dir)
+```
+
+    ## Source: local data frame [6 x 4]
+    ## Groups: datetime_bin, leg [3]
+    ## 
+    ##          datetime_bin   leg movement total_volume
+    ##                <dttm> <chr>    <chr>        <int>
+    ## 1 2017-10-11 15:00:00 North     Left           44
+    ## 2 2017-10-11 15:00:00 North     Thru           81
+    ## 3 2017-10-11 15:00:00 South    Right           77
+    ## 4 2017-10-11 15:00:00 South     Thru          122
+    ## 5 2017-10-11 15:15:00 North     Left           54
+    ## 6 2017-10-11 15:15:00 North     Thru           95
+
+``` r
 ggplot(data = vol_by_class, aes(x=datetime_bin, y=total_volume)) +
   geom_line() +
   facet_grid(classification ~ .)
 ```
 
 ![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-1.png)
+
+``` r
+lights_by_dir <- data %>%
+  group_by(datetime_bin, leg, movement) %>%
+  filter(classification == 'Lights') %>%
+  summarize(total_volume = sum(volume))
+head(lights_by_dir)
+```
+
+    ## Source: local data frame [6 x 4]
+    ## Groups: datetime_bin, leg [3]
+    ## 
+    ##          datetime_bin   leg movement total_volume
+    ##                <dttm> <chr>    <chr>        <int>
+    ## 1 2017-10-11 15:00:00 North     Left           44
+    ## 2 2017-10-11 15:00:00 North     Thru           81
+    ## 3 2017-10-11 15:00:00 South    Right           77
+    ## 4 2017-10-11 15:00:00 South     Thru          122
+    ## 5 2017-10-11 15:15:00 North     Left           54
+    ## 6 2017-10-11 15:15:00 North     Thru           95
+
+``` r
+ggplot(data = lights_by_dir, aes(x=datetime_bin, y=total_volume)) +
+  geom_line() +
+  facet_grid(leg ~ movement)
+```
+
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-8-1.png)

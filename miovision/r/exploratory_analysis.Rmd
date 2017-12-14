@@ -50,10 +50,30 @@ vol_by_class <- data %>%
   group_by(datetime_bin, classification) %>%
   summarize(total_volume = sum(volume))
 head(vol_by_class)
+
+lights_by_dir <- data %>%
+  group_by(datetime_bin, leg, movement) %>%
+  filter(classification == 'Lights') %>%
+  summarize(total_volume = sum(volume))
+head(lights_by_dir)
 ```
 
 ```{r}
 ggplot(data = vol_by_class, aes(x=datetime_bin, y=total_volume)) +
   geom_line() +
   facet_grid(classification ~ .)
+```
+
+```{r}
+lights_by_dir <- data %>%
+  group_by(datetime_bin, leg, movement) %>%
+  filter(classification == 'Lights') %>%
+  summarize(total_volume = sum(volume))
+head(lights_by_dir)
+```
+
+```{r}
+ggplot(data = lights_by_dir, aes(x=datetime_bin, y=total_volume)) +
+  geom_line() +
+  facet_grid(leg ~ movement)
 ````
