@@ -34,32 +34,49 @@ segment|direction|mon|time_period|volume|pct_change
 The code for the D3 Volume Map is broken up into several different sections dedicated to different purposes, and groups functions for those purposes. The following describes the different sections and some functions of interest:
 
 ### HTML
-In the standalone D3 Volume Map, the HTML code defines the style of the tooltip, sources D3.js scripts, and creates buttons that updates the displayed data. 
+In the standalone D3 Volume Map, the HTML code defines the style of the tooltip, sources D3.js scripts, and creates buttons that updates the displayed data. In the dashboard, a CSS file manages the style of the tooltip, and global controls in react.js and Python filter and update the data. 
 
 ### Prepare CSV Data
+These functions define the object properties of the objects created from the D3.js CSV call. 
 
 ### Setup SVGs
+These functions create the SVG container and the SVG groups that the paths will be drawn into. `labelgroup` holds street labels, `slnodata` holds street lines with no volume data, `slgroup` holds street lines with volume data, `ssgroup` holds street segments, and `legendgroup` holds legend components. 
+
+*image here*
 
 ### Scale SVGs
+This section creates the `scaling` function, which calculates the domain (original coordinate/size) and defines the range (new size), which are used by the `xScale` and `yScale` functions. 
 
 ### Get min/max segments coordinates
+These functions get the min and max of x and y coordinates of all the street segments. 
 
 ### Create tooltip
-In react.js, this section appears in the createVolumeMap function.
+In the standalone D3 Volume Map, this section creates the tooltip variable to be used later. In react.js, this section appears in the createVolumeMap function.
 
 ### Data filter functions
-In react.js, this section does not exist as data filtering is handled on the Python side
+In the standalone D3 Volume Map, this section stores the values expected from the button controls, and creates a function that checks which buttons are selected. In react.js, this section does not exist as data filtering is handled on the Python side
 
 ### Colouring segments
+This section defines the colour scale and `pctColour`, a function that determines which interval the volume data of a segment falls into. 
 
 ### Functions to draw SVGs
+This is the largest section of the document, and contains all the functions that create the paths of SVGs drawn. `pathFunc` generates the line paths for street lines, while `fancy` generates the polygon paths for street segments. `fancy` uses functions `outside` and `inside` to determine if a street segment is on the outer edges of the study area, or if it falls within those edge bounds. Together, `fancy`, `outside`, and `inside` draw the polygon paths, following the cases listed in the table below.
+
+*table here*
+
+The function `slpathGen` draws the street lines into `slnodata` or `slgroup`, while function `sspathGen` draws the street segments into `ssgroup`. `sspathGen` also creates the key for binding data to the appropriate segments, which is referenced in function `sspathUpdate`, which binds the data to the segment polygons, transitions colour change, and creates the tooltip that displays when the mouse hovers over a segment. `sspathUpdate` is called when a button is clicked. 
+
+*gif of button click and tooltip*
+
 
 ### Functions to label SVGs
+The function `labelStreets` takes the streets_lines data and creates text SVGs at the west-most and north-most ends of the streets, depending on the direction of the street. 
 
 ### Create a legend
+The function `createLegend` creates the array of objects that defines the text, x, y, and colours, and displays the text and colour components of the legend. The symbols of the legend are technically very wide straight lines, and are not polygons. 
 
 ### Draw SVGs
-In react.js, this section appears in the createVolumeMap function.
+In the standalone D3 Volume Map, the variables and functions that are immediately dependent on the external data are updated and called within the nested CSV calls. In react.js, this section appears in the createVolumeMap function.
 
 ## 4. Key Takeaways
 The development of the D3 Volume Map had many challenges, but there were several lessons learned in regards to developing in Javascript and with D3.js.

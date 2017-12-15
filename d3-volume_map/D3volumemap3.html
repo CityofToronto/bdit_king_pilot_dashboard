@@ -631,8 +631,9 @@ var legendY = [0, 40, 80, 120, 140, 160, 180, 200, 240, 280]; // requires length
 var legendColours = [cND, cNeg4, cNeg3, cNeg2, cNeg1, cPos1, cPos2, cPos3, cPos4, cND]; // requires length of 10
 var legendData = []; // will be length of 10
 
-// create objects from text, x, y, and colour to put into legendData array
+
 function createLegend() {
+	// create objects from text, x, y, and colour to put into legendData array
 	legendText.forEach(function(t, i) {
 		legendData.push({text: t, 
 						x: legendX, 
