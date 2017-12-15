@@ -348,9 +348,8 @@ html.Div(children=[html.H1(children=TITLE, id='title'),
     , html.Div(id=MAIN_DIV, className='row'),
     html.Div(children = [
             html.Div(children = [html.Button(id = 'exit')], 
-                     className = 'nodata', 
-                     id = 'floating_text')], 
-            id = 'floating_div'),
+                     className = 'nodata')],
+             id = 'floating_text'),
     html.Div(children=html.H3(['Created by the ',
                                html.A('Big Data Innovation Team',
                                       href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
@@ -439,16 +438,16 @@ def assign_default_timperiod(day_type='Weekday'):
     return TIMEPERIODS[TIMEPERIODS['day_type'] == day_type].iloc[0]['period']
 
 
-@app.callback(Output('floating_div', 'children'),
+@app.callback(Output('floating_text', 'children'),
               [Input('info', 'n_clicks'),
                Input('exit', 'n_clicks')])
 
 def show_floating_div(info_clicks, exit_clicks):
     print(info_clicks, exit_clicks)
     if exit_clicks is None and info_clicks is not None: #Since the exit button is remade with floating div, n_clicks is reset to none.
-        return [html.Div(children = [html.H2('SamPlE TeXT'), html.Button('X', id = 'exit')], id = 'floating_text')]
+        return [html.Div(children = [html.H2('SamPlE TeXT'), html.Button('X', id = 'exit')], className = 'floating_div')]
     else:
-        return [html.Div(children = [html.Button(id = 'exit')], className = 'nodata', id = 'floating_text')]
+        return [html.Div(children = [html.Button(id = 'exit')], className = 'nodata')]
 
 @app.callback(Output(TABLE_DIV_ID, 'children'),
               [Input(CONTROLS['timeperiods'], 'value'),
