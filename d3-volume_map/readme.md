@@ -2,6 +2,8 @@
 ## 1. Overview
 The D3 Volume Map was created for the public dashboard of the King Street Pilot, to present actual and percent change in volumes in major streets in the study area for which is there is data. The study area is bounded by Bathurst in the west, Jarvis in the east, Queen in the north, and Front in the south. 
 
+The information below directly references the 3rd version of the D3 Volume Map, and the code for that can be found [here](https://github.com/CityofToronto/bdit_king_pilot_dashboard/blob/gh-pages/d3-volume_map/D3volumemap3.html). At times, `react.js` may be referenced, which specifically means the VolumeMap.react.js file located [here](https://github.com/CityofToronto/bdit_king_pilot_dashboard/blob/dash_components/src/components/VolumeMap.react.js).
+
 ## 2. Data
 The D3 Volume Map takes in 3 different datasets:
 1. `streets_lines3.csv` - full-length streets, point-to-point line, version 3
@@ -42,7 +44,7 @@ These functions define the object properties of the objects created from the D3.
 ### Setup SVGs
 These functions create the SVG container and the SVG groups that the paths will be drawn into. `labelgroup` holds street labels, `slnodata` holds street lines with no volume data, `slgroup` holds street lines with volume data, `ssgroup` holds street segments, and `legendgroup` holds legend components. 
 
-*image here*
+*image of html inspect element here*
 
 ### Scale SVGs
 This section creates the `scaling` function, which calculates the domain (original coordinate/size) and defines the range (new size), which are used by the `xScale` and `yScale` functions. 
@@ -59,6 +61,19 @@ In the standalone D3 Volume Map, this section stores the values expected from th
 ### Colouring segments
 This section defines the colour scale and `pctColour`, a function that determines which interval the volume data of a segment falls into. 
 
+Interval|Colour
+--------|------
+Below -20|#4d9221
+-20 to -10|#7fbc41
+-10 to -5|#b8e186
+-5 to 0|#e6f5d0
+0 to 5|#fde0ef
+5 to 10|#f1b6da
+10 to 20|#de77ae
+Over 20|#c51b7d
+No Data|grey
+
+
 ### Functions to draw SVGs
 This is the largest section of the document, and contains all the functions that create the paths of SVGs drawn. `pathFunc` generates the line paths for street lines, while `fancy` generates the polygon paths for street segments. `fancy` uses functions `outside` and `inside` to determine if a street segment is on the outer edges of the study area, or if it falls within those edge bounds. Together, `fancy`, `outside`, and `inside` draw the polygon paths, following the cases listed in the table below.
 
@@ -73,7 +88,9 @@ The function `slpathGen` draws the street lines into `slnodata` or `slgroup`, wh
 The function `labelStreets` takes the streets_lines data and creates text SVGs at the west-most and north-most ends of the streets, depending on the direction of the street. 
 
 ### Create a legend
-The function `createLegend` creates the array of objects that defines the text, x, y, and colours, and displays the text and colour components of the legend. The symbols of the legend are technically very wide straight lines, and are not polygons. 
+The function `createLegend` creates the array of objects that defines the text, x, y, and colours, and displays the text and colour components of the legend. The symbols of the legend are technically very wide straight lines, and are not polygons. The legend is not scaled, so the size and position of the legend and its components are adjusted with hard numbers. 
+
+![](img\legend.PNG)
 
 ### Draw SVGs
 In the standalone D3 Volume Map, the variables and functions that are immediately dependent on the external data are updated and called within the nested CSV calls. In react.js, this section appears in the createVolumeMap function.
