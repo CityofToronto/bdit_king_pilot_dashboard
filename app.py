@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from dateutil.relativedelta import relativedelta
 import dash
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, Event
 import dash_core_components as dcc
 import dash_html_components as html
 from psycopg2 import connect
@@ -283,6 +283,7 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK', datera
 
     annotations = [dict(x=-0.008,
                         y=base_data.iloc[0]['tt'] + 2,
+                        text = 'Baseline',
                         font={'color':BASELINE_LINE['color']},
                         xref='paper',
                         yref='yaxis',
@@ -337,6 +338,7 @@ html.Link(rel = 'stylesheet',
               href = '/css/style.css'),
           
 html.Div(children=[html.H1(children=TITLE, id='title'),
+                   html.Button('info', id = 'info')
                   ], className='row twelve columns'),
     dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
                    {'label': 'North-South Streets', 'value': 'ns'}],
@@ -344,6 +346,11 @@ html.Div(children=[html.H1(children=TITLE, id='title'),
              id='tabs',
              style={'font-weight':'bold'})
     , html.Div(id=MAIN_DIV, className='row'),
+    html.Div(children = [
+            html.Div(children = [html.Button(id = 'exit')], 
+                     className = 'nodata', 
+                     id = 'floating_text')], 
+            id = 'floating_div'),
     html.Div(children=html.H3(['Created by the ',
                                html.A('Big Data Innovation Team',
                                       href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
@@ -430,6 +437,18 @@ def assign_default_timperiod(day_type='Weekday'):
     '''Assign the time period radio button selected option based on selected day type
     '''
     return TIMEPERIODS[TIMEPERIODS['day_type'] == day_type].iloc[0]['period']
+
+
+@app.callback(Output('floating_div', 'children'),
+              [Input('info', 'n_clicks'),
+               Input('exit', 'n_clicks')])
+
+def show_floating_div(info_clicks, exit_clicks):
+    print(info_clicks, exit_clicks)
+    if exit_clicks is None and info_clicks is not None: #Since the exit button is remade with floating div, n_clicks is reset to none.
+        return [html.Div(children = [html.H2('SamPlE TeXT'), html.Button('X', id = 'exit')], id = 'floating_text')]
+    else:
+        return [html.Div(children = [html.Button(id = 'exit')], className = 'nodata', id = 'floating_text')]
 
 @app.callback(Output(TABLE_DIV_ID, 'children'),
               [Input(CONTROLS['timeperiods'], 'value'),
