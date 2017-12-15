@@ -1,6 +1,7 @@
 import json
 import os
 from collections import OrderedDict
+import logging
 
 from dateutil.relativedelta import relativedelta
 import dash
@@ -36,7 +37,6 @@ DATA = pandasql.read_sql('''
                          SELECT street, direction, dt AS date, day_type, category, period, round(tt,1) tt, 
                          rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS most_recent,
                          week_number, month_number 
-                         FROM king_pilot.dash_daily
                          LEFT OUTER JOIN king_pilot.pilot_weeks weeks ON dt >= week AND dt < week + INTERVAL '1 week'
                          LEFT OUTER JOIN king_pilot.pilot_months months ON dt >= month AND dt < month + INTERVAL '1 month'
                          ''', con)
@@ -51,6 +51,7 @@ MONTHS = pandasql.read_sql('''SELECT * FROM king_pilot.pilot_months
 WEEKS['label'] = 'Week ' + WEEKS['week_number'].astype(str) + ': ' + WEEKS['week'].astype(str)
 WEEKS.sort_values(by='week_number', inplace=True)
 MONTHS['label'] = 'Month ' + MONTHS['month_number'].astype(str) + ': ' + MONTHS['month'].dt.strftime("%b '%y")
+RANGES = [pd.DataFrame(), pd.DataFrame(), WEEKS, MONTHS]
 con.close()
 
 ###################################################################################################
@@ -58,7 +59,6 @@ con.close()
 #                                        Constants                                                #
 #                                                                                                 #
 ###################################################################################################
-
 
 # Data management constants
 
@@ -105,12 +105,31 @@ DATERANGE_TYPES = ['Last Day', 'Select Date', 'Select Week', 'Select Month']
 GRAPHS = ['eb_graph', 'wb_graph']
 GRAPHDIVS = ['eb_graph_div', 'wb_graph_div']
 
+LAYOUTS = dict(streets='streets-div')
+
 INITIAL_STATE = {orientation:OrderedDict([(street,
                                            dict(n_clicks=(1 if i == 0 else 0),
                                                 clicked=(i == 0)
                                                )) for i, street in enumerate(STREETS[orientation])])
                  for orientation in STREETS}
 
+###################################################################################################
+#                                                                                                 #
+#                                   App Configuration                                             #
+#                                                                                                 #
+###################################################################################################
+
+app = DashResponsive()
+app.config['suppress_callback_exceptions'] = True
+app.title=TITLE
+server = app.server
+
+server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
+
+FORMAT = '%(asctime)s %(name)-2s %(levelname)-2s %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+
+LOGGER = logging.getLogger(__name__)
 
 ###################################################################################################
 #                                                                                                 #
@@ -215,21 +234,21 @@ def get_orientation_from_dir(direction):
 ###################################################################################################
 
 
-def generate_date_ranges(range_type=1):
+def generate_date_ranges(daterange_type=2):
     '''Generate an array of dropdown menu options depending on the date range type
     '''
 
-    if range_type == 2:
+    if DATERANGE_TYPES[daterange_type] == 'Select Week':
         # Weeks
         return [{'label': row.label,
                  'value': row.week_number}
                 for row in WEEKS.itertuples()]
-    elif range_type == 3:
+    elif DATERANGE_TYPES[daterange_type] == 'Select Month':
         return [{'label': row.label,
                  'value': row.month_number}
                 for row in MONTHS.itertuples()]
     else:
-        return None
+        return {'label':'None', 'value':1}
 
 def generate_row_class(clicked):
     '''Assigns class to clicked row'''
@@ -293,18 +312,20 @@ def generate_table(state, day_type, period, orientation='ew', daterange_type=0, 
         :param daterange:
             
     """
-
+    LOGGER.debug('Generate table: daterange_type:' + str(daterange_type) 
+                 + ', period: ' + str(period)
+                 + ', day_type: ' + str(day_type) 
+                 + ', date_range_id: ' + str(date_range_id) 
+                 + ', orientation: ' + str(orientation) )
     filtered_data, baseline = filter_table_data(period, day_type, orientation, daterange_type, date_range_id)
     #Current date for the data, to replace "After" header
     if DATERANGE_TYPES[daterange_type] in ['Last Day', 'Select Date']:
-        print("Generate Table: Single Date")
         day = filtered_data['date'].iloc[0].strftime('%a %b %d')
     elif DATERANGE_TYPES[daterange_type] == 'Select Week':
         day = 'Week ' + str(date_range_id)
     elif DATERANGE_TYPES[daterange_type] == 'Select Month':
         day = 'Month ' + str(date_range_id)
 
-    print('Generate Table, before return')
     return html.Table([html.Tr([html.Td(""), html.Td(DIRECTIONS[orientation][0], colSpan=2), html.Td(DIRECTIONS[orientation][1], colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
                       # Generate a row
@@ -339,6 +360,7 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK',
                                                                   date_range_id)
 
     orientation = get_orientation_from_dir(direction)
+    
     if after_df.empty:
         return None
     pilot_data = generate_graph_data(after_df,
@@ -388,43 +410,8 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK',
                   )
     return {'layout': layout, 'data': data}
                                           
-app = DashResponsive()
-app.config['suppress_callback_exceptions'] = True
-app.title=TITLE
-server = app.server
-
-server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
-
-app.layout = html.Div([html.Link(rel='stylesheet',
-                                 href='/css/dashboard.css'),
-                       html.Link(rel='stylesheet',
-                                 href='/css/style.css'),
-                       html.Div(children=[html.H1(children=TITLE, id='title')],
-                                className='row twelve columns'),
-                       dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
-                                      {'label': 'North-South Streets', 'value': 'ns'}],
-                                value='ew',
-                                id='tabs',
-                                style={'font-weight':'bold'}),
-                       html.Div(id=MAIN_DIV, className='row'),
-                       html.Div(children=html.H3(['Created by the ',
-                                                  html.A('Big Data Innovation Team',
-                                                         href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
-                                                         style={'text-align':'right',
-                                                                'padding-right':'1em'}),
-                                className='row'),
-                       *[html.Div(id=STATE_DIV_IDS[orientation],
-                                  style={'display': 'none'},
-                                  children=serialise_state(state))
-                         for orientation, state in INITIAL_STATE.items()],
-                       *[html.Div(id=div_id,
-                                  style={'display': 'none'},
-                                  children=[STREETS[orientation][0]])
-                         for orientation, div_id in SELECTED_STREET_DIVS.items()]
-                      ])
-
 #Elements to include in the "main-"
-STREETS_LAYOUT = [html.Div(children=[
+STREETS_LAYOUT = html.Div(children=[html.Div(children=[
     html.H2(id=TIMEPERIOD_DIV, children='Weekday AM Peak'),
     html.Button(id=CONTROLS['toggle'], children='Show Filters'),
     html.Div(id=CONTROLS['div_id'],
@@ -447,7 +434,7 @@ STREETS_LAYOUT = [html.Div(children=[
                                     clearable=False),
                                     title='Select a date range type to filter table data'),
                            html.Span(dcc.Dropdown(id=CONTROLS['date_range'],
-                                                  options=generate_date_ranges(range_type=3),
+                                                  options=generate_date_ranges(daterange_type=3),
                                                   value = 1,
                                                   clearable=False),
                                      id=CONTROLS['date_range_span'],
@@ -467,11 +454,41 @@ STREETS_LAYOUT = [html.Div(children=[
                            className='four columns'),
     html.H2(id=STREETNAME_DIV[0], children=[html.B('Dundas Eastbound:'),
                                                 ' Bathurst - Jarvis']),
-    html.Div(id = GRAPHDIVS[0], className='eight columns'),
+    html.Div(id = GRAPHDIVS[0], children=dcc.Graph(id=GRAPHS[0]), className='eight columns'),
     html.H2(id=STREETNAME_DIV[1], children=[html.B('Dundas Westbound:'),
                                                 ' Jarvis - Bathurst']),
-    html.Div(id = GRAPHDIVS[1], className='eight columns')
-               ]
+    html.Div(id = GRAPHDIVS[1], children=dcc.Graph(id=GRAPHS[1]), className='eight columns')
+               ], id=LAYOUTS['streets'])
+
+app.layout = html.Div([html.Link(rel='stylesheet',
+                                 href='/css/dashboard.css'),
+                       html.Link(rel='stylesheet',
+                                 href='/css/style.css'),
+                       html.Div(children=[html.H1(children=TITLE, id='title')],
+                                className='row twelve columns'),
+                       dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
+                                      {'label': 'North-South Streets', 'value': 'ns'}],
+                                value='ew',
+                                id='tabs',
+                                style={'font-weight':'bold'}),
+                       html.Div(id=MAIN_DIV, className='row', children=[STREETS_LAYOUT]),
+                       html.Div(children=html.H3(['Created by the ',
+                                                  html.A('Big Data Innovation Team',
+                                                         href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
+                                                         style={'text-align':'right',
+                                                                'padding-right':'1em'}),
+                                className='row'),
+                       *[html.Div(id=STATE_DIV_IDS[orientation],
+                                  style={'display': 'none'},
+                                  children=serialise_state(state))
+                         for orientation, state in INITIAL_STATE.items()],
+                       *[html.Div(id=div_id,
+                                  style={'display': 'none'},
+                                  children=[STREETS[orientation][0]])
+                         for orientation, div_id in SELECTED_STREET_DIVS.items()]
+                      ])
+
+
 
 ################################CSS###########################################
 
@@ -491,13 +508,16 @@ def static_file(path):
 #                                                                                                 #
 ###################################################################################################
 
-@app.callback(Output('main-page', 'children'), [Input('tabs', 'value')])
-def display_content(value):
-
+@app.callback(Output(LAYOUTS['streets'], 'style'),
+              [Input('tabs', 'value')])
+def display_streets(value):
+    '''Switch tabs display while retaining frontend client-side'''
     if value == 'ew':
-        return STREETS_LAYOUT
+        return {'display':'inline'}
     elif value == 'ns':
-        return STREETS_LAYOUT
+        return {'display':'inline'}
+    else:
+        return {'display':'none'}
 
 @app.callback(Output(CONTROLS['div_id'], 'style'),
               state=[State(CONTROLS['toggle'], 'children')],
@@ -538,47 +558,67 @@ def assign_default_timperiod(day_type='Weekday'):
                Input(CONTROLS['day_types'], 'value'),
                Input(CONTROLS['date_range_type'], 'value'),
                Input(CONTROLS['date_range'], 'value'),
-               Input('tabs', 'value'),
-               ],
+               Input('tabs', 'value')],
               [State(div_id, 'children') for div_id in STATE_DIV_IDS.values()])
 def update_table(period, day_type, daterange_type, date_range_id, orientation, *state_data):
     '''Generate HTML table of before-after travel times based on selected
     day type, time period, and remember which row was previously selected
     '''
+    LOGGER.debug('Update table: daterange_type:' + str(daterange_type) 
+                 + ', period ' + str(period)
+                 + ', day_type ' + str(day_type) 
+                 + ', date_range_id ' + str(date_range_id) 
+                 + ', orientation  ' + str(orientation)     )
+    if daterange_type == 1:
+        raise NotImplementedError("Not updating table for 'Select Date'")
     state_index = list(STREETS.keys()).index(orientation)
     state_data_dict = deserialise_state(state_data[state_index])
-    table = generate_table(state_data_dict, day_type, period, orientation, daterange_type, date_range_id)
+    table = generate_table(state_data_dict, day_type, period,
+                           orientation=orientation,
+                           daterange_type=daterange_type,
+                           date_range_id=date_range_id)
+    if daterange_type == 0:
+        LOGGER.debug('Table returned for Last Day')
+        print(table)
+    elif daterange_type == 2:
+        LOGGER.debug('Table returned for Week')
     return table
 
 @app.callback(Output(CONTROLS['date_range_span'], 'style'),
               [Input(CONTROLS['date_range_type'], 'value')])
-def hide_reveal_date_range(date_range_value):
-    if date_range_value > 1:
+def hide_reveal_date_range(daterange_type):
+    if daterange_type > 1:
         return {'display':'inline'}
     else:
         return {'display':'none'}
 
+# @app.callback(Output(CONTROLS['date_picker_span'], 'style'),
+#               [Input(CONTROLS['date_range_type'], 'value')])
+# def hide_reveal_date_picker(daterange_type):
+#     LOGGER.debug('Hide reveal date picker, daterange_type: ' + str(daterange_type))
+#     if daterange_type == 1:
+#         LOGGER.debug('Reveal date picker')
+#         return {'display':'inline'}
+#     else:
+#         return {'display':'none'}
+
 @app.callback(Output(CONTROLS['date_range'], 'options'),
               [Input(CONTROLS['date_range_type'], 'value')])
-def generate_date_range_for_type(date_range_value):
-    return generate_date_ranges(range_type=date_range_value)
+def generate_date_range_for_type(daterange_type):
+    if daterange_type == 1:
+        raise NotImplementedError("Generating date range for 'Select Date'")
+    return generate_date_ranges(daterange_type=daterange_type)
 
-def create_selected_data(graph_num):
-    @app.callback(Output(GRAPHS[graph_num], 'figure'),
-                  [Input(CONTROLS['date_range_type'], 'value'),
-                   Input(CONTROLS['date_range'], 'value')],
-                  [State(CONTROLS['day_types'], 'value'),
-                   State(CONTROLS['timeperiods'], 'value'),
-                   State('tabs', 'value'),
-                   *[State(div_id, 'children') for div_id in SELECTED_STREET_DIVS.values()]])
-    def update_selected_data(daterange_type, date_range_id, day_type, period, orientation, *selected_streets):
-        street = selected_streets[list(SELECTED_STREET_DIVS.keys()).index(orientation)]
-        direction = DIRECTIONS[orientation][graph_num]
-        return generate_figure(street[0], direction, day_type, period, daterange_type, date_range_id)
-    update_selected_data.__name__ = 'update_selected_data_'+GRAPHS[graph_num]
-    return update_selected_data
-
-[create_selected_data(graph_num) for graph_num, __ in enumerate(GRAPHS)]
+@app.callback(Output(CONTROLS['date_range'], 'value'),
+              [Input(CONTROLS['date_range_type'], 'value')],
+              [State(CONTROLS['date_range'], 'value')])
+def update_date_range_value(daterange_type, date_range_id):
+    if daterange_type == 1:
+        raise NotImplementedError("Updating date range for 'Select Date'")
+    if not RANGES[daterange_type].empty and date_range_id <= len(RANGES[daterange_type]):
+        return date_range_id
+    else:
+        return 1
 
 def create_row_update_function(streetname, orientation):
     '''Create a callback function for a given streetname
@@ -614,16 +654,18 @@ def create_row_click_function(orientation):
 
         clicks = deserialise_state(old_clicks)
         click_updated = False
-        for click_obj, n_click_new in zip(clicks.values(), rows):
+        for (street, click_obj), n_click_new in zip(clicks.items(), rows):
             if n_click_new > click_obj['n_clicks']:
                 click_obj['clicked'] = True
                 click_obj['n_clicks'] = n_click_new
                 click_updated = True
+                LOGGER.debug(street + ' clicked')
             else:
                 click_obj['clicked'] = False
         #If no street was found to be clicked by this function, revert to previously clicked street.
         if not click_updated:
             clicks[prev_clicked_street[0]]['clicked'] = True
+        
         return serialise_state(clicks)
     row_click.__name__ = 'row_click_'+orientation
     return row_click
@@ -638,7 +680,9 @@ def create_update_selected_street(orientation):
         stored in its own hidden div
         '''
         state_data_dict = deserialise_state(state_data)
-        return [street for street, click_obj in state_data_dict.items() if click_obj['clicked']]
+        street = [street for street, click_obj in state_data_dict.items() if click_obj['clicked']]
+        LOGGER.debug('Updating %s with selected street: %s', SELECTED_STREET_DIVS[orientation], street)
+        return street
     update_selected_street.__name__ = 'update_selected_street_'+orientation
     return update_selected_street
 
@@ -682,7 +726,11 @@ def create_update_graph_div(graph_number):
         '''
         *selected_streets, daterange_type, date_range = args
         #Use the input for the selected street from the orientation of the current tab
+        if daterange_type == 1:
+            raise NotImplementedError("Not updating graphs for 'Select Date'")
         street = selected_streets[list(SELECTED_STREET_DIVS.keys()).index(orientation)]
+        LOGGER.debug('Updating graph %s, for street: %s, period: %s, day_type: %s, daterange_type: %s, date_range: %s',
+                     GRAPHS[graph_number], street, period, day_type, daterange_type, date_range)
         figure = generate_figure(street[0],
                                  DIRECTIONS[orientation][graph_number],
                                  period=period,
