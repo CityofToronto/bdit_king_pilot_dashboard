@@ -90,7 +90,7 @@ The function `labelStreets` takes the streets_lines data and creates text SVGs a
 ### Create a legend
 The function `createLegend` creates the array of objects that defines the text, x, y, and colours, and displays the text and colour components of the legend. The symbols of the legend are technically very wide straight lines, and are not polygons. The legend is not scaled, so the size and position of the legend and its components are adjusted with hard numbers. 
 
-![](img\legend.PNG)
+![](img/legend.PNG)
 
 ### Draw SVGs
 In the standalone D3 Volume Map, the variables and functions that are immediately dependent on the external data are updated and called within the nested CSV calls. In react.js, this section appears in the createVolumeMap function.
