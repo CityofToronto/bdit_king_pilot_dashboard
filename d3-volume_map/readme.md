@@ -9,24 +9,25 @@ The D3 Volume Map takes in 3 different datasets:
 3. `street_volumes.csv`, or other source - volume data tied to segment number and segment direction; street_volumes.csv is fake data
 
 ###streets_lines example
-|line|streetname|directions|x1|y1|x2|y2|
-|----|----------|----------|--|--|--|--|
-|1|Queen|EW|10|10|250|10|
-|2|Richmond|W|10|20|250|20|
+line|streetname|directions|x1|y1|x2|y2
+----|----------|----------|--|--|--|--
+1|Queen|EW|10|10|250|10
+2|Richmond|W|10|20|250|20
 
 ###streets_segments example
-|segment|streetname|direction|segdesc|x1|y1|x2|y2|
-|-------|----------|---------|-------|--|--|--|--|
-|1|Queen|E|Bathurst to Portland|10|10|30|10|
-|2|Queen|E|Portland to Spadina|30|10|60|10|
+segment|streetname|direction|segdesc|x1|y1|x2|y2
+-------|----------|---------|-------|--|--|--|--
+1|Queen|E|Bathurst to Portland|10|10|30|10
+2|Queen|E|Portland to Spadina|30|10|60|10
 
 ###street_volumes example
-|segment|direction|mon|time_period|volume|pct_change|
-|-------|---------|---|-----------|------|----------|
-|1|E|11/01/2017 0:00|AM|2380|13.42|
-|2|E|11/01/2017 0:00|AM|2725|12.34|
+segment|direction|mon|time_period|volume|pct_change
+-------|---------|---|-----------|------|----------
+1|E|11/01/2017 0:00|AM|2380|13.42
+2|E|11/01/2017 0:00|AM|2725|12.34
 
-## 3. Major Functions
+## 3. Major Components
+The code for the D3 Volume Map is broken up into several different sections dedicated to different purposes, and groups functions for those purposes. 
 
 
 
