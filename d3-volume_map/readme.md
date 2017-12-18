@@ -63,8 +63,8 @@ This section defines the colour scale and `pctColour`, a function that determine
 
 Interval|Colour
 --------|------
-Below -20|<span style="color:#4d9221;font-weight:bold">#4d9221</span>
--20 to -10|<span style="color:#7fbc41;font-weight:bold">#7fbc41</span>
+Below -20|#4d9221
+-20 to -10|#7fbc41
 -10 to -5|#b8e186
 -5 to 0|#e6f5d0
 0 to 5|#fde0ef
@@ -95,8 +95,9 @@ Else|function `inside`
 #### `inside`
 Condition|Action
 ---------|------
-
-
+If there are 2 other segments touching the current segment|Both ends of the polygon are tapered<br>![](img/3piece.PNG)
+If there is 1 other segment touching the current segment|Determine which point of the current segment the other segment is touching, and then taper that end of the polygon<br>![](img/2piece1.PNG)![](img/2piece2.PNG)
+If there are no other segments touching the current segment|Draw the polygon as a rectangle<br>![](img/1piece.PNG)
 
 The function `slpathGen` draws the street lines into `slnodata` or `slgroup`, while function `sspathGen` draws the street segments into `ssgroup`. `sspathGen` also creates the key for binding data to the appropriate segments, which is referenced in function `sspathUpdate`, which binds the data to the segment polygons, transitions colour change, and creates the tooltip that displays when the mouse hovers over a segment. `sspathUpdate` is called when a button is clicked. 
 
