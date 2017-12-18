@@ -44,7 +44,7 @@ These functions define the object properties of the objects created from the D3.
 ### Setup SVGs
 These functions create the SVG container and the SVG groups that the paths will be drawn into. `labelgroup` holds street labels, `slnodata` holds street lines with no volume data, `slgroup` holds street lines with volume data, `ssgroup` holds street segments, and `legendgroup` holds legend components. 
 
-*image of html inspect element here*
+![](img/inspector.PNG)
 
 ### Scale SVGs
 This section creates the `scaling` function, which calculates the domain (original coordinate/size) and defines the range (new size), which are used by the `xScale` and `yScale` functions. 
@@ -77,7 +77,13 @@ No Data|grey
 ### Functions to draw SVGs
 This is the largest section of the document, and contains all the functions that create the paths of SVGs drawn. `pathFunc` generates the line paths for street lines, while `fancy` generates the polygon paths for street segments. `fancy` uses functions `outside` and `inside` to determine if a street segment is on the outer edges of the study area, or if it falls within those edge bounds. Together, `fancy`, `outside`, and `inside` draw the polygon paths, following the cases listed in the table below.
 
-*table here*
+Condition|Action
+---------|------
+NW corner
+<br>End point is NW corner, and direction is W
+<br>Start point is NW corner, and direction is S
+|<br>![](img/nwcornerw.PNG)
+<br>![](img/nwcorners.PNG)
 
 The function `slpathGen` draws the street lines into `slnodata` or `slgroup`, while function `sspathGen` draws the street segments into `ssgroup`. `sspathGen` also creates the key for binding data to the appropriate segments, which is referenced in function `sspathUpdate`, which binds the data to the segment polygons, transitions colour change, and creates the tooltip that displays when the mouse hovers over a segment. `sspathUpdate` is called when a button is clicked. 
 
