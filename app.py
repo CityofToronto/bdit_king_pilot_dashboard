@@ -338,7 +338,7 @@ html.Link(rel = 'stylesheet',
               href = '/css/style.css'),
           
 html.Div(children=[html.H1(children=TITLE, id='title'),
-                   html.Button('info', id = 'info')
+                   html.Button('info', id = 'info', className = 'info')
                   ], className='row twelve columns'),
     dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
                    {'label': 'North-South Streets', 'value': 'ns'}],
@@ -445,7 +445,7 @@ def assign_default_timperiod(day_type='Weekday'):
 def show_floating_div(info_clicks, exit_clicks):
     print(info_clicks, exit_clicks)
     if exit_clicks is None and info_clicks is not None: #Since the exit button is remade with floating div, n_clicks is reset to none.
-        return [html.Div(children = [html.H2('SamPlE TeXT'), html.Button('X', id = 'exit')], className = 'floating_div')]
+        return [html.Div(children = [html.Button('X', id = 'exit', className = 'close')], className = 'floating_div'), html.H2('sample text')]
     else:
         return [html.Div(children = [html.Button(id = 'exit')], className = 'nodata')]
 
