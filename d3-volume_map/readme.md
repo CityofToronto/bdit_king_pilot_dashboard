@@ -75,20 +75,26 @@ No Data|grey
 
 
 ### Functions to draw SVGs
-This is the largest section of the document, and contains all the functions that create the paths of SVGs drawn. `pathFunc` generates the line paths for street lines, while `fancy` generates the polygon paths for street segments. `fancy` uses functions `outside` and `inside` to determine if a street segment is on the outer edges of the study area, or if it falls within those edge bounds. Together, `fancy`, `outside`, and `inside` draw the polygon paths, following the cases listed in the table below. The red dots represent the street segment, and the blue dots are the other two points of the polygon. The arrows represent the direction the "pen" moves in order to draw the path. 
+This is the largest section of the document, and contains all the functions that create the paths of SVGs drawn. `pathFunc` generates the line paths for street lines, while `fancy` generates the polygon paths for street segments. `fancy` uses functions `outside` and `inside` to determine if a street segment is on the outer edges of the study area, or if it falls within those edge bounds. Together, `fancy`, `outside`, and `inside` draw the polygon paths, following the cases listed in the tables below. The red dots represent the street segment, and the blue dots are the other two points of the polygon. The arrows represent the direction the "pen" moves in order to draw the path. 
 
+#### `outside`
 Condition|Action
 ---------|------
 End point is NW corner, and direction is W|![](img/nwcornerw.PNG)
 Start point is NW corner, and direction is S|![](img/nwcorners.PNG)
 End point is SW corner, and direction is S|![](img/swcorners.png)
 Start point is SW corner, and direction is E|![](img/swcornere.png)
-End point is NE corner, and direction is N|
-Start point is NE corner, and direction is W|
-End point is SE corner, and direction is E|
-Start point is SE corner, and direction is N|
+End point is NE corner, and direction is N|![](img/necornern.PNG)
+Start point is NE corner, and direction is W|![](img/necornerw.PNG)
+End point is SE corner, and direction is E|The study area does not have a southmost and eastmost point, so while the code to draw the SE corner exists, it is not used.
+Start point is SE corner, and direction is N|The study area does not have a southmost and eastmost point, so while the code to draw the SE corner exists, it is not used.
+Front EB to Front/Wellington and Jarvis corner|![](img/secornere.PNG)
+Jarvis NB to Front/Wellington and Jarvis corner|![](img/secornern.PNG)
+Else|function `inside`
 
-
+#### `inside`
+Condition|Action
+---------|------
 
 
 
