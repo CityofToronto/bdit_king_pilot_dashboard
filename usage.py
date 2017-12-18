@@ -80,6 +80,15 @@ MAIN_DIV = 'main-page'
 AM_PEAK_LABEL = 'AM PEAK PERIOD (7-10AM)'
 PM_PEAK_LABEL = 'PM PEAK PERIOD (4-7PM)'
 
+# Callback Ids
+SCS_TABLE_IDS = ['am-scs-table', 'pm-scs-table']
+BASELINE_SCS_TABLE_IDS = ['am-baseline-scs-table', 'pm-baseline-scs-table']
+SCHR_GRAPH_IDS = ['am-wb-schr-graph', 'am-eb-schr-graph', 'pm-wb-schr-graph', 'pm-eb-schr-graph']
+SC_MONTH_RADIO_ID = 'streetcar-month-radio'
+VOLUME_MAP_ID = 'volume-map'
+C_PERIOD_RADIO = 'car-period-radio'
+C_MONTH_RADIO = 'car-month-radio'
+
 ###################################################################################################
 #                                                                                                 #
 #                                   Data Manipulation                                             #
@@ -168,7 +177,8 @@ def filter_ctt_data(street, period, month):
 				textposition = 'inside',
 				name = 'Before',
 				marker = dict(color = 'rgba(255,165,0, 0.6)'),
-				width = .3
+				width = .3,
+				hoverinfo='name+y'
 	)
 	after_data = go.Bar(
 				x = x_label,
@@ -178,7 +188,8 @@ def filter_ctt_data(street, period, month):
 				textposition = 'inside',
 				name = 'After',
 				marker = dict(color = 'rgba(30,144,255, 0.6)'),
-				width = .3
+				width = .3,
+				hoverinfo='name+y'
 	)
 	data = [before_data, after_data]
 	return data
@@ -288,7 +299,14 @@ def generate_schr_graph(period, dir, mon):
 	# Values that are displayed inside the bar
 	fmt_values = [str(before) + '%', str(after) + '%']
 	labels = ['BEFORE', 'AFTER']
-	data = [go.Bar(x=labels, y=values, text=fmt_values, textfont = dict(size=15, color='white'), textposition = 'inside', marker=dict(color=['rgba(255,165,0, 0.6)', 'rgba(30,144,255, 0.6)']))]
+	data = [go.Bar(x=labels, 
+					y=values, 
+					text=fmt_values, 
+					textfont = dict(size=15, color='white'), 
+					textposition = 'inside', 
+					hoverinfo='y', 
+					marker=dict(color=['rgba(255,165,0, 0.6)', 'rgba(30,144,255, 0.6)'])
+			)]
 	layout = go.Layout(title = period + ' PEAK PERIOD', titlefont = dict(size=14),
 			xaxis = dict(title = 'WESTBOUND' if dir == 'WB' else 'EASTBOUND', titlefont = dict(size=12), tickfont = dict(size=10)),
 			yaxis = dict(title = 'RELIABILITY %', titlefont = dict(size = 12), range = [0, 100], tickfont = dict(size=10)),
@@ -327,15 +345,15 @@ STREETCAR_LAYOUT = [html.Div(children=[
 								# AM Section
 								html.Div(children=[
 									html.H3(children=AM_PEAK_LABEL),
-									dash_components.StreetcarSpeeds( id='am-baseline-scs-table', data=filter_sc_table_data(9, 'AM')), # Baseline scs table
-									dash_components.StreetcarSpeeds( id='am-scs-table', data=filter_sc_table_data(DEFAULT_MONTH, 'AM')), # Current scs table
+									dash_components.StreetcarSpeeds( id=BASELINE_SCS_TABLE_IDS[0], data=filter_sc_table_data(9, 'AM')), # Baseline scs table
+									dash_components.StreetcarSpeeds( id=SCS_TABLE_IDS[0], data=filter_sc_table_data(DEFAULT_MONTH, 'AM')), # Current scs table
 									html.Div(dcc.Graph(id='am-tt-graph', figure=generate_sc_graph('AM')), style={'border-style':'solid', 'border-width': '1px'}) # sctt graph
 								], className='six columns'),
 								# PM Section
 								html.Div(children=[
 									html.H3(children=PM_PEAK_LABEL),
-									dash_components.StreetcarSpeeds( id='pm-baseline-scs-table', data=filter_sc_table_data(9, 'PM')), # Baseline scs table
-									dash_components.StreetcarSpeeds( id='pm-scs-table', data=filter_sc_table_data(DEFAULT_MONTH, 'PM')), # Current scs table
+									dash_components.StreetcarSpeeds( id=BASELINE_SCS_TABLE_IDS[1], data=filter_sc_table_data(9, 'PM')), # Baseline scs table
+									dash_components.StreetcarSpeeds( id=SCS_TABLE_IDS[1], data=filter_sc_table_data(DEFAULT_MONTH, 'PM')), # Current scs table
 									html.Div(dcc.Graph(id='pm-tt-graph', figure=generate_sc_graph('PM')), style={'border-style':'solid', 'border-width': '1px'}) # sctt graph
 								], className='six columns')
 							], className='nine columns', style={'margin-left':0}),
@@ -348,13 +366,13 @@ STREETCAR_LAYOUT = [html.Div(children=[
 								], className='three columns'),
 								# AM
 								html.Div(children=[
-									html.Div(dcc.Graph(id='am-wb-schr-graph', figure=generate_schr_graph('AM', 'WB', DEFAULT_MONTH))), # AM WB schr graph
-									html.Div(dcc.Graph(id='am-eb-schr-graph', figure=generate_schr_graph('AM', 'EB', DEFAULT_MONTH)))  # AM EB schr graph
+									html.Div(dcc.Graph(id=SCHR_GRAPH_IDS[0], figure=generate_schr_graph('AM', 'WB', DEFAULT_MONTH))), # AM WB schr graph
+									html.Div(dcc.Graph(id=SCHR_GRAPH_IDS[1], figure=generate_schr_graph('AM', 'EB', DEFAULT_MONTH)))  # AM EB schr graph
 								], className='one-half columns'),
 								# PM
 								html.Div(children=[
-									html.Div(dcc.Graph(id='pm-wb-schr-graph', figure=generate_schr_graph('PM', 'WB', DEFAULT_MONTH))), # PM WB schr graph
-									html.Div(dcc.Graph(id='pm-eb-schr-graph', figure=generate_schr_graph('PM', 'EB', DEFAULT_MONTH)))  # PM EB schr graph
+									html.Div(dcc.Graph(id=SCHR_GRAPH_IDS[2], figure=generate_schr_graph('PM', 'WB', DEFAULT_MONTH))), # PM WB schr graph
+									html.Div(dcc.Graph(id=SCHR_GRAPH_IDS[3], figure=generate_schr_graph('PM', 'EB', DEFAULT_MONTH)))  # PM EB schr graph
 								], className='one-half columns')
 							], className='three colums')
 						], className='row'),
@@ -368,7 +386,7 @@ STREETCAR_LAYOUT = [html.Div(children=[
 						# ),
 						# Month radio filters
 						dcc.RadioItems(
-							id='streetcar-month-radio',
+							id=SC_MONTH_RADIO_ID,
 							options = MONTH_RADIO,
 							value=DEFAULT_MONTH,
 							className='radio-toolbar',
@@ -409,7 +427,7 @@ CAR_LAYOUT = [html.Div(children=[
 				html.Div(children=[
 					html.Div(className='one columns'),
 					html.Div(children=[
-					dash_components.VolumeMap(id='volume-map', sl_data=json.loads(street_lines_df.to_json(orient='records')),
+					dash_components.VolumeMap(id=VOLUME_MAP_ID, sl_data=json.loads(street_lines_df.to_json(orient='records')),
 												ss_data=json.loads(street_segments_df.to_json(orient='records')),
 												volume_data=filter_vol_data(DEFAULT_MONTH, DEFAULT_PERIOD))
 					], className='ten columns'),
@@ -417,7 +435,7 @@ CAR_LAYOUT = [html.Div(children=[
 				], className='row'),
 				# Period radio filter
 				dcc.RadioItems(
-					id='car-period-radio',
+					id=C_PERIOD_RADIO,
 					options = TIME_PERIOD_RADIO,
 					value=DEFAULT_PERIOD,
 					className='radio-toolbar',
@@ -425,7 +443,7 @@ CAR_LAYOUT = [html.Div(children=[
 				),
 				# Month radio filter
 				dcc.RadioItems(
-					id='car-month-radio',
+					id=C_MONTH_RADIO,
 					options = MONTH_RADIO,
 					value=DEFAULT_MONTH,
 					className='radio-toolbar',
@@ -498,15 +516,15 @@ def display_content(value):
 # Streetcar Speed tables controllers
 # AM
 @app.callback(
-	Output('am-scs-table', 'data'),
-	[Input('streetcar-month-radio', 'value')])
+	Output(SCS_TABLE_IDS[0], 'data'),
+	[Input(SC_MONTH_RADIO_ID, 'value')])
 def update_am_scs_scstable(current_month):
 	filtered_data = filter_sc_table_data(current_month, 'AM');
 	return filtered_data
 # PM
 @app.callback(
-	Output('pm-scs-table', 'data'),
-	[Input('streetcar-month-radio', 'value')])
+	Output(SCS_TABLE_IDS[1], 'data'),
+	[Input(SC_MONTH_RADIO_ID, 'value')])
 def update_pm_baseline_scstable(current_month):
 	filtered_data = filter_sc_table_data(current_month, 'PM');
 	return filtered_data
@@ -514,29 +532,29 @@ def update_pm_baseline_scstable(current_month):
 # Streetcar Headway Reliability controllers
 # AM WB
 @app.callback(
-	Output('am-wb-schr-graph', 'figure'),
-	[Input('streetcar-month-radio', 'value')])
+	Output(SCHR_GRAPH_IDS[0], 'figure'),
+	[Input(SC_MONTH_RADIO_ID, 'value')])
 def update_am_wb_schr_graph(current_month):
 	figure = generate_schr_graph('AM', 'WB', current_month);
 	return figure
 # AM EB
 @app.callback(
-	Output('am-eb-schr-graph', 'figure'),
-	[Input('streetcar-month-radio', 'value')])
+	Output(SCHR_GRAPH_IDS[1], 'figure'),
+	[Input(SC_MONTH_RADIO_ID, 'value')])
 def update_am_eb_schr_graph(current_month):
 	figure = generate_schr_graph('AM', 'EB', current_month);
 	return figure
 # PM WB
 @app.callback(
-	Output('pm-wb-schr-graph', 'figure'),
-	[Input('streetcar-month-radio', 'value')])
+	Output(SCHR_GRAPH_IDS[2], 'figure'),
+	[Input(SC_MONTH_RADIO_ID, 'value')])
 def update_pm_wb_schr_graph(current_month):
 	figure = generate_schr_graph('PM', 'WB', current_month);
 	return figure
 # PM EB
 @app.callback(
-	Output('pm-eb-schr-graph', 'figure'),
-	[Input('streetcar-month-radio', 'value')])
+	Output(SCHR_GRAPH_IDS[3], 'figure'),
+	[Input(SC_MONTH_RADIO_ID, 'value')])
 def update_pm_eb_schr_graph(current_month):
 	figure = generate_schr_graph('PM', 'EB', current_month);
 	return figure
@@ -546,7 +564,7 @@ def update_pm_eb_schr_graph(current_month):
 # Updates the peak period label depending on current period
 @app.callback(
     Output('ctt-peak-label', 'children'),
-    [Input('car-period-radio', 'value')])
+    [Input(C_PERIOD_RADIO, 'value')])
 def update_tf_label(value):
 	if value == 'AM':
 		return AM_PEAK_LABEL
@@ -556,51 +574,51 @@ def update_tf_label(value):
 # Dundas
 @app.callback(
     Output(STREETS[0] + '-tf-graph', 'figure'),
-    [Input('car-month-radio', 'value'),
-	Input('car-period-radio', 'value')])
+    [Input(C_MONTH_RADIO, 'value'),
+	Input(C_PERIOD_RADIO, 'value')])
 def update_dundas(current_month, current_period):
     return generate_tf_graph(STREETS[0], current_period, current_month)
 # Richmond
 @app.callback(
 	Output(STREETS[1] + '-tf-graph', 'figure'),
-    [Input('car-month-radio', 'value'),
-	Input('car-period-radio', 'value')])
+    [Input(C_MONTH_RADIO, 'value'),
+	Input(C_PERIOD_RADIO, 'value')])
 def update_richmond(current_month, current_period):
     return generate_tf_graph(STREETS[1], current_period, current_month)	
 # Wellington
 @app.callback(
 	Output(STREETS[2] + '-tf-graph', 'figure'),
-    [Input('car-month-radio', 'value'),
-	Input('car-period-radio', 'value')])
+    [Input(C_MONTH_RADIO, 'value'),
+	Input(C_PERIOD_RADIO, 'value')])
 def update_wellington(current_month, current_period):
 	return generate_tf_graph(STREETS[2], current_period, current_month)
 # Queen
 @app.callback(
     Output(STREETS[3] + '-tf-graph', 'figure'),
-    [Input('car-month-radio', 'value'),
-	Input('car-period-radio', 'value')])
+    [Input(C_MONTH_RADIO, 'value'),
+	Input(C_PERIOD_RADIO, 'value')])
 def update_queen(current_month, current_period):
     return generate_tf_graph(STREETS[3], current_period, current_month)
 # Adelaide
 @app.callback(
     Output(STREETS[4] + '-tf-graph', 'figure'),
-    [Input('car-month-radio', 'value'),
-	Input('car-period-radio', 'value')])
+    [Input(C_MONTH_RADIO, 'value'),
+	Input(C_PERIOD_RADIO, 'value')])
 def update_adelaide(current_month, current_period):
     return generate_tf_graph(STREETS[4], current_period, current_month)
 # Front
 @app.callback(
     Output(STREETS[5] + '-tf-graph', 'figure'),
-    [Input('car-month-radio', 'value'),
-	Input('car-period-radio', 'value')])
+    [Input(C_MONTH_RADIO, 'value'),
+	Input(C_PERIOD_RADIO, 'value')])
 def update_front(current_month, current_period):
 	return generate_tf_graph(STREETS[5], current_period, current_month)
 
 # Volume Map controller
 @app.callback(
 	Output('volume-map', 'volume_data'),
-    [Input('car-month-radio', 'value'),
-	Input('car-period-radio', 'value')])
+    [Input(C_MONTH_RADIO, 'value'),
+	Input(C_PERIOD_RADIO, 'value')])
 def update_vol_map(current_month, current_period):
 	filtered_data = filter_vol_data(current_month, current_period);
 	return filtered_data
