@@ -81,6 +81,16 @@ Condition|Action
 ---------|------
 End point is NW corner, and direction is W|![](img/nwcornerw.PNG)
 Start point is NW corner, and direction is S|![](img/nwcorners.PNG)
+End point is SW corner, and direction is S|![](img/swcorners.PNG)
+Start point is SW corner, and direction is E|![](img/swcornere.PNG)
+End point is NE corner, and direction is N|
+Start point is NE corner, and direction is W|
+End point is SE corner, and direction is E|
+Start point is SE corner, and direction is N|
+
+
+
+
 
 The function `slpathGen` draws the street lines into `slnodata` or `slgroup`, while function `sspathGen` draws the street segments into `ssgroup`. `sspathGen` also creates the key for binding data to the appropriate segments, which is referenced in function `sspathUpdate`, which binds the data to the segment polygons, transitions colour change, and creates the tooltip that displays when the mouse hovers over a segment. `sspathUpdate` is called when a button is clicked. 
 
