@@ -75,11 +75,12 @@ No Data|grey
 
 
 ### Functions to draw SVGs
-This is the largest section of the document, and contains all the functions that create the paths of SVGs drawn. `pathFunc` generates the line paths for street lines, while `fancy` generates the polygon paths for street segments. `fancy` uses functions `outside` and `inside` to determine if a street segment is on the outer edges of the study area, or if it falls within those edge bounds. Together, `fancy`, `outside`, and `inside` draw the polygon paths, following the cases listed in the table below.
+This is the largest section of the document, and contains all the functions that create the paths of SVGs drawn. `pathFunc` generates the line paths for street lines, while `fancy` generates the polygon paths for street segments. `fancy` uses functions `outside` and `inside` to determine if a street segment is on the outer edges of the study area, or if it falls within those edge bounds. Together, `fancy`, `outside`, and `inside` draw the polygon paths, following the cases listed in the table below. The red dots represent the street segment, and the blue dots are the other two points of the polygon. The arrows represent the direction the "pen" moves in order to draw the path. 
 
 Condition|Action
 ---------|------
-NW corner<br>End point is NW corner, and direction is W<br>Start point is NW corner, and direction is S|<br>![](img/nwcornerw.PNG)<br>![](img/nwcorners.PNG)
+End point is NW corner, and direction is W|![](img/nwcornerw.PNG)
+Start point is NW corner, and direction is S|![](img/nwcorners.PNG)
 
 The function `slpathGen` draws the street lines into `slnodata` or `slgroup`, while function `sspathGen` draws the street segments into `ssgroup`. `sspathGen` also creates the key for binding data to the appropriate segments, which is referenced in function `sspathUpdate`, which binds the data to the segment polygons, transitions colour change, and creates the tooltip that displays when the mouse hovers over a segment. `sspathUpdate` is called when a button is clicked. 
 
