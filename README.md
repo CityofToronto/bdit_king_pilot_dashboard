@@ -33,7 +33,7 @@ Finally if you wish to see the components run:
 `$ python usage.py` and go to `http://127.0.0.1:8050/` in your browser.
 
 ## Reactifying D3 Components for use in Dash
-D3 is a major JavaScript data visualization library that allows for the creation of custom graphs, charts, and other visualizations. For this reason, we wanted to combine it with the power data manipulation libraries of Python such as `pandas`. To do so, JavaScript and Python are combined using Dash which can process `React.js` and convert it to be usable in a Python file which outputs the `React.js` as `HTML`. However, you can not simply process `D3` in `React.js` with `Dash` as you would with a normal React component using only `D3` and `React.js`. Below is a guide on Reactifying D3 Components for use in Dash explained with what needs to be done to each file in you Dash Enviornment.
+D3 is a major JavaScript data visualization library that allows for the creation of custom graphs, charts, and other visualizations. For this reason, we wanted to combine it with the power data manipulation libraries of Python such as `pandas`. To do so, JavaScript and Python are combined using Dash which can process `React.js` and convert it to be usable in a Python file which outputs the `React.js` as `HTML`. However, you can not simply process `D3` in `React.js` with `Dash` as you would with a normal React component. Below is a guide on Reactifying D3 Components for use in Dash explained with what needs to be done to each file in you Dash Enviornment.
 
 ### `<Your Component Name>.react.js`
 Found in `<Your Dash Enviroment>/src/components/`. 
@@ -244,6 +244,40 @@ tt_texts.append('text')
 				.attr('text-anchor', 'middle')             # if you alter the same property
 				.attr('class','test')                      # add this
 ```
+
+### Enable Dynamic Scaling on SVGs
+The great thing about SVG's is that it allow us to scale our components based on the view window size. To do so, modify your code to follow this:
+```
+// Create SVG container
+var svgContainer = select(this.node)				// this.node is your base Div which your component builds off of
+	.classed('svg-container volumemap-padding', true)	// Set the class for your base Div, also added a seperate class
+	.append('svg')						// Add your SVG
+	...
+	.attr('preserveAspectRatio','xMinYMin')			// Preserves the aspect ratio of your svg
+	.attr('viewBox', '0 0 '+svgW+' '+svgH)			// svgW and svgH are your width and height, these are mandatory
+	.attr('class', 'svg-content-responsive');		// class to make it responsive
+```
+Then add the following code to your stylesheet:
+```
+.svg-container {
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+    width:100%;
+    height:100%;
+    overflow: hidden;
+}
+.svg-content-responsive {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.volumemap-padding {
+	padding-bottom: 40%; /* probably need to adjust this according to your aspect ratio */
+}
+```
+This method of scaling your D3 SVGs is based off of [this solution](https://stackoverflow.com/questions/16265123/resize-svg-when-window-is-resized-in-d3-js).
 
 ### Useful Tips
 Here are few tips on developing you D3 component in Dash:
