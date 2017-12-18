@@ -63,8 +63,8 @@ This section defines the colour scale and `pctColour`, a function that determine
 
 Interval|Colour
 --------|------
-Below -20|#4d9221
--20 to -10|#7fbc41
+Below -20|<span style="color:#4d9221;font-weight:bold">#4d9221</span>
+-20 to -10|<span style="color:#7fbc41;font-weight:bold">#7fbc41</span>
 -10 to -5|#b8e186
 -5 to 0|#e6f5d0
 0 to 5|#fde0ef
