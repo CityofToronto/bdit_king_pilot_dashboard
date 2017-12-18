@@ -81,8 +81,8 @@ Condition|Action
 ---------|------
 End point is NW corner, and direction is W|![](img/nwcornerw.PNG)
 Start point is NW corner, and direction is S|![](img/nwcorners.PNG)
-End point is SW corner, and direction is S|![](img/swcorners.PNG)
-Start point is SW corner, and direction is E|![](img/swcornere.PNG)
+End point is SW corner, and direction is S|![](img/swcorners.png)
+Start point is SW corner, and direction is E|![](img/swcornere.png)
 End point is NE corner, and direction is N|
 Start point is NE corner, and direction is W|
 End point is SE corner, and direction is E|
