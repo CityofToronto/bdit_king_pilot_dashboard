@@ -9,7 +9,7 @@ The D3 Volume Map takes in 3 different datasets:
 1. `streets_lines3.csv` - full-length streets, point-to-point line, version 3
 2. `streets_segments31.csv` - streets segmented by intersections with other streets, point-to-point line, version 3.1
 3. `street_volumes.csv`, or other source - volume data tied to segment number and segment direction; `street_volumes.csv` is fake data
-
+The coordinates of streets_lines and streets_segments are relative to (0,0), with x increasing as you move right and y increasing as you move down. Compared to the streets in real life, the coordinates are about 10 units to 100 metres. 
 
 ### `streets_lines3.csv` example
 
@@ -31,6 +31,14 @@ segment|direction|mon|time_period|volume|pct_change
 -------|---------|---|-----------|------|----------
 1|E|11/01/2017 0:00|AM|2380|13.42
 2|E|11/01/2017 0:00|AM|2725|12.34
+
+### Adding/Creating New Streets
+You can adapt the code and street creation by creating new street line and segment data, and draw new street polygons. Based on the data examples, you will need to have an unique identifier, street name, direction, and the x and y coordinates of the start and end points of the street segment. The coordinates of the start and end points are relative to (0,0) in the top-left corner of the SVG container, with a scale of 10 units to 100 metres in real life. 
+
+For a completely new streets dataset, the code is flexible to take different ranges of values, as the `scaling` function in *Scale SVGs* finds the min and max x and y values of all streets, and uses those maxes and mins in the `xScale` and `yScale` functions. The two scale functions scale to the height and width of the SVG container, which can also be set.
+
+_Will the path functions be responsive to new street coordinates?_ It will depend on the street coordinates. The working version with the study area's dataset is dependent on a very grid-like street network, with only one case of a diagonal street segment (Front from Yonge to Church), and that segment did not overlap with any other street segment polygons. To reuse `fancy`, `outside`, and `inside`, it would be best to remove exception cases we have, and investigate if the new street segments meet each other at 90 degree angles. You can modify the `outside` and `inside` functions to account for non-right-angle intersections and draw the polygon tapering appropriately with some trigonometry. 
+
 
 ## 3. Major Components
 The code for the D3 Volume Map is broken up into several different sections dedicated to different purposes, and groups functions for those purposes. The following describes the different sections and some functions of interest:
