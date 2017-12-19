@@ -167,6 +167,3 @@ d3.select("#legendgroup")
 	.attr("stroke-width", 40);
 ```
 
-
-
-
