@@ -40,7 +40,7 @@ BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_
                              FROM king_pilot.dash_baseline ''',
                              con)
 GHOST = pandasql.read_sql('''SELECT street, direction, dt AS date, day_type, period, round(tt,1) tt 
-                             FROM king_pilot_dev.dash_ghost ''',
+                             FROM king_pilot.dash_ghost ''',
                              con)
 
 con.close()
@@ -443,9 +443,8 @@ def assign_default_timperiod(day_type='Weekday'):
                Input('exit', 'n_clicks')])
 
 def show_floating_div(info_clicks, exit_clicks):
-    print(info_clicks, exit_clicks)
     if exit_clicks is None and info_clicks is not None: #Since the exit button is remade with floating div, n_clicks is reset to none.
-        return [html.Div(children = [html.Button('X', id = 'exit', className = 'close')], className = 'floating_div'), html.H2('sample text')]
+        return [html.Div(children = [html.Button('X', id = 'exit', className = 'close'), html.H2('sample text')], className = 'floating_div')]
     else:
         return [html.Div(children = [html.Button(id = 'exit')], className = 'nodata')]
 
