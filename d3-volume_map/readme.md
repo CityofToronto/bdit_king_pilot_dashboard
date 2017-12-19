@@ -96,7 +96,7 @@ Else|function `inside`
 Condition|Action
 ---------|------
 If there are 2 other segments touching the current segment|Both ends of the polygon are tapered<br>![](img/3piece.PNG)
-If there is 1 other segment touching the current segment|Determine which point of the current segment the other segment is touching, and then taper that end of the polygon<br>![](img/2piece1.PNG)![](img/2piece2.PNG)
+If there is 1 other segment touching the current segment|Determine which point of the current segment the other segment is touching, and then taper that end of the polygon<br>![](img/2piece1.PNG)<br>![](img/2piece2.PNG)
 If there are no other segments touching the current segment|Draw the polygon as a rectangle<br>![](img/1piece.PNG)
 
 The function `slpathGen` draws the street lines into `slnodata` or `slgroup`, while function `sspathGen` draws the street segments into `ssgroup`. `sspathGen` also creates the key for binding data to the appropriate segments, which is referenced in function `sspathUpdate`, which binds the data to the segment polygons, transitions colour change, and creates the tooltip that displays when the mouse hovers over a segment. `sspathUpdate` is called when a button is clicked. 
@@ -118,10 +118,41 @@ In the standalone D3 Volume Map, the variables and functions that are immediatel
 ## 4. Key Takeaways
 The development of the D3 Volume Map had many challenges, but there were several lessons learned in regards to developing in Javascript and with D3.js.
 
-### Asynchronous Javascript / Working with external files with D3
+### Working with external files with D3
+Javascript runs scripts synchronously, which means that requests and callbacks are all run at the same time. This is important to keep in mind when working with external data and loading external files with D3, as the main data-loading functions (d3.csv, .tsv, .json, etc.) will also be called synchronously. Javascript functions immediately requiring the external data (functions that take the data as an argument, or refers to the loaded data within the function) will error because the data has not finished loading/been fully loaded. 
+
+To ensure that functions requiring the external data are able to run without error, those functions should be defined _before_ the D3 data load, and called _within_ the data load. 
+
+```Javascript
+var dataParser = function(d) {
+	return {
+		id: d.id,
+		value: d.value
+	};
+};
+
+function dataPrinter(arr) {
+	arr.forEach(function(obj) {
+		console.log(obj.id + " " + obj.value);
+	};
+}
+
+var data;
+d3.csv("filename.csv", function(d) {
+	data = d.map(dataParser);
+	dataPrinter(data);
+};
+```
+
 ### Global Variables
+
+
 ### Built-In Array Functions
+
+
 ### Using Anonymous Functions as Accessors of Data
+
+
 
 
 
