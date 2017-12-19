@@ -119,11 +119,12 @@ In the standalone D3 Volume Map, the variables and functions that are immediatel
 The development of the D3 Volume Map had many challenges, but there were several lessons learned in regards to developing in Javascript and with D3.js.
 
 ### Working with external files with D3
-Javascript runs scripts synchronously, which means that requests and callbacks are all run at the same time. This is important to keep in mind when working with external data and loading external files with D3, as the main data-loading functions (d3.csv, .tsv, .json, etc.) will also be called synchronously. Javascript functions immediately requiring the external data (functions that take the data as an argument, or refers to the loaded data within the function) will error because the data has not finished loading/been fully loaded. 
+Javascript runs scripts synchronously. This is important to keep in mind when working with external data and loading external files with D3, as the main data-loading functions (d3.csv, .tsv, .json, etc.) will also be called synchronously. Javascript functions immediately requiring the external data (functions that take the data as an argument, or refers to the loaded data within the function) will error because the data has not finished loading/been fully loaded. 
 
 To ensure that functions requiring the external data are able to run without error, those functions should be defined _before_ the D3 data load, and called _within_ the data load. 
 
 ```Javascript
+// Sample Code
 var dataParser = function(d) {
 	return {
 		id: d.id,
@@ -144,16 +145,27 @@ d3.csv("filename.csv", function(d) {
 };
 ```
 
-### Global Variables
+### Global Variables and Built-In Array Functions
+We have been learning Javascript throughout the project, and two good things to remember are: global variables make information accessible and allows easier testing and debugging of script; and built-in array functions (`map`, `filter`, and `reduce` are some popular ones) reduce the need to write your own array function (usually written using `for` loops or `forEach`). See the above sample for the use of `forEach` and `map`. 
 
-
-### Built-In Array Functions
-
+D3.js also provides a built-in array function in the form of `.data`, which iterates through an array of objects and passes those objects to the functions chained after it (e.g. `.attr` with an anonymous function to access specific properties of the array's objects).  
 
 ### Using Anonymous Functions as Accessors of Data
+D3 relies heavily on anonymous functions to access data, as data is often stored in the form of arrays of objects. Array functions help us access the objects, but anonymous functions help us quickly access the properties of the objects. Below is a sample from the D3 Volume Map script that uses several anonymous functions. 
 
-
-
+```Javascript
+d3.select("#legendgroup")
+	.selectAll("line")
+	.data(legendData.filter(function(d) {return d.text != legendText[0];}))
+	.enter()
+	.append("line")
+	.attr("x1", function(d) {return d.x-40;})
+	.attr("y1", function(d) {return d.y;})
+	.attr("x2", function(d) {return d.x-9;})
+	.attr("y2", function(d) {return d.y;})
+	.attr("stroke", function(d) {return d.colour;})
+	.attr("stroke-width", 40);
+```
 
 
 
