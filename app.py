@@ -1,6 +1,7 @@
 import json
 import os
 from collections import OrderedDict
+from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 import dash
@@ -369,7 +370,14 @@ STREETS_LAYOUT = [html.Div(children=[
                                                 'id': day_type}
                                                for day_type in TIMEPERIODS['day_type'].unique()],
                                       value=TIMEPERIODS.iloc[0]['day_type'],
-                                      className='radio-toolbar')],
+                                      className='radio-toolbar'),
+                       dcc.DatePickerSingle(id=CONTROLS['date_picker'],
+                                            min_date_allowed=DATERANGE[0],
+                                            max_date_allowed=DATERANGE[1],
+                                            date=DATERANGE[1],
+                                            display_format='MMM DD',
+                                            month_format='MMM',
+                                            show_outside_days=True)],
              style={'display':'none'}),
     html.Div(id=TABLE_DIV_ID, children=generate_table(INITIAL_STATE['ew'], 'Weekday', 'AM Peak')),
     html.Div([html.B('Travel Time', style={'background-color':'#E9A3C9'}),
@@ -455,15 +463,17 @@ def assign_default_timperiod(day_type='Weekday'):
 @app.callback(Output(TABLE_DIV_ID, 'children'),
               [Input(CONTROLS['timeperiods'], 'value'),
                Input(CONTROLS['day_types'], 'value'),
-               Input('tabs', 'value')],
+               Input('tabs', 'value'),
+               Input(CONTROLS['date_picker'], 'date')],
               [State(div_id, 'children') for div_id in STATE_DIV_IDS.values()])
-def update_table(period, day_type, orientation, *state_data):
+def update_table(period, day_type, orientation='ew', date_picked=datetime.today().date(), *state_data):
     '''Generate HTML table of before-after travel times based on selected
     day type, time period, and remember which row was previously selected
     '''
     state_index = list(STREETS.keys()).index(orientation)
     state_data_dict = deserialise_state(state_data[state_index])
-    table = generate_table(state_data_dict, day_type, period, orientation)
+    date_date = datetime.strptime(date_picked, '%Y-%m-%d').date()
+    table = generate_table(state_data_dict, day_type, period, orientation, date_date)
     return table
 
 
