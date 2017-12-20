@@ -1,21 +1,21 @@
 import json
+import logging
 import os
 from collections import OrderedDict
-import logging
+from datetime import datetime
 
-from dateutil.relativedelta import relativedelta
 import dash
-from dash.dependencies import Input, Output, State, Event
 import dash_core_components as dcc
 import dash_html_components as html
-from psycopg2 import connect
-import pandas.io.sql as pandasql
 import pandas as pd
+import pandas.io.sql as pandasql
 import plotly.graph_objs as go
+from dash.dependencies import Event, Input, Output, State
+from dateutil.relativedelta import relativedelta
+from flask import send_from_directory
+from psycopg2 import connect
 
 from dash_responsive import DashResponsive
-
-from flask import send_from_directory
 
 ###################################################################################################
 #                                                                                                 #
@@ -37,6 +37,7 @@ DATA = pandasql.read_sql('''
                          SELECT street, direction, dt AS date, day_type, category, period, round(tt,1) tt, 
                          rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS most_recent,
                          week_number, month_number 
+                         FROM king_pilot.dash_daily_dev
                          LEFT OUTER JOIN king_pilot.pilot_weeks weeks ON dt >= week AND dt < week + INTERVAL '1 week'
                          LEFT OUTER JOIN king_pilot.pilot_months months ON dt >= month AND dt < month + INTERVAL '1 month'
                          ''', con)
@@ -66,8 +67,7 @@ STREETS = OrderedDict(ew=['Dundas', 'Queen', 'Richmond', 'Adelaide', 'Wellington
                       ns=['Bathurst', 'Spadina', 'University', 'Yonge', 'Jarvis'])
 DIRECTIONS = OrderedDict(ew=['Eastbound', 'Westbound'],
                          ns=['Northbound', 'Southbound'])
-DATERANGE = [DATA['date'].min() - relativedelta(days=1),
-             DATA['date'].max() + relativedelta(days=1)]
+DATERANGE = [DATA['date'].min(), DATA['date'].max()]
 TIMEPERIODS = BASELINE[['day_type','period', 'period_range']].drop_duplicates().sort_values(['day_type', 'period_range'])
 THRESHOLD = 1
 
@@ -440,7 +440,13 @@ STREETS_LAYOUT = html.Div(children=[html.Div(children=[
                                      id=CONTROLS['date_range_span'],
                                      style={'display':'none'}),
                            html.Span(dcc.DatePickerSingle(id=CONTROLS['date_picker'],
-                                                          clearable=False),
+                                                          clearable=False,
+                                                          min_date_allowed=DATERANGE[0],
+                                                          max_date_allowed=DATERANGE[1],
+                                                          date=DATERANGE[1],
+                                                          display_format='MMM DD',
+                                                          month_format='MMM',
+                                                          show_outside_days=True),
                                      id=CONTROLS['date_picker_span'],
                                      style={'display':'none'})
                                      ])],
@@ -558,9 +564,10 @@ def assign_default_timperiod(day_type='Weekday'):
                Input(CONTROLS['day_types'], 'value'),
                Input(CONTROLS['date_range_type'], 'value'),
                Input(CONTROLS['date_range'], 'value'),
+               Input(CONTROLS['date_picker'], 'date'),
                Input('tabs', 'value')],
               [State(div_id, 'children') for div_id in STATE_DIV_IDS.values()])
-def update_table(period, day_type, daterange_type, date_range_id, orientation, *state_data):
+def update_table(period, day_type, daterange_type, date_range_id, date_picked=datetime.today().date(), orientation='ew',  *state_data):
     '''Generate HTML table of before-after travel times based on selected
     day type, time period, and remember which row was previously selected
     '''
@@ -570,18 +577,21 @@ def update_table(period, day_type, daterange_type, date_range_id, orientation, *
                  + ', date_range_id ' + str(date_range_id) 
                  + ', orientation  ' + str(orientation)     )
     if daterange_type == 1:
-        raise NotImplementedError("Not updating table for 'Select Date'")
+        date_range_id = datetime.strptime(date_picked, '%Y-%m-%d').date()
     state_index = list(STREETS.keys()).index(orientation)
     state_data_dict = deserialise_state(state_data[state_index])
+
     table = generate_table(state_data_dict, day_type, period,
                            orientation=orientation,
                            daterange_type=daterange_type,
                            date_range_id=date_range_id)
     if daterange_type == 0:
         LOGGER.debug('Table returned for Last Day')
-        print(table)
+    elif  daterange_type == 1:
+        LOGGER.debug('Table returned for Selected Date: %s', date_range_id.strftime('%a %b %d'))
     elif daterange_type == 2:
         LOGGER.debug('Table returned for Week')
+
     return table
 
 @app.callback(Output(CONTROLS['date_range_span'], 'style'),
@@ -592,21 +602,21 @@ def hide_reveal_date_range(daterange_type):
     else:
         return {'display':'none'}
 
-# @app.callback(Output(CONTROLS['date_picker_span'], 'style'),
-#               [Input(CONTROLS['date_range_type'], 'value')])
-# def hide_reveal_date_picker(daterange_type):
-#     LOGGER.debug('Hide reveal date picker, daterange_type: ' + str(daterange_type))
-#     if daterange_type == 1:
-#         LOGGER.debug('Reveal date picker')
-#         return {'display':'inline'}
-#     else:
-#         return {'display':'none'}
+@app.callback(Output(CONTROLS['date_picker_span'], 'style'),
+              [Input(CONTROLS['date_range_type'], 'value')])
+def hide_reveal_date_picker(daterange_type):
+    LOGGER.debug('Hide reveal date picker, daterange_type: ' + str(daterange_type))
+    if daterange_type == 1:
+        LOGGER.debug('Reveal date picker')
+        return {'display':'inline'}
+    else:
+        return {'display':'none'}
 
 @app.callback(Output(CONTROLS['date_range'], 'options'),
               [Input(CONTROLS['date_range_type'], 'value')])
 def generate_date_range_for_type(daterange_type):
     if daterange_type == 1:
-        raise NotImplementedError("Generating date range for 'Select Date'")
+        pass
     return generate_date_ranges(daterange_type=daterange_type)
 
 @app.callback(Output(CONTROLS['date_range'], 'value'),
@@ -614,7 +624,7 @@ def generate_date_range_for_type(daterange_type):
               [State(CONTROLS['date_range'], 'value')])
 def update_date_range_value(daterange_type, date_range_id):
     if daterange_type == 1:
-        raise NotImplementedError("Updating date range for 'Select Date'")
+        pass
     if not RANGES[daterange_type].empty and date_range_id <= len(RANGES[daterange_type]):
         return date_range_id
     else:
@@ -717,17 +727,18 @@ def create_update_graph_div(graph_number):
                    Input('tabs', 'value'),
                    *[Input(div_id, 'children') for div_id in SELECTED_STREET_DIVS.values()]],
                   [State(CONTROLS['date_range_type'], 'value'),
-                   State(CONTROLS['date_range'], 'value')])
+                   State(CONTROLS['date_range'], 'value'),
+                   State(CONTROLS['date_picker'], 'date')])
     def update_graph(period, day_type, orientation, *args):
         '''Update the graph for a street direction based on the selected:
          - street
          - time period
          - day type
         '''
-        *selected_streets, daterange_type, date_range = args
+        *selected_streets, daterange_type, date_range, date_picked = args
         #Use the input for the selected street from the orientation of the current tab
         if daterange_type == 1:
-            raise NotImplementedError("Not updating graphs for 'Select Date'")
+            date_range = datetime.strptime(date_picked, '%Y-%m-%d').date()
         street = selected_streets[list(SELECTED_STREET_DIVS.keys()).index(orientation)]
         LOGGER.debug('Updating graph %s, for street: %s, period: %s, day_type: %s, daterange_type: %s, date_range: %s',
                      GRAPHS[graph_number], street, period, day_type, daterange_type, date_range)
