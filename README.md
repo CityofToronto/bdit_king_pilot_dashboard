@@ -1,5 +1,28 @@
 # King St. Pilot Dashboard Dash Components
 
+- [Usage](#usage)
+  - [Requirements](#requirements)
+  - [Making Dash Components](#making-dash-components)
+  - [Installing these Components](#installing-these-components)
+- [Reactifying D3 Components for use in Dash](#reactifying-d3-components-for-use-in-dash)
+  - [Step-By-Step Guide](#step-by-step-guide)
+  - [<Your Component Name>.react.js](#your-component-namereactjs)
+    - [What you should import](#what-you-should-import)
+    - [Importing D3 modules](#importing-d3-modules)
+    - [Modifying Your Component Class](#modifying-your-component-class)
+    - [`propTypes`](#proptypes)
+    - [`export default`](#export-default)
+  - [index.js](#indexjs)
+  - [usage.py](#usagepy)
+    - [Importing Our Component](#importing-our-component)
+    - [Adding Our Component to the Layout](#adding-our-component-to-the-layout)
+    - [Modify Our Component's `props`](#modify-our-components-props)
+  - [Bonus Features](#bonus-features)
+    - [Enable Global Styling](#enable-global-styling)
+    - [Enable Dynamic Scaling on SVGs](#enable-dynamic-scaling-on-svgs)
+  - [Useful Tips](#useful-tips)
+  - [Resources](#resources)
+
 ## Usage
 
 ### Requirements
@@ -35,6 +58,22 @@ Finally if you wish to see the components run:
 ## Reactifying D3 Components for use in Dash
 D3 is a major JavaScript data visualization library that allows for the creation of custom graphs, charts, and other visualizations. For this reason, we wanted to combine it with the power data manipulation libraries of Python such as `pandas`. To do so, JavaScript and Python are combined using Dash which can process `React.js` and convert it to be usable in a Python file which outputs the `React.js` as `HTML`. However, you can not simply process `D3` in `React.js` with `Dash` as you would with a normal React component. Below is a guide on Reactifying D3 Components for use in Dash explained with what needs to be done to each file in you Dash Enviornment.
 
+### Step-By-Step Guide
+1. Create your D3 application normally in JS. When you create it and are loading data from an external source (ie. CSV, TSV), you'll likely be loading it using d3.csv which wraps all the function calls that utilize the data it parses (since the data cannot be accessed outside d3.csv). In addition, you should also be selecting the node you are appending your SVG object to inside the d3.csv.
+2. Begin reactifying your D3 application. In your `<Your Component Name>.react.js` file, import the [necessary modules](#what-you-should-import). Also read the note on [importing D3 modules](#importing-d3-modules).
+3. Copy the template [below](#modifying-your-component-class) into your `<Your Component Name>.react.js` file. Take all of the contents of you d3.csv (excluding the actual d3.csv parts) and put them into your `create<Your Component Name>` method.
+4. Take any helper functions outside of your d3.csv and place them outside of the class.
+5. Remove any mentions of `d3.` in any of your functions as you will have imported the individual functions from D3 as [mentioned previously](#importing-d3-modules).
+6. Read about and copy the [`propTypes`](#proptypes) and paste it below your component class. Add any necessary `props` such as `id`, `data`, etc. There should be a `prop` for each `d3.csv` line removed as data will be passed through the `prop` now.
+7. Modify the other methods in your component class to reflect your component such as what functions should be called when your components mounts using `componentDidMount()`, what functions should be called when your component updates using `componentDidUpdate()`, and should be initialized when your component first loads in `contructor(...)`. Be sure to read the explanation in [modifying your component class](#modifying-your-component-class) for further details.
+8. Now that your `create<Your Component Name>` is binded to the class and can access `this`. Add the line `var x = select(this.node);` if you haven't already from the template. `x` is the equivalent of doing `var x = d3.select("body")` in d3, but `this.node` refers to the element you are modifying in your `render()` method. Read the [explanation](#modifying-your-component-class) for `render()` on how it works.
+9. Add a few lines that would load data into the variables which held data passed by `d3.csv` such as `var my-data = this.props.data` which gets the data from your `props` and stores its into `my-data` which is used to pass data into your d3 components.
+10. Copy the [`export default`](#export-default) line and paste it at the bottom of your file. Replace the `<Your Component Class>` with the name of your component.
+11. Add your component to [`index.js`](#indexjs).
+12. Save your files and go to bash. Type in and run `$ npm run prepublish && python setup.py install` this will compile your component in the `bundle.js` file. If you get errors read [`the tips`](#useful-tips).
+13. Modify your [`usage.py`](#usagepy) to contain your component. Be sure to add the necessary data to fill the `props` of your class.
+14. Run `$ python usage.py` to ensure your component is running correctly.
+
 ### `<Your Component Name>.react.js`
 Found in `<Your Dash Enviroment>/src/components/`. 
 
@@ -52,6 +91,9 @@ Normally you would import the D3 library using `import * as d3 from 'd3'` when w
 #### Modifying Your Component Class
 Your component class is what is called when you access it in your `usage.py`, it also controls what will be rendered for your component. The following layout is used to explain what is recommend for your component using D3:
 ```
+... helper functions can be defined outside the class, but they can't access the props without binding ...
+... they can be passed the data from methods inside the class or by using a accessor function ...
+
 class <Component Name> extends Component {
   constructor(props) {
     super(props)
@@ -202,6 +244,7 @@ $ python usage.py
 ```
 To prepublish your component and to display it in your browser at `http://127.0.0.1:8050/`. Optionally you can run `$ npm run prepublish` to display your component in pure JavaScript, but you'll need to update `demo/Demo.react.js` to include it.
 
+## Bonus Features
 ### Enable Global Styling
 It is possible to style all components using one stylesheet. All you need to do it modify your `usage.py` file and create classes if you are using `d3`.
 
@@ -279,7 +322,7 @@ Then add the following code to your stylesheet:
 ```
 This method of scaling your D3 SVGs is based off of [this solution](https://stackoverflow.com/questions/16265123/resize-svg-when-window-is-resized-in-d3-js).
 
-### Useful Tips
+## Useful Tips
 Here are few tips on developing you D3 component in Dash:
 - Remove all unused variables from you component, a lot of errors will appear if you don't.
 - Make sure values such as for data are in the correct format.
