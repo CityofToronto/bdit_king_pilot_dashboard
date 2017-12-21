@@ -1,7 +1,22 @@
 # King St. Pilot Public Dashboard
 Dashboard for King Street Pilot for public viewing. This dashboard displays various traffic information pertaining to the King Street Pilot including streetcar/car travel times, and volumes using collect data. This dashboard is to be updated monthly.
 
-Current Web App layout
+- [Current Web App Layout](#current-web-app-layout)
+- [Features](#features)
+- [App Organization](#app-organization)
+  - [Constants](#constants)
+  - [Data Manipulation](#data-manipulation)
+  - [App Layout](#app-layout)
+  - [Controllers](#controllers)
+- [Data](#data)
+- [React Components](#react-components)
+  - [Volume Map](#volume-map)
+  - [Streetcar Speeds Table](#streetcar-speeds-table)
+- [Styling](#styling)
+- [Deployment](#deployment)
+- [Future Tasks](#future-tasks)
+
+## Current Web App layout
 ![Streetcar Tab](https://github.com/CityofToronto/bdit_king_pilot_dashboard/blob/public-dashboard-layout/imgs/1.PNG "Streetcar Tab")
 
 ![Car Tab](https://github.com/CityofToronto/bdit_king_pilot_dashboard/blob/public-dashboard-layout/imgs/2.PNG "Car Tab")
@@ -54,6 +69,28 @@ The Streetcar Speeds Table and Volume Map are both created and rendered in [Reac
 
 For information on the components before they were reactified go to the [Volume Map Documentation](https://github.com/CityofToronto/bdit_king_pilot_dashboard/tree/gh-pages/d3-volume_map) and the [original code](https://github.com/CityofToronto/bdit_king_pilot_dashboard/blob/gh-pages/d3-streetcar_speeds/index.html) for the streetcar speeds table.
 
+### Volume Map
+Displays the volume of each road segment in the King St Pilot. Features include animated shifting of volume colour representation when data changes and hover tooltips.
+
+**Parameters**
+
+`id`: The ID used to indentify the Volume Map component in Dash callbacks
+
+`sl_data`: The data used to generate the street lines. Must be in JSON format. Data is contained in the [streets_lines3.csv](https://github.com/CityofToronto/bdit_king_pilot_dashboard/blob/public-dashboard-layout/streets_lines3.csv) file.
+
+`ss_data`: The data used to generate the street segments. Must be in JSON format. Data is contianed in the [ 	streets_segments31.csv](https://github.com/CityofToronto/bdit_king_pilot_dashboard/blob/public-dashboard-layout/streets_segments31.csv) file.
+
+`volume_data`: The data that contains volume information for the street segments. Must be in JSON format. Check [here](https://github.com/CityofToronto/bdit_king_pilot_dashboard/blob/public-dashboard-layout/street_volumes.csv) for the suitable format.
+
+### Streetcar Speeds Table
+Displays the streetcar East and West speeds on King St in addition to their travel times. Speeds are also represented by shifting colours whenever the data is changed.
+
+**Parameters**
+
+`id`: The ID used to identify the Streetcar Speeds table component in Dash callbacks
+
+`data`: The data used to fill the component. Must be in JSON format. Check [here](https://github.com/CityofToronto/bdit_king_pilot_dashboard/blob/public-dashboard-layout/streetcar_travel_times.csv) for the suitable format.
+
 ## Styling
 Styling is seperated into 3 different files and can be found [here](https://github.com/CityofToronto/bdit_king_pilot_dashboard/tree/public-dashboard-layout/src/css). Each file serves a different purpose.
 - `style.css` controls how the radio buttons are displayed in the web page. Only radios in the `radio-toolbar` class are affected.
@@ -84,4 +121,5 @@ The app is currently deployed on Heroku by detecting updates to this branch and 
 - Add animations to Plot.ly charts/graphs. Read the [tutorial](https://plot.ly/python/animations/) on how
 - Finalize layout/styling of app
 - Switch from mock data to real data using database connection
+- Following the above task, modify data manipulation functions to suit new data.
 - Fix loading of Car tab. Currently the Car Travel Time graphs take a second to load which causes the height of the Div they are in to shift the page up when they load. (Not really important)
