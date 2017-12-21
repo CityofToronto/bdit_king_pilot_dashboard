@@ -300,14 +300,33 @@ input[type="button"].button-primary:focus {
   color: #FFF;
   background-color: #1EAEDB;
   border-color: #1EAEDB; }
+
 button.close {
-	float: right;
-	vertical-align: top;
-	outline: none;
+    float: right;
+    vertical-align: top;
+    border: none;
+    padding: 0px;
+    color: RGB(125, 125, 125);
+    height: 0px;
+    line-height: 0px;
 }
 button.info {
-	margin-left: 5px;
-	margin-bottom: 5px;
+    float: right;
+    margin-right: 1rem;
+    margin-top: .8rem;
+    margin-bottom: .8rem;
+    border: 1px solid;
+    border-radius: 50%;
+    color: RGB(150,150,150);
+    font-family: charcoal;
+    font-size: 1.5rem;
+    text-transform: none;
+    font-weight: bold;
+    padding: 0px;
+    display: table;
+    height: 2.5rem;
+    line-height: 0rem;
+    width: 2.5rem;
 }
 
 
@@ -471,9 +490,6 @@ hr {
 ._dash-undo-redo {
   display: none;
 }
-body{
-	position: relative;
-}
 .floating_div {
 	z-index: 1; 
 	position: absolute; 
@@ -484,6 +500,7 @@ body{
 	height: 50%; 
 	padding: 20px; 
 	color: white;
+	border-radius: 5px;
 }
 
 /* Clearing

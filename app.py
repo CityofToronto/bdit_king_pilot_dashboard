@@ -297,7 +297,7 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK', datera
             'y1': base_data.iloc[0]['tt'],
             'line': BASELINE_LINE
            }
-    axis_line = {'type':'line', #axis line
+    axis_line = {'type':'line', #axis line to cover ghost bars overlapping with the x-axis
             'x0': 0,
             'x1': 1,
             'xref': 'paper',
@@ -337,8 +337,8 @@ html.Link(rel = 'stylesheet',
 html.Link(rel = 'stylesheet',
               href = '/css/style.css'),
           
-html.Div(children=[html.H1(children=TITLE, id='title'),
-                   html.Button('info', id = 'info', className = 'info')
+html.Div(children=[html.Button('i', id = 'info', className = 'info'),
+                   html.H1(children=TITLE, id='title')                   
                   ], className='row twelve columns'),
     dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
                    {'label': 'North-South Streets', 'value': 'ns'}],
@@ -444,7 +444,7 @@ def assign_default_timperiod(day_type='Weekday'):
 
 def show_floating_div(info_clicks, exit_clicks):
     if exit_clicks is None and info_clicks is not None: #Since the exit button is remade with floating div, n_clicks is reset to none.
-        return [html.Div(children = [html.Button('X', id = 'exit', className = 'close'), html.H2('sample text')], className = 'floating_div')]
+        return [html.Div(children = [html.Button('X', id = 'exit', className = 'close'), html.H2('Data Processing'), html.Div('What\'s the best way to add a large wall of text here?')], className = 'floating_div')]
     else:
         return [html.Div(children = [html.Button(id = 'exit')], className = 'nodata')]
 
