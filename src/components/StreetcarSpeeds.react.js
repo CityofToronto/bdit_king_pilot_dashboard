@@ -245,17 +245,13 @@ class StreetcarSpeeds extends Component {
 	// What is displayed from the class
     render() {
 		return (
-			<div id={this.props.div_id} ref={node => this.node = node}>
+			<div ref={node => this.node = node}>
 			</div>
 		)
 	}
 }
 // StreetcarSpeeds props
 StreetcarSpeeds.propTypes = {
-	/**
-     * The ID used to identify this component in Dash callbacks
-     */
-    div_id: PropTypes.string,
 	
     /**
      * The ID used to identify this component in Dash callbacks
