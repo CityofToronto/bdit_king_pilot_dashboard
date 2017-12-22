@@ -558,6 +558,19 @@ def assign_default_timperiod(day_type='Weekday'):
     '''Assign the time period radio button selected option based on selected day type
     '''
     return TIMEPERIODS[TIMEPERIODS['day_type'] == day_type].iloc[0]['period']
+@app.callback(Output(CONTROLS['day_types'], 'value'),
+                     [Input(CONTROLS['date_picker'], 'date')],
+                     [State(CONTROLS['date_range_type'], 'value'),
+                      State(CONTROLS['day_types'], 'value')])
+def update_day_type(date_picked, daterange_type, day_type):
+    if DATERANGE_TYPES[daterange_type] == 'Select Date':
+        dt = datetime.strptime(date_picked, '%Y-%m-%d').date()
+        if dt.weekday() > 4:
+            return 'Weekend'
+        else: 
+            return 'Weekday'
+    else:
+        return day_type 
 
 @app.callback(Output(TABLE_DIV_ID, 'children'),
               [Input(CONTROLS['timeperiods'], 'value'),
@@ -602,6 +615,14 @@ def hide_reveal_date_range(daterange_type):
     else:
         return {'display':'none'}
 
+@app.callback(Output(CONTROLS['day_types'], 'style'),
+              [Input(CONTROLS['date_range_type'], 'value')])
+def hide_reveal_day_types(daterange_type):
+    if daterange_type != 1:
+        return {'display':'inline'}
+    else:
+        return {'display':'none'}
+
 @app.callback(Output(CONTROLS['date_picker_span'], 'style'),
               [Input(CONTROLS['date_range_type'], 'value')])
 def hide_reveal_date_picker(daterange_type):
@@ -629,6 +650,8 @@ def update_date_range_value(daterange_type, date_range_id):
         return date_range_id
     else:
         return 1
+
+
 
 def create_row_update_function(streetname, orientation):
     '''Create a callback function for a given streetname
