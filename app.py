@@ -48,7 +48,7 @@ BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_
 WEEKS = pandasql.read_sql('''SELECT * FROM king_pilot.pilot_weeks 
                          ''', con)
 MONTHS = pandasql.read_sql('''SELECT * FROM king_pilot.pilot_months
-                         ''', con, parse_dates=['month'])
+                         ''', con)
 WEEKS['label'] = 'Week ' + WEEKS['week_number'].astype(str) + ': ' + WEEKS['week'].astype(str)
 WEEKS.sort_values(by='week_number', inplace=True)
 MONTHS['label'] = 'Month ' + MONTHS['month_number'].astype(str) + ': ' + MONTHS['month'].dt.strftime("%b '%y")
@@ -174,6 +174,25 @@ def selected_data(data, daterange_type=0, date_range_id=1):
         date_filter = data['month_number'] == date_range_id
     return date_filter
 
+def get_daterange_for_date(daterange_type, date_range_id):
+    if DATERANGE_TYPES[daterange_type] == 'Last Day':
+        end_range = DATERANGE[1]
+        start_range = DATERANGE[1] - relativedelta(weeks=2)
+    
+    elif DATERANGE_TYPES[daterange_type] in ['Select Date', 'Select Week']:
+        if DATERANGE_TYPES[daterange_type] == 'Select Date':
+            date_picked = date_range_id
+        else:
+            date_picked = WEEKS[WEEKS['week_number'] == date_range_id]['week'].iloc[0]
+        start_of_week = date_picked - relativedelta(days=date_picked.weekday())
+        start_range = max(start_of_week - relativedelta(weeks=1), DATERANGE[0])
+        end_range = min(start_of_week + relativedelta(weeks=2), DATERANGE[1])
+    else:
+        date_picked = MONTHS[MONTHS['month_number'] == date_range_id]['month'].iloc[0]
+        start_range = max(date_picked - relativedelta(days=date_picked.day - 1), DATERANGE[0])
+        end_range = min(date_picked - relativedelta(days=date_picked.day - 1) + relativedelta(months=1), DATERANGE[1])
+    return [start_range, end_range]
+
 def filter_table_data(period, day_type, orientation='ew', daterange_type=0, date_range_id=1):
     '''Return data aggregated and filtered by period
     '''
@@ -200,10 +219,15 @@ def filter_graph_data(street, direction, day_type='Weekday', period='AMPK',
     '''Filter dataframes by street, direction, day_type, and period
     Returns a filtered baseline, and a filtered current dataframe
     '''
+
+    daterange = get_daterange_for_date(daterange_type, date_range_id)
     filtered_daily = DATA[(DATA['street'] == street) &
                           (DATA['period'] == period) &
                           (DATA['day_type'] == day_type) &
-                          (DATA['direction'] == direction)]
+                          (DATA['direction'] == direction) & 
+                          (DATA['date'] >= daterange[0]) & 
+                          (DATA['date'] < daterange[1])
+                          ]
 
     base_line = BASELINE[(BASELINE['street'] == street) &
                          (BASELINE['period'] == period) &
@@ -398,8 +422,7 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK',
                   height=225,
                   barmode='relative',
                   xaxis=dict(title='Date',
-                              range=DATERANGE,
-                              fixedrange=True),
+                              fixedrange=True), #Prevents zoom
                   yaxis=dict(title='Travel Time (min)',
                               range=[0, MAX_TIME[orientation]],
                               fixedrange=True),
