@@ -37,7 +37,7 @@ DATA = pandasql.read_sql('''
                          SELECT street, direction, dt AS date, day_type, category, period, round(tt,1) tt, 
                          rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS most_recent,
                          week_number, month_number 
-                         FROM king_pilot.dash_daily_dev
+                         FROM king_pilot.dash_daily
                          LEFT OUTER JOIN king_pilot.pilot_weeks weeks ON dt >= week AND dt < week + INTERVAL '1 week'
                          LEFT OUTER JOIN king_pilot.pilot_months months ON dt >= month AND dt < month + INTERVAL '1 month'
                          ''', con)
@@ -48,7 +48,7 @@ BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_
 WEEKS = pandasql.read_sql('''SELECT * FROM king_pilot.pilot_weeks 
                          ''', con)
 MONTHS = pandasql.read_sql('''SELECT * FROM king_pilot.pilot_months
-                         ''', con)
+                         ''', con, parse_dates=['month'])
 WEEKS['label'] = 'Week ' + WEEKS['week_number'].astype(str) + ': ' + WEEKS['week'].astype(str)
 WEEKS.sort_values(by='week_number', inplace=True)
 MONTHS['label'] = 'Month ' + MONTHS['month_number'].astype(str) + ': ' + MONTHS['month'].dt.strftime("%b '%y")
@@ -174,25 +174,6 @@ def selected_data(data, daterange_type=0, date_range_id=1):
         date_filter = data['month_number'] == date_range_id
     return date_filter
 
-def get_daterange_for_date(daterange_type, date_range_id):
-    if DATERANGE_TYPES[daterange_type] == 'Last Day':
-        end_range = DATERANGE[1]
-        start_range = DATERANGE[1] - relativedelta(weeks=2)
-    
-    elif DATERANGE_TYPES[daterange_type] in ['Select Date', 'Select Week']:
-        if DATERANGE_TYPES[daterange_type] == 'Select Date':
-            date_picked = date_range_id
-        else:
-            date_picked = WEEKS[WEEKS['week_number'] == date_range_id]['week'].iloc[0]
-        start_of_week = date_picked - relativedelta(days=date_picked.weekday())
-        start_range = max(start_of_week - relativedelta(weeks=1), DATERANGE[0])
-        end_range = min(start_of_week + relativedelta(weeks=2), DATERANGE[1])
-    else:
-        date_picked = MONTHS[MONTHS['month_number'] == date_range_id]['month'].iloc[0]
-        start_range = max(date_picked - relativedelta(days=date_picked.day - 1), DATERANGE[0])
-        end_range = min(date_picked - relativedelta(days=date_picked.day - 1) + relativedelta(months=1), DATERANGE[1])
-    return [start_range, end_range]
-
 def filter_table_data(period, day_type, orientation='ew', daterange_type=0, date_range_id=1):
     '''Return data aggregated and filtered by period
     '''
@@ -213,6 +194,33 @@ def filter_table_data(period, day_type, orientation='ew', daterange_type=0, date
     pivoted_baseline = pivot_order(filtered_base, orientation)
 
     return (pivoted, pivoted_baseline)
+
+def get_daterange_for_date(daterange_type, date_range_id):
+    if DATERANGE_TYPES[daterange_type] == 'Last Day':
+        end_range = DATERANGE[1] + relativedelta(days=1)
+        start_range = DATERANGE[1] - relativedelta(weeks=2)
+    
+    elif DATERANGE_TYPES[daterange_type] in ['Select Date', 'Select Week']:
+        if DATERANGE_TYPES[daterange_type] == 'Select Date':
+            date_picked = date_range_id
+        else:
+            date_picked = WEEKS[WEEKS['week_number'] == date_range_id]['week'].iloc[0]
+        start_of_week = date_picked - relativedelta(days=date_picked.weekday())
+        start_range = max(start_of_week - relativedelta(weeks=1), DATERANGE[0])
+        end_range = min(start_of_week + relativedelta(weeks=2), DATERANGE[1])
+    elif DATERANGE_TYPES[daterange_type] == 'Select Month':
+        date_picked = MONTHS[MONTHS['month_number'] == date_range_id]['month'].iloc[0].date()
+        if date_picked == DATERANGE[1].replace(day=1):
+            #End of data within month picked, display last month of data
+            start_range = max(DATERANGE[1] - relativedelta(months=1), DATERANGE[0])
+        else:
+            start_range = max(date_picked - relativedelta(days=date_picked.day - 1), DATERANGE[0])
+        end_range = min(date_picked - relativedelta(days=date_picked.day - 1) + relativedelta(months=1), DATERANGE[1])
+    else:
+        raise ValueError('Wrong daterange_type provided: {}'.format(daterange_type))
+    LOGGER.debug('Filtering for %s. Date picked: %s, Start Range: %s, End Range: %s',
+                 DATERANGE_TYPES[daterange_type], date_picked, start_range, end_range)
+    return [start_range, end_range]
 
 def filter_graph_data(street, direction, day_type='Weekday', period='AMPK',
                       daterange_type=0, date_range_id=1):
@@ -384,16 +392,19 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK',
                                                                   date_range_id)
 
     orientation = get_orientation_from_dir(direction)
-    
+    data = []
     if after_df.empty:
-        return None
-    pilot_data = generate_graph_data(after_df,
+        if selected_df.empty:
+            return None
+    else:
+        pilot_data = generate_graph_data(after_df,
                                      marker=dict(color=PLOT_COLORS['pilot']),
                                      name='Pilot')
+        data.append(pilot_data)
     pilot_data_selected = generate_graph_data(selected_df,
                                               marker=dict(color=PLOT_COLORS['selected']),
                                               name='Selected')
-    data = [pilot_data_selected, pilot_data]
+    data.append(pilot_data_selected)
 
     if not base_df.empty:
         baseline_data = generate_graph_data(base_df,
