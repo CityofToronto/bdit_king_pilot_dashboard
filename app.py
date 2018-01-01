@@ -199,7 +199,7 @@ def get_daterange_for_date(daterange_type, date_range_id):
     if DATERANGE_TYPES[daterange_type] == 'Last Day':
         end_range = DATERANGE[1] + relativedelta(days=1)
         start_range = DATERANGE[1] - relativedelta(weeks=2)
-    
+        date_picked = date_range_id
     elif DATERANGE_TYPES[daterange_type] in ['Select Date', 'Select Week']:
         if DATERANGE_TYPES[daterange_type] == 'Select Date':
             date_picked = date_range_id
