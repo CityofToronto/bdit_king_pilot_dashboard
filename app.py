@@ -195,7 +195,7 @@ def filter_table_data(period, day_type, orientation='ew', daterange_type=0, date
 
     return (pivoted, pivoted_baseline)
 
-def get_daterange_for_date(daterange_type, date_range_id):
+def graph_bounds_for_date_range(daterange_type, date_range_id):
     if DATERANGE_TYPES[daterange_type] == 'Last Day':
         end_range = DATERANGE[1] + relativedelta(days=1)
         start_range = DATERANGE[1] - relativedelta(weeks=2)
@@ -207,7 +207,7 @@ def get_daterange_for_date(daterange_type, date_range_id):
             date_picked = WEEKS[WEEKS['week_number'] == date_range_id]['week'].iloc[0]
         start_of_week = date_picked - relativedelta(days=date_picked.weekday())
         start_range = max(start_of_week - relativedelta(weeks=1), DATERANGE[0])
-        end_range = min(start_of_week + relativedelta(weeks=2), DATERANGE[1])
+        end_range = min(start_of_week + relativedelta(weeks=2), DATERANGE[1] + relativedelta(days=1))
     elif DATERANGE_TYPES[daterange_type] == 'Select Month':
         date_picked = MONTHS[MONTHS['month_number'] == date_range_id]['month'].iloc[0].date()
         if date_picked == DATERANGE[1].replace(day=1):
@@ -215,7 +215,8 @@ def get_daterange_for_date(daterange_type, date_range_id):
             start_range = max(DATERANGE[1] - relativedelta(months=1), DATERANGE[0])
         else:
             start_range = max(date_picked - relativedelta(days=date_picked.day - 1), DATERANGE[0])
-        end_range = min(date_picked - relativedelta(days=date_picked.day - 1) + relativedelta(months=1), DATERANGE[1])
+        end_range = min(date_picked - relativedelta(days=date_picked.day - 1) + relativedelta(months=1),
+                        DATERANGE[1] + relativedelta(days=1))
     else:
         raise ValueError('Wrong daterange_type provided: {}'.format(daterange_type))
     LOGGER.debug('Filtering for %s. Date picked: %s, Start Range: %s, End Range: %s',
@@ -228,7 +229,7 @@ def filter_graph_data(street, direction, day_type='Weekday', period='AMPK',
     Returns a filtered baseline, and a filtered current dataframe
     '''
 
-    daterange = get_daterange_for_date(daterange_type, date_range_id)
+    daterange = graph_bounds_for_date_range(daterange_type, date_range_id)
     filtered_daily = DATA[(DATA['street'] == street) &
                           (DATA['period'] == period) &
                           (DATA['day_type'] == day_type) &
