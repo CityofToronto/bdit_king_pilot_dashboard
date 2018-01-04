@@ -259,7 +259,17 @@ def get_orientation_from_dir(direction):
     for orientation, direction_list in DIRECTIONS.items():
         if direction in direction_list:
             return orientation
-        
+
+def get_timeperiods_for_date(selected_date):
+    '''Get available timeperiods for the selected_data'''
+    timeperiods = DATA[DATA['date']==selected_date]['period'].unique()
+    if selected_date.weekday() > 4: #Weekend
+        return TIMEPERIODS[(TIMEPERIODS['day_type']=='Weekend')&
+                           (TIMEPERIODS['period'].isin(timeperiods))]['period'].values
+    else:
+        return TIMEPERIODS[(TIMEPERIODS['day_type']=='Weekday')&
+                           (TIMEPERIODS['period'].isin(timeperiods))]['period'].values
+
 ###################################################################################################
 #                                                                                                 #
 #                                         App Layout                                              #
@@ -579,20 +589,41 @@ def change_button_text(current_toggle):
         return 'Hide Filters'
 
 @app.callback(Output(CONTROLS['timeperiods'], 'options'),
-              [Input(CONTROLS['day_types'], 'value')]) 
-def generate_radio_options(day_type='Weekday'):
+              [Input(CONTROLS['date_picker'], 'date'),
+               Input(CONTROLS['day_types'], 'value'),
+               Input(CONTROLS['date_range_type'], 'value')]) 
+def generate_radio_options(selected_date, day_type='Weekday', daterange_type=0):
     '''Assign time period radio button options based on select day type
     '''
-    return [{'label': period, 'value': period}
-            for period
-            in TIMEPERIODS[TIMEPERIODS['day_type'] == day_type]['period']]
+    if DATERANGE_TYPES[daterange_type] == 'Select Date':
+        selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+        return [{'label': period, 'value': period}
+                for period
+                in get_timeperiods_for_date(selected_date)]
+    else:
+        return [{'label': period, 'value': period}
+                for period
+                in TIMEPERIODS[TIMEPERIODS['day_type'] == day_type]['period']]
 
 @app.callback(Output(CONTROLS['timeperiods'], 'value'),
-              [Input(CONTROLS['day_types'], 'value')])
-def assign_default_timperiod(day_type='Weekday'):
+              [Input(CONTROLS['date_picker'], 'date'),
+               Input(CONTROLS['day_types'], 'value')],
+              [State(CONTROLS['timeperiods'], 'value' ), 
+               State(CONTROLS['date_range_type'], 'value')])
+def assign_default_timperiod(selected_date, day_type='Weekday',
+                             current_timeperiod='AM Peak', daterange_type=0):
     '''Assign the time period radio button selected option based on selected day type
     '''
+    if DATERANGE_TYPES[daterange_type] == 'Select Date':
+        selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+        available_timeperiods = get_timeperiods_for_date(selected_date)
+        if current_timeperiod in available_timeperiods:
+            return current_timeperiod
+        else:
+            return available_timeperiods[-1]
     return TIMEPERIODS[TIMEPERIODS['day_type'] == day_type].iloc[0]['period']
+
+
 @app.callback(Output(CONTROLS['day_types'], 'value'),
                      [Input(CONTROLS['date_picker'], 'date')],
                      [State(CONTROLS['date_range_type'], 'value'),
