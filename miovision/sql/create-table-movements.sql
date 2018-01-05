@@ -12,9 +12,9 @@ GRANT ALL ON TABLE miovision.movements TO dbadmin;
 GRANT SELECT, REFERENCES, TRIGGER ON TABLE miovision.movements TO bdit_humans WITH GRANT OPTION;
 GRANT ALL ON TABLE miovision.movements TO aharpal;
 
-INSERT INTO miovision.movements(movement, location_only) VALUES ('Thru', FALSE);
-INSERT INTO miovision.movements(movement, location_only) VALUES ('Left', FALSE);
-INSERT INTO miovision.movements(movement, location_only) VALUES ('Right', FALSE);
-INSERT INTO miovision.movements(movement, location_only) VALUES ('U-Turn', FALSE);
-INSERT INTO miovision.movements(movement, location_only) VALUES ('Peds CW', TRUE);
-INSERT INTO miovision.movements(movement, location_only) VALUES ('Peds CCW', TRUE);
+INSERT INTO miovision.movements(movement, location_only) VALUES ('thru', FALSE);
+INSERT INTO miovision.movements(movement, location_only) VALUES ('left', FALSE);
+INSERT INTO miovision.movements(movement, location_only) VALUES ('right', FALSE);
+INSERT INTO miovision.movements(movement, location_only) VALUES ('u_turn', FALSE);
+INSERT INTO miovision.movements(movement, location_only) VALUES ('cw', TRUE);
+INSERT INTO miovision.movements(movement, location_only) VALUES ('ccw', TRUE);
