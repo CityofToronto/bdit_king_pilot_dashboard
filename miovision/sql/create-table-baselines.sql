@@ -5,7 +5,7 @@ CREATE TABLE miovision.baselines (
 	intersection_uid integer,
 	day_type text,
 	time_bin time without time zone,
+	classification_uid integer,
 	leg text,
 	dir text,
-	volume
-	);
+	volume decimal);
