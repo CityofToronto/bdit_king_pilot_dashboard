@@ -12,15 +12,26 @@ To aggregate the Bluetooth data, the travel times were aggregated with:
 
 ### Baseline Determination
 
+The following plots were used to determine which dates and observations to use in determining the base line:
+1. Dot graphs of 30-min travel times over a week
+2. 24-hour line plot averaging 30-min bins, with quintile bands
+3. 24-hour line plot averaging 30-min bins, with and without outliers removed
+4. For weeks with significant outliers, a Weekly dot graph with percentile bands and outliers identified. 
+
 With the level of aggregation decided, scatter plots of the 30-minute data were created for each segment and divided into weekly subplots. The plots were all checked to ensure the data was contiguous and sane.
 
-Meanwhile, in the baseline lookover notebook, each segment's 24-hour baseline was plotted with quintile bands for the segment's 30 minute aggregated data over 24 hours. These plots were used to identify outliers that had an impact on the baselines. Most outliers that shifted the baseline beyond the 20-80 percentile band were noted for further investigation.
+Meanwhile, in the [baseline lookover notebook](baseline lookover.ipynb), each segment's 24-hour baseline was plotted with quintile bands for the segment's 30 minute aggregated data over 24 hours. These plots were used to identify outliers that had an impact on the baselines. Outliers that shifted the baseline beyond the 20-80 percentile band were noted for further investigation.
 
-The third type of plot was put together to analyze the impact of removing a date from a given baseline. This plot showed the new baseline overlaid on the old baseline to demonstrate the effect of removing the outlier. It was determined that removing dates with outliers from the baseline could have an impact on the quality of the data.
+The third type of plot was put together to analyze the impact of removing a date from a given baseline. This plot showed the new baseline overlaid on the old baseline to demonstrate the effect of removing the outlier. It was determined that removing dates with outliers from the baseline could have an impact on the quality of the data. 
 
-Finally, for each baseline with notable outliers, a scatter plot was produced for the weeks the outliers were found. The percentile band plots were shown for reference, now with the 100th percentile shown as x's, and the last band showing up to the 90th percentile. Lastly, the baseline comparison graphs were plotted with the outlying dates removed from the new baseline. Each of these sets of figures was analyzed to see if the outlier's impact on the baseline was great enough to warrant it's removal.
+Finally, for each baseline with notable outliers, a scatter plot was produced for the weeks the outliers were found. The percentile band plots were shown for reference, now with the 100th percentile shown as x's, and the last band showing up to the 90th percentile. 
 
-If the outlier didn't have a large impact on the baseline, if it's impact was far from peak hours, or if removing the date had unpredictable effects on the baseline outside of the outlier's time the date wasn't listed for exclusion. 
+Lastly, the baseline comparison graphs were plotted with the outlying dates removed from the new baseline. Each of these sets of figures was analyzed to see if the outlier's impact on the baseline was great enough to warrant it's removal. 
+
+Entire dates were removed as outliers if they had a large effect on the baseline unless the outlier:
+ - didn't have a large impact on the baseline, 
+ - had an impact outside peak hours,
+ - had unpredictable effects on the baseline outside of the outlier's timeperiod
 
 When looking at the travel time scatterplot for Queen Street University to Yonge, a major change in travel times was noticed at midnight on Saturday, September 30th. The baseline for Saturday was examined using the percentile band plot, and it looked like the event significantly impacted the baseline, pulling it beyond the 10-90 percentile band, and forming a slight upwards trend where no such trend is reflected in the bulk of the data. Because of this, the original baseline was compared to a new baseline with September 30th and October 1st removed, and the new weekend baseline was significantly lower during early morning and midnight. Finally, it was learned that the event occurred during Nuit Blanche, and the Bluetooth readers likely picked up pedestrian phones as there were no cars on the street. Even though this didn't affect the data during peak hours, its impact on the baseline was so large it was excluded from the baseline data. 
 
