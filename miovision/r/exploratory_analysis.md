@@ -74,7 +74,7 @@ all_vehicles$wk <- strftime(all_vehicles$dt,format='%W')
 all_vehicles$dow <- strftime(all_vehicles$dt, format = '%u')
 ```
 
-Plot all direction/leg combinations:
+Plot all direction/leg combinations (Adelaide and Bathurst):
 
 ``` r
 for (leg in c('N','S','W','E')){
@@ -84,18 +84,20 @@ for (leg in c('N','S','W','E')){
       dates <- data.frame(label = unique(all_vehicles$dt))
       dates$dow <- strftime(dates$lab, format = '%u')
       dates$wk <- strftime(dates$lab, format = '%W')
-      dates$x = as.POSIXct('06:00', format = '%H:%M')
-      dates$y = 0.975 * max(subset$total_volume)
+      dates$x = as.POSIXct('04:00', format = '%H:%M')
+      dates$y = max(0.96 * max(subset$total_volume), 0.95)
       
       print(ggplot(data = subset, aes(x=time_bin, y=total_volume)) +
         geom_line(aes(color = ifelse(dow < 6, "weekday", "weekend")), size = 1) +
         scale_colour_brewer(type = 'qua', palette = "Set1", direction = -1) +
         scale_x_datetime(date_labels = "%H", date_breaks = "2 hours") +
-        facet_grid(wk ~ dow) +
+        facet_grid(dow ~ wk) +
         geom_text(data = dates, aes(x,y-0.5,label=label)) +
         theme_light() + 
         guides(color = F) +
-        labs(title = paste0(intersection_name,": ", leg, " leg, ", dir, " direction")))
+        theme(aspect.ratio = 1/2) +
+        labs(title = paste0(intersection_name,": ", leg, " leg, ", dir, " direction")),
+        width = 700, height = 1400)
     }
   }
 }
