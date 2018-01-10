@@ -184,6 +184,7 @@ def filter_table_data(period, day_type, orientation='ew', daterange_type=0, date
     filtered = DATA[(DATA['period'] == period) &
                     (DATA['day_type'] == day_type) &
                     (DATA['direction'].isin(DIRECTIONS[orientation])) &
+                    (DATA['category'] != 'Excluded') &
                     (date_filter)]
     pivoted = pivot_order(filtered, orientation, daterange_type)
 
