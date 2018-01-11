@@ -294,7 +294,7 @@ def generate_date_ranges(daterange_type=2):
                  'value': row.month_number}
                 for row in MONTHS.itertuples()]
     else:
-        return {'label':'None', 'value':1}
+        return [{'label':'No daterange value', 'value':1}]
 
 def generate_row_class(clicked):
     '''Assigns class to clicked row'''
@@ -723,8 +723,6 @@ def hide_reveal_date_picker(daterange_type):
 @app.callback(Output(CONTROLS['date_range'], 'options'),
               [Input(CONTROLS['date_range_type'], 'value')])
 def generate_date_range_for_type(daterange_type):
-    if daterange_type == 1:
-        pass
     return generate_date_ranges(daterange_type=daterange_type)
 
 @app.callback(Output(CONTROLS['date_range'], 'value'),
@@ -732,7 +730,7 @@ def generate_date_range_for_type(daterange_type):
               [State(CONTROLS['date_range'], 'value')])
 def update_date_range_value(daterange_type, date_range_id):
     if daterange_type == 1:
-        pass
+        date_range_id
     if not RANGES[daterange_type].empty and date_range_id <= len(RANGES[daterange_type]):
         return date_range_id
     else:
