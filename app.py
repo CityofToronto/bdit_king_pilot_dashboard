@@ -5,6 +5,7 @@ from collections import OrderedDict
 from datetime import datetime
 
 import dash
+from dash.dependencies import Input, Output, State, Event
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
@@ -53,6 +54,10 @@ WEEKS['label'] = 'Week ' + WEEKS['week_number'].astype(str) + ': ' + WEEKS['week
 WEEKS.sort_values(by='week_number', inplace=True)
 MONTHS['label'] = 'Month ' + MONTHS['month_number'].astype(str) + ': ' + MONTHS['month'].dt.strftime("%b '%y")
 RANGES = [pd.DataFrame(), pd.DataFrame(), WEEKS, MONTHS]
+GHOST = pandasql.read_sql('''SELECT street, direction, dt AS date, day_type, period, round(tt,1) tt 
+                             FROM king_pilot.dash_ghost ''',
+                             con)
+
 con.close()
 
 ###################################################################################################
@@ -79,10 +84,14 @@ MAX_TIME = dict(ew=min(30, DATA[DATA['direction'].isin(DIRECTIONS['ew'])].tt.max
 TITLE = 'King Street Transit Pilot: Vehicular Travel Time Monitoring'
 BASELINE_LINE = {'color': 'rgba(128, 128, 128, 0.7)',
                  'width': 4}
+AXIS_LINE = {'color' : 'rgba(0, 0, 0, 1)',
+             'width' : 2}
 PLOT = dict(margin={'t':10, 'b': 40, 'r': 40, 'l': 40, 'pad': 8})
 PLOT_COLORS = dict(pilot='rgba(22, 87, 136, 100)',
                    baseline='rgba(128, 128, 128, 1.0)',
-                   selected='rgba(135, 71, 22, 1.0)')
+                   selected='rgba(135, 71, 22, 1.0)',
+                   ghost_bar='rgba(255, 255, 255, 0.1)',
+                   ghost_line='rgba(166, 206, 227, 50)')
 FONT_FAMILY = '"Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
 # IDs for divs
@@ -252,7 +261,17 @@ def filter_graph_data(street, direction, day_type='Weekday', period='AMPK',
 
     pilot_data_selected = filtered_daily[(filtered_daily['category'] == 'Pilot') &
                                          (selected_filter)]
-    return (base_line, base_line_data, pilot_data, pilot_data_selected)
+    
+
+    filtered_ghost = GHOST[(GHOST['street'] == street) &
+                           (GHOST['period'] == period) &
+                           (GHOST['day_type'] == day_type) &
+                           (GHOST['direction'] == direction)&
+                           (GHOST['date'] >= daterange[0]) & 
+                           (GHOST['date'] < daterange[1])
+                           ]
+  
+    return (base_line, base_line_data, pilot_data, pilot_data_selected, filtered_ghost)
 
 def get_orientation_from_dir(direction):
     '''Get the orientation of the street based on its direction'''
@@ -383,34 +402,42 @@ def generate_table(state, day_type, period, orientation='ew', daterange_type=0, 
 def generate_graph_data(data, **kwargs):
     return dict(x=data['date'],
                 y=data['tt'],
-                text=data['tt'].round(),
-                hoverinfo='x+y',
-                textposition='inside',
                 type='bar',
-                insidetextfont=dict(color='rgba(255,255,255,1)',
-                                    size=12),
                 **kwargs)
 
 def generate_figure(street, direction, day_type='Weekday', period='AMPK',
                     daterange_type=0, date_range_id=1):
     '''Generate a Dash bar chart of average travel times by day
     '''
-    base_line, base_df, after_df, selected_df = filter_graph_data(street,
-                                                                  direction,
-                                                                  day_type,
-                                                                  period,
-                                                                  daterange_type,
-                                                                  date_range_id)
+    base_line, base_df, after_df, selected_df, ghost_data = filter_graph_data(street,
+                                                                              direction,
+                                                                              day_type,
+                                                                              period,
+                                                                              daterange_type,
+                                                                              date_range_id)
 
     orientation = get_orientation_from_dir(direction)
     data = []
+    data.append(generate_graph_data(ghost_data,
+                                    marker = dict(color = PLOT_COLORS['ghost_bar'],
+                                                  line = dict(width = 2, 
+                                                              color = PLOT_COLORS['ghost_line'])),
+                                    hoverinfo = 'skip',
+                                    showlegend = False,
+                                    name = 'Ghost'))
+
     if after_df.empty:
         if selected_df.empty:
             return None
     else:
         pilot_data = generate_graph_data(after_df,
-                                     marker=dict(color=PLOT_COLORS['pilot']),
-                                     name='Pilot')
+                                         marker=dict(color=PLOT_COLORS['pilot']),
+                                         name='Pilot',
+                                         text=after_data['tt'].round(),
+                                         hoverinfo='x+y',
+                                         textposition='inside',
+                                         insidetextfont=dict(color='rgba(255,255,255,1)',
+                                                             size=12))
         data.append(pilot_data)
     pilot_data_selected = generate_graph_data(selected_df,
                                               marker=dict(color=PLOT_COLORS['selected']),
@@ -431,14 +458,22 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK',
                         yref='yaxis',
                         showarrow=False
                         )]
-    line = {'type':'line',
+    base_line = {'type':'line', #baseline line
             'x0': 0,
             'x1': 1,
             'xref': 'paper',
-            'y0': base_line.iloc[0]['tt'],
-            'y1': base_line.iloc[0]['tt'],
+            'y0': base_data.iloc[0]['tt'],
+            'y1': base_data.iloc[0]['tt'],
             'line': BASELINE_LINE
-            }
+           }
+    axis_line = {'type':'line', #axis line to cover ghost bars overlapping with the x-axis
+            'x0': 0,
+            'x1': 1,
+            'xref': 'paper',
+            'y0': 0,
+            'y1': 0,
+            'line': AXIS_LINE
+           }
     layout = dict(font={'family': FONT_FAMILY},
                   autosize=True,
                   height=225,
@@ -448,13 +483,20 @@ def generate_figure(street, direction, day_type='Weekday', period='AMPK',
                   yaxis=dict(title='Travel Time (min)',
                               range=[0, MAX_TIME[orientation]],
                               fixedrange=True),
-                  shapes=[line],
+                  shapes=[base_line, axis_line],
                   margin=PLOT['margin'],
                   annotations=annotations,
                   legend={'xanchor':'right'}
                   )
     return {'layout': layout, 'data': data}
                                           
+app = DashResponsive()
+app.config['suppress_callback_exceptions'] = True
+app.title=TITLE
+server = app.server
+
+server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
+            
 #Elements to include in the "main-"
 STREETS_LAYOUT = html.Div(children=[html.Div(children=[
     html.H2(id=TIMEPERIOD_DIV, children='Weekday AM Peak'),
@@ -515,14 +557,19 @@ app.layout = html.Div([html.Link(rel='stylesheet',
                                  href='/css/dashboard.css'),
                        html.Link(rel='stylesheet',
                                  href='/css/style.css'),
-                       html.Div(children=[html.H1(children=TITLE, id='title')],
-                                className='row twelve columns'),
+                       html.Div(children=[html.Button('i', id = 'info', className = 'info'),
+                                          html.H1(children=TITLE, id='title')                   
+                                         ], className='row twelve columns'),
                        dcc.Tabs(tabs=[{'label': 'East-West Streets', 'value': 'ew'},
                                       {'label': 'North-South Streets', 'value': 'ns'}],
                                 value='ew',
                                 id='tabs',
                                 style={'font-weight':'bold'}),
                        html.Div(id=MAIN_DIV, className='row', children=[STREETS_LAYOUT]),
+                       html.Div(children = [
+                                            html.Div(children = [html.Button(id = 'exit')], 
+                                                    className = 'nodata')],
+                                            id = 'floating_text'),
                        html.Div(children=html.H3(['Created by the ',
                                                   html.A('Big Data Innovation Team',
                                                          href="https://www1.toronto.ca/wps/portal/contentonly?vgnextoid=f98b551ed95ff410VgnVCM10000071d60f89RCRD")],
@@ -637,6 +684,15 @@ def update_day_type(date_picked, daterange_type, day_type):
             return 'Weekday'
     else:
         return day_type 
+@app.callback(Output('floating_text', 'children'),
+              [Input('info', 'n_clicks'),
+               Input('exit', 'n_clicks')])
+
+def show_floating_div(info_clicks, exit_clicks):
+    if exit_clicks is None and info_clicks is not None: #Since the exit button is remade with floating div, n_clicks is reset to none.
+        return [html.Div(children = [html.Button('X', id = 'exit', className = 'close'), html.H2('Data Processing'), html.Div('What\'s the best way to add a large wall of text here?')], className = 'floating_div')]
+    else:
+        return [html.Div(children = [html.Button(id = 'exit')], className = 'nodata')]
 
 @app.callback(Output(TABLE_DIV_ID, 'children'),
               [Input(CONTROLS['timeperiods'], 'value'),
