@@ -104,3 +104,4 @@ ttc/db.cfg
 ttc/r/.Rhistory
 ttc/r/connect/*
 ttc/r/png/*
+*.cfg
