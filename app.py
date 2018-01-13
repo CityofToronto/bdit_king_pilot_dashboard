@@ -29,7 +29,7 @@ if database_url is not None:
 else:
     import configparser
     CONFIG = configparser.ConfigParser()
-    CONFIG.read('dev_db.cfg')
+    CONFIG.read('db.cfg')
     dbset = CONFIG['DBSETTINGS']
     con = connect(**dbset)
 
