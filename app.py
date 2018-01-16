@@ -10,6 +10,7 @@ import dash_html_components as html
 from psycopg2 import connect
 import pandas.io.sql as pandasql
 import pandas as pd
+from numpy import nan
 import plotly.graph_objs as go
 
 from dash_responsive import DashResponsive
@@ -33,7 +34,8 @@ else:
     con = connect(**dbset)
 
 DATA = pandasql.read_sql('''SELECT street, direction, dt AS date, day_type, category, period, round(tt,1) tt, 
-                         rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS most_recent
+                         CASE WHEN dt = first_value(dt) OVER (PARTITION BY direction, day_type, period ORDER BY dt DESC)
+                         THEN 1 ELSE 0 END AS most_recent
                          FROM king_pilot.dash_daily''', con)
 BASELINE = pandasql.read_sql('''SELECT street, direction, from_intersection, to_intersection, 
                              day_type, period, period_range, round(tt,1) tt 
@@ -216,9 +218,19 @@ def generate_row(df_row, baseline_row, row_state, orientation='ew'):
         :param row_state:
             Current state of that row: number of clicks, whether it is currently clicked
     """
+
+    data_cells = []
+
+    for i in range(2):
+        baseline_val = baseline_row[DIRECTIONS[orientation][i]]
+        try:
+            after_val =  df_row[DIRECTIONS[orientation][i]]
+        except TypeError:
+            after_val = nan 
+        data_cells.extend(generate_direction_cells(baseline_val, after_val))
+
     return html.Tr([html.Td(df_row['street'], className='segname'),
-                    *generate_direction_cells(baseline_row[DIRECTIONS[orientation][0]], df_row[DIRECTIONS[orientation][0]]),
-                    *generate_direction_cells(baseline_row[DIRECTIONS[orientation][1]], df_row[DIRECTIONS[orientation][1]])],
+                    *data_cells],
                    id=df_row['street'],
                    className=generate_row_class(row_state['clicked']),
                    n_clicks=row_state['n_clicks'])
@@ -241,16 +253,24 @@ def generate_table(state, day_type, period, orientation='ew'):
     #Current date for the data, to replace "After" header
     day = filtered_data['date'].iloc[0].strftime('%a %b %d')
 
+    rows = []
+    for baseline_row, street in zip(baseline.iterrows(), baseline['street'].values):
+    # Generate a row for each street, keeping in mind the state (which row is clicked)
+        try:
+            pilot_data = filtered_data[filtered_data['street']==street].iloc[0]
+        except IndexError:
+            #No data for street
+            pilot_data = {direction : nan for direction  in DIRECTIONS[orientation]}
+            pilot_data['street'] = street
+        row = generate_row(pilot_data,
+                           baseline_row[1], 
+                           state[street],
+                           orientation)
+        rows.append(row) 
+
     return html.Table([html.Tr([html.Td(""), html.Td(DIRECTIONS[orientation][0], colSpan=2), html.Td(DIRECTIONS[orientation][1], colSpan=2)])] +
                       [html.Tr([html.Td(""), html.Td(day), html.Td("Baseline"), html.Td(day), html.Td("Baseline")])] +
-                      # Generate a row 
-                      [generate_row(new_row[1], baseline_row[1], row_state, orientation)
-                      # for each street, keeping in mind the state (which row is clicked)
-                       for new_row, baseline_row, row_state
-                       in zip(filtered_data.iterrows(),
-                              baseline.iterrows(),
-                              state.values())]
-                      , id='data_table')
+                      rows, id='data_table')
 
 def generate_graph_data(data, **kwargs):
     return dict(x=data['date'],
