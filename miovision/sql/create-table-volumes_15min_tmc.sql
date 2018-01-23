@@ -8,7 +8,7 @@ CREATE TABLE miovision.volumes_15min_tmc
 	classification_uid integer,
 	leg text,
 	movement_uid integer,
-	volume integer
+	volume numeric
 );
 ALTER TABLE miovision.volumes_15min_tmc
   OWNER TO aharpal;

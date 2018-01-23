@@ -7,5 +7,5 @@ CREATE TABLE miovision.volumes_15min (
 	classification_uid integer,
 	leg text,
 	dir text,
-	volume integer
+	volume numeric
 	);

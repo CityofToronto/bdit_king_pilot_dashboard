@@ -1,0 +1,63 @@
+---
+title: "Exploratory Ped Analysis - Miovision Counts"
+author: "Aakash Harpalani"
+date: "Monday, January 22, 2018"
+output: github_document
+---
+
+### Setup
+
+Loading libraries:
+```{r, message=FALSE, warning=FALSE}
+library(RPostgreSQL)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+```
+
+Establishing connections and credentials:
+```{r}
+drv <- dbDriver("PostgreSQL")
+source("connect/connect.R")
+```
+
+### Analysis
+
+Retrieve 15-min count data:
+```{r}
+
+strSQL <-
+  paste0("SELECT * FROM miovision.peds_daily INNER JOIN miovision.intersections USING (intersection_uid)")
+data <- dbGetQuery(con, strSQL)
+```
+
+Modify/Add Fields
+```{r}
+data$dow <- as.numeric(strftime(data$dt, format = '%u'))
+data$mth <- as.numeric(strftime(data$dt, format = "%m"))
+data$dt <- strftime(data$dt, format = "%m-%d")
+data$day_type <- ifelse(data$dow < 4, "Mo-We",ifelse(data$dow < 6,'Th-Fr',ifelse(data$dow == 6,'Sa','Su')))
+data$day_type <- factor(data$day_type, levels = c('Mo-We','Th-Fr','Sa','Su'))
+```
+
+Modify intersection order
+```{r}
+data[data$street_cross == "Yong", ]$street_cross <- "Yonge"
+data$street_main <- factor(data$street_main, levels = c("Queen","Richmond","Adelaide","King","Wellington","Front"))
+data$street_cross <- factor(data$street_cross, levels = c("Strachan","Bathurst","Spadina","University","Bay","Yonge","Jarvis","Sherbourne"))
+data <- data[data$street_cross %in% c('Bathurst','Spadina','Bay','Jarvis'),]
+```
+Plot all direction/leg combinations (Adelaide and Bathurst):
+```{r, fig.width= 10, fig.height = 10}
+daily_plot <- ggplot(data = data, aes(x=dt, y=total_volume)) +
+          geom_bar(stat = "identity", aes(fill = day_type, alpha = ifelse(mth == 12, 1, 0)), size = 1) +
+          scale_colour_brewer(type = 'qua', palette = "Set1", direction = -1) +
+#          scale_x_datetime(date_labels = "%H", date_breaks = "1 hours") +
+          facet_grid(street_main ~ street_cross, scales = "free_x", space = "free") +
+          theme_light() + 
+          theme(legend.position = "bottom") +
+          guides(alpha=FALSE) +
+  scale_alpha(range = c(0.3,1))
+ggsave(filename = "daily_plot.png", plot = daily_plot, width = 30, height = 12, units = "in")
+
+```

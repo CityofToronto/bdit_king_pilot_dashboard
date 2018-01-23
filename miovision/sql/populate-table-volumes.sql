@@ -6,5 +6,5 @@ FROM miovision.raw_data A
 INNER JOIN miovision.intersections B ON TRIM(substring(replace(study_name,'Adelaide/','Adelaide /') FROM '(?:(?!Oct|Nov|Dec).)*')) = B.intersection_name
 INNER JOIN miovision.movements D USING (movement)
 INNER JOIN miovision.classifications C USING (classification, location_only)
-WHERE A.lat = B.lat AND A.lng = B.lng
+-- WHERE A.lat = B.lat AND A.lng = B.lng
 ORDER BY (A.datetime_bin AT TIME ZONE 'America/Toronto'), B.intersection_uid, C.classification_uid, A.entry_name, D.movement_uid;
