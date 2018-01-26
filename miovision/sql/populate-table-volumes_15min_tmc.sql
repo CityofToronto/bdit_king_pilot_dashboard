@@ -1,4 +1,5 @@
-﻿-- TRUNCATE miovision.volumes_15min_tmc;
+﻿TRUNCATE miovision.volumes_15min_tmc;
+
 DROP TABLE IF EXISTS bins;
 CREATE TEMPORARY TABLE bins (
 	intersection_uid integer,
