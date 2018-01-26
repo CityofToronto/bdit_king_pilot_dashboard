@@ -99,9 +99,12 @@ We start with simple linear regression, then multilevel modelling, and we conclu
 
 Simple model with a single intercept, no other explanatory variables.
 
-*V**o**l* = *β*<sub>0</sub> + *e**r**r**o**r*
+$Vol = \beta_0 + error$ 
 
-*e**r**r**o**r* ∼ *N*(0, *σ*<sup>2</sup>)
+
+
+$error \sim N(0, \sigma^2)$
+
 
 ``` r
 grandmean = lm(data$totaladjusted_vol ~ 1)
@@ -127,7 +130,9 @@ summary(grandmean)
 <p>
 We perform a simple linear regression, incorporating the other explanatory variables. We exclude `dt`, as incorporating datetime values into this simple linear regression is quite complex.
 <p>
-*V**o**l* = *i**n**t**e**r**s**e**c**t**i**o**n* + *l**e**g* + *d**i**r**e**c**t**i**o**n* + *d**a**y* + *e**r**r**o**r*
+
+$Vol = intersection + leg + direction + day  + error$
+
 
 ``` r
 glm = glm(totaladjusted_vol ~ intersection_uid + leg + dir + day, data = data)
@@ -206,7 +211,8 @@ From the above, we can see many components of the model are statistically signif
 
 One aspect missing from the above model is the fact that leg and direction of an intersection are correlated. Let's make an interaction component in the model to account for this fact.
 
-*V**o**l* = *i**n**t**e**r**s**e**c**t**i**o**n**i* + *d**a**y* + *l**e**g* : *d**i**r**e**c**t**i**o**n* + *e**r**r**o**r*
+$Vol = intersectioni + day + leg:direction   + error$
+
 
 ``` r
 glm2 = glm(totaladjusted_vol ~ intersection_uid + day + leg:day, data = data)
@@ -333,9 +339,13 @@ From the above, it can be clearly seen that for leg and direction, North/South a
 <p>
 Now consider date and intersection. The variation seems absolutely random, i.e. the difference in traffic volumes do not indicate any clear pattern. This gives us reason to believe that a multilevel component may be at play. Ignoring date, let us consider a multilevel model with `intersection_uid` being the multilevel component, i.e. the intercept for the intersection changes in addition containing a random error component.
 <p>
-*V**o**l* = *i**n**t**e**r**s**e**c**t**i**o**n*<sub>*i*</sub> + *d**i**r**e**c**t**i**o**n* + *l**e**g* + *d**a**y* + *e**r**r**o**r*
 
-*i**n**t**e**r**s**e**c**t**i**o**n*<sub>*i*</sub> = *β*<sub>0</sub> + *e**r**r**o**r*<sub>*i*</sub>
+$Vol = intersection_{i} + direction +  leg + day  + error$
+
+
+
+
+$intersection_i = \beta_0 + error_i$
 
 ``` r
 ml1 = lmer(totaladjusted_vol ~ dir + leg + day + (1|intersection_uid), data = data)
@@ -404,7 +414,7 @@ There seems to be some sort of a sinusoidal pattern in the residuals. Let's try 
 <p>
 Recall that legs are a component of each intersection. Rather than just varying the intercept, let's vary the slope as well.
 
-*V**o**l* = (*l**e**g*|*i**n**t**e**r**s**e**c**t**i**o**n*)+*d**i**r* + *l**e**g* + *d**a**y* + *e**r**r**o**r*
+$Vol = (leg|intersection) + dir + leg + day + error$
 
 ``` r
 ml2 = lmer(totaladjusted_vol ~ (leg | intersection_uid) + dir + leg + day, data = data)
@@ -493,7 +503,7 @@ From the above, it is clear that the second model is significantly better. This 
 <p>
 Instead of including a `leg:dir` interaction component, what if we account for their interaction through a change slope multilevel componnent?
 
-*V**o**l* = (*l**e**g*|*i**n**t**e**r**s**e**c**t**i**o**n*)+(*d**i**r*|*l**e**g*)+*d**i**r* + *l**e**g* + *d**a**y* + *e**r**r**o**r*
+$Vol = (leg|intersection) + (dir|leg) + dir + leg + day + error$
 
 ``` r
 ml3 = lmer(totaladjusted_vol ~ (leg | intersection_uid) + (dir|leg) + dir + leg + day, data = data)
@@ -607,7 +617,7 @@ We consider a multiplicative approach to the model. This way variables will have
 <p>
 We consider a simple multiplicative model in which we multiply all elements.
 
-*V**o**l* = *I**n**t**e**r**s**e**c**t**i**o**n* \* *D**a**y* \* *L**e**g* \* *D**i**r*
+$Vol = Intersection*Day*Leg*Dir$
 
 ``` r
 mult1 = gnm( totaladjusted_vol ~ Mult(intersection_uid, day, leg, dir), data = data)
@@ -752,7 +762,7 @@ plot(mult1, which = 1)
 
 The sinusoidal pattern seems to have reduced. Let's break up the model into two separate components.
 
-*V**o**l* = (*I**n**t**e**r**s**e**c**t**i**o**n* \* *D**a**y*)+(*L**e**g* \* *D**i**r*)
+$Vol = (Intersection*Day) + (Leg*Dir)$
 
 ``` r
 mult2 = gnm( totaladjusted_vol ~ Mult(intersection_uid, day) + Mult(leg, dir), data = data)
@@ -942,12 +952,26 @@ plot(mult3, which = 1)
 This model isn't any better either. If we were to choose a multiplicative model, we should choose `mult1` due to the lowest AIC.
 <p>
 
+
 ## Conclusion
 
-Some sound starting points to modelling traffic volumes would be `ml2` and `mult1`, whos formulas are respectively as follows:
 
-*V**o**l* = (*l**e**g*|*i**n**t**e**r**s**e**c**t**i**o**n*)+*d**i**r* + *l**e**g* + *d**a**y* + *e**r**r**o**r*
+Some sound starting points to modelling traffic volumes would be `ml2` and `mult1`, whos formulas are respectively as follows: 
 
-*V**o**l* = *I**n**t**e**r**s**e**c**t**i**o**n* \* *D**a**y* \* *L**e**g* \* *D**i**r*
 
-These are not conclusive results, just solid starting points to approach traffic volumes. The data is quite noisy and sparse, and more data points are definitely needed to accurately predict volume baselines. 1600 data points is too few to build a reliable model. Hoewever, multiplicative and multilevel approaches are great stepping stones.
+
+
+$Vol = (leg|intersection) + dir + leg + day + error$
+
+
+
+
+
+$Vol = Intersection*Day*Leg*Dir$
+
+
+
+
+These are not conclusive results, just solid starting points to approach traffic volumes. The data is quite noisy and sparse, and more data points are definitely needed to accurately predict volume baselines. 1600 data points is too few to build a reliable model. Hoewever, multiplicative and multilevel approaches are great stepping stones. 
+
+
