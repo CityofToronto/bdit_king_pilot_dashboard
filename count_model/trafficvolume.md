@@ -941,8 +941,8 @@ plot(mult3, which = 1)
 <p>
 This model isn't any better either. If we were to choose a multiplicative model, we should choose `mult1` due to the lowest AIC.
 <p>
-Conclusion
-----------
+
+## Conclusion
 
 Some sound starting points to modelling traffic volumes would be `ml2` and `mult1`, whos formulas are respectively as follows:
 
