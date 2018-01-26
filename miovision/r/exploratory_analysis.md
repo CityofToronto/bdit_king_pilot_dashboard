@@ -131,17 +131,17 @@ for (intersection_id in intersection_ids){
 
     ## [1] "2: Adelaide / Spadina"
 
-![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-9.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-10.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-11.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-12.png)
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-9.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-10.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-11.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-12.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-13.png)
 
-    ## Warning in max(subset$total_volume): no non-missing arguments to max;
-    ## returning -Inf
-
-![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-13.png)
-
-    ## Warning: Unknown or uninitialised column: 'PANEL'.
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
 ![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-14.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-15.png)
 
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
@@ -161,9 +161,19 @@ for (intersection_id in intersection_ids){
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
 ![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-22.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-23.png)
 
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
@@ -187,9 +197,19 @@ for (intersection_id in intersection_ids){
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
 ![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-30.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-31.png)
 
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
@@ -203,22 +223,12 @@ for (intersection_id in intersection_ids){
 
     ## [1] "5: Front / Bathurst"
 
-![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-33.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-34.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-35.png)
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-33.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-34.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-35.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-36.png)
 
-    ## Warning in max(subset$total_volume): no non-missing arguments to max;
-    ## returning -Inf
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
-![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-36.png)
-
-    ## Warning: Unknown or uninitialised column: 'PANEL'.
-
-    ## Warning: no non-missing arguments to max; returning -Inf
-
-![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-37.png)
-
-    ## Warning: Unknown or uninitialised column: 'PANEL'.
-
-![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-38.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-39.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-40.png)
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-37.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-38.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-39.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-40.png)
 
     ## [1] "6: Front / Spadina"
 
@@ -272,8 +282,17 @@ for (intersection_id in intersection_ids){
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
-![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-122.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-123.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-124.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-125.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-126.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-127.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-128.png)
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-122.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-123.png)
+
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-124.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-125.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-126.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-127.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-128.png)
 
     ## [1] "17: King / Bay"
 
@@ -323,6 +342,12 @@ for (intersection_id in intersection_ids){
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
 ![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-207.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-208.png)
 
@@ -334,9 +359,27 @@ for (intersection_id in intersection_ids){
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
 ![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-213.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-214.png)
 
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
@@ -358,9 +401,13 @@ for (intersection_id in intersection_ids){
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
 ![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-221.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-222.png)
 
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
@@ -384,12 +431,32 @@ for (intersection_id in intersection_ids){
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
-![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-229.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-230.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-231.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-232.png)
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-229.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-230.png)
+
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-231.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-232.png)
 
     ## [1] "30: Wellington / Blue Jays"
 
-![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-233.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-234.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-235.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-236.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-237.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-238.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-239.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-240.png)
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-233.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-234.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-235.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-236.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-237.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-238.png)
+
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+
+![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-239.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-240.png)
 
     ## [1] "31: Wellington / Bay"
 
@@ -399,9 +466,19 @@ for (intersection_id in intersection_ids){
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
 
 ![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-245.png)![](exploratory_analysis_files/figure-markdown_github/unnamed-chunk-6-246.png)
 
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
+    ## geom_path: Each group consists of only one observation. Do you need to
+    ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
