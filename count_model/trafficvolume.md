@@ -99,12 +99,9 @@ We start with simple linear regression, then multilevel modelling, and we conclu
 
 Simple model with a single intercept, no other explanatory variables.
 
-$Vol = \beta_0 + error$ 
+*V**o**l* = *β*<sub>0</sub> + *e**r**r**o**r*
 
-
-
-$error \sim N(0, \sigma^2)$
-
+*e**r**r**o**r* ∼ *N*(0, *σ*<sup>2</sup>)
 
 ``` r
 grandmean = lm(data$totaladjusted_vol ~ 1)
@@ -130,9 +127,7 @@ summary(grandmean)
 <p>
 We perform a simple linear regression, incorporating the other explanatory variables. We exclude `dt`, as incorporating datetime values into this simple linear regression is quite complex.
 <p>
-
-$Vol = intersection + leg + direction + day  + error$
-
+*V**o**l* = *i**n**t**e**r**s**e**c**t**i**o**n* + *l**e**g* + *d**i**r**e**c**t**i**o**n* + *d**a**y* + *e**r**r**o**r*
 
 ``` r
 glm = glm(totaladjusted_vol ~ intersection_uid + leg + dir + day, data = data)
@@ -211,8 +206,7 @@ From the above, we can see many components of the model are statistically signif
 
 One aspect missing from the above model is the fact that leg and direction of an intersection are correlated. Let's make an interaction component in the model to account for this fact.
 
-$Vol = intersectioni + day + leg:direction   + error$
-
+*V**o**l* = *i**n**t**e**r**s**e**c**t**i**o**n**i* + *d**a**y* + *l**e**g* : *d**i**r**e**c**t**i**o**n* + *e**r**r**o**r*
 
 ``` r
 glm2 = glm(totaladjusted_vol ~ intersection_uid + day + leg:day, data = data)
@@ -339,13 +333,9 @@ From the above, it can be clearly seen that for leg and direction, North/South a
 <p>
 Now consider date and intersection. The variation seems absolutely random, i.e. the difference in traffic volumes do not indicate any clear pattern. This gives us reason to believe that a multilevel component may be at play. Ignoring date, let us consider a multilevel model with `intersection_uid` being the multilevel component, i.e. the intercept for the intersection changes in addition containing a random error component.
 <p>
+*V**o**l* = *i**n**t**e**r**s**e**c**t**i**o**n*<sub>*i*</sub> + *d**i**r**e**c**t**i**o**n* + *l**e**g* + *d**a**y* + *e**r**r**o**r*
 
-$Vol = intersection_{i} + direction +  leg + day  + error$
-
-
-
-
-$intersection_i = \beta_0 + error_i$
+*i**n**t**e**r**s**e**c**t**i**o**n*<sub>*i*</sub> = *β*<sub>0</sub> + *e**r**r**o**r*<sub>*i*</sub>
 
 ``` r
 ml1 = lmer(totaladjusted_vol ~ dir + leg + day + (1|intersection_uid), data = data)
@@ -414,7 +404,7 @@ There seems to be some sort of a sinusoidal pattern in the residuals. Let's try 
 <p>
 Recall that legs are a component of each intersection. Rather than just varying the intercept, let's vary the slope as well.
 
-$Vol = (leg|intersection) + dir + leg + day + error$
+*V**o**l* = (*l**e**g*|*i**n**t**e**r**s**e**c**t**i**o**n*)+*d**i**r* + *l**e**g* + *d**a**y* + *e**r**r**o**r*
 
 ``` r
 ml2 = lmer(totaladjusted_vol ~ (leg | intersection_uid) + dir + leg + day, data = data)
@@ -503,7 +493,7 @@ From the above, it is clear that the second model is significantly better. This 
 <p>
 Instead of including a `leg:dir` interaction component, what if we account for their interaction through a change slope multilevel componnent?
 
-$Vol = (leg|intersection) + (dir|leg) + dir + leg + day + error$
+*V**o**l* = (*l**e**g*|*i**n**t**e**r**s**e**c**t**i**o**n*)+(*d**i**r*|*l**e**g*)+*d**i**r* + *l**e**g* + *d**a**y* + *e**r**r**o**r*
 
 ``` r
 ml3 = lmer(totaladjusted_vol ~ (leg | intersection_uid) + (dir|leg) + dir + leg + day, data = data)
@@ -617,7 +607,7 @@ We consider a multiplicative approach to the model. This way variables will have
 <p>
 We consider a simple multiplicative model in which we multiply all elements.
 
-$Vol = Intersection*Day*Leg*Dir$
+*V**o**l* = *I**n**t**e**r**s**e**c**t**i**o**n* \* *D**a**y* \* *L**e**g* \* *D**i**r*
 
 ``` r
 mult1 = gnm( totaladjusted_vol ~ Mult(intersection_uid, day, leg, dir), data = data)
@@ -642,6 +632,8 @@ mult1 = gnm( totaladjusted_vol ~ Mult(intersection_uid, day, leg, dir), data = d
 summary(mult1)
 ```
 
+    ## Warning in sqrt(diag(cov.scaled)): NaNs produced
+
     ## 
     ## Call:
     ## gnm(formula = totaladjusted_vol ~ Mult(intersection_uid, day, 
@@ -653,52 +645,52 @@ summary(mult1)
     ## 
     ## Coefficients:
     ##                                             Estimate Std. Error t value
-    ## (Intercept)                                7.476e+03  1.670e+02   44.75
-    ## Mult(., day, leg, dir).intersection_uid1  -1.078e+05         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid2  -1.448e+05         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid3  -5.858e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid4  -1.268e+05         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid5  -1.402e+05         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid6  -2.096e+05         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid7   7.037e+03         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid8  -8.872e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid9   4.535e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid10 -9.812e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid11  8.336e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid12 -1.560e+05         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid13  7.107e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid14  7.091e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid15 -1.231e+05         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid16 -2.017e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid17 -1.656e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid18  4.349e+03         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid19  6.324e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid20 -6.675e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid21  9.169e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid22 -7.499e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid23 -9.872e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid24 -3.023e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid25 -7.746e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid26 -7.770e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid27 -1.254e+05         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid28 -4.750e+04         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid29 -1.115e+05         NA      NA
-    ## Mult(., day, leg, dir).intersection_uid31 -2.950e+04         NA      NA
-    ## Mult(intersection_uid, ., leg, dir).day1   5.234e-01         NA      NA
-    ## Mult(intersection_uid, ., leg, dir).day2   5.362e-01         NA      NA
-    ## Mult(intersection_uid, ., leg, dir).day3   5.906e-01         NA      NA
-    ## Mult(intersection_uid, ., leg, dir).day4   5.803e-01         NA      NA
-    ## Mult(intersection_uid, ., leg, dir).day5   6.701e-01         NA      NA
-    ## Mult(intersection_uid, day, ., dir).legE  -1.181e-01         NA      NA
-    ## Mult(intersection_uid, day, ., dir).legN  -3.767e-01         NA      NA
-    ## Mult(intersection_uid, day, ., dir).legS  -4.281e-01         NA      NA
-    ## Mult(intersection_uid, day, ., dir).legW  -8.946e-02         NA      NA
-    ## Mult(intersection_uid, day, leg, .).dirEB  2.352e-01         NA      NA
-    ## Mult(intersection_uid, day, leg, .).dirNB  2.063e-01         NA      NA
-    ## Mult(intersection_uid, day, leg, .).dirSB  1.592e-01         NA      NA
-    ## Mult(intersection_uid, day, leg, .).dirWB  1.924e-01         NA      NA
+    ## (Intercept)                                7.476e+03  1.840e+03   4.063
+    ## Mult(., day, leg, dir).intersection_uid1  -6.953e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid2  -9.334e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid3  -3.777e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid4  -8.177e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid5  -9.037e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid6  -1.351e+06         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid7   4.537e+04         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid8  -5.720e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid9   2.924e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid10 -6.326e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid11  5.375e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid12 -1.006e+06         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid13  4.582e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid14  4.571e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid15 -7.937e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid16 -1.300e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid17 -1.068e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid18  2.804e+04         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid19  4.077e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid20 -4.303e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid21  5.911e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid22 -4.835e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid23 -6.365e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid24 -1.949e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid25 -4.994e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid26 -5.009e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid27 -8.086e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid28 -3.063e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid29 -7.191e+05         NA      NA
+    ## Mult(., day, leg, dir).intersection_uid31 -1.902e+05         NA      NA
+    ## Mult(intersection_uid, ., leg, dir).day1  -1.682e-01         NA      NA
+    ## Mult(intersection_uid, ., leg, dir).day2  -1.723e-01         NA      NA
+    ## Mult(intersection_uid, ., leg, dir).day3  -1.898e-01         NA      NA
+    ## Mult(intersection_uid, ., leg, dir).day4  -1.865e-01         NA      NA
+    ## Mult(intersection_uid, ., leg, dir).day5  -2.153e-01         NA      NA
+    ## Mult(intersection_uid, day, ., dir).legE  -4.104e-02         NA      NA
+    ## Mult(intersection_uid, day, ., dir).legN  -2.470e-01         NA      NA
+    ## Mult(intersection_uid, day, ., dir).legS  -2.807e-01         NA      NA
+    ## Mult(intersection_uid, day, ., dir).legW  -3.108e-02         NA      NA
+    ## Mult(intersection_uid, day, leg, .).dirEB -3.267e-01         NA      NA
+    ## Mult(intersection_uid, day, leg, .).dirNB -1.519e-01         NA      NA
+    ## Mult(intersection_uid, day, leg, .).dirSB -1.172e-01         NA      NA
+    ## Mult(intersection_uid, day, leg, .).dirWB -2.672e-01         NA      NA
     ##                                           Pr(>|t|)    
-    ## (Intercept)                                 <2e-16 ***
+    ## (Intercept)                               5.09e-05 ***
     ## Mult(., day, leg, dir).intersection_uid1        NA    
     ## Mult(., day, leg, dir).intersection_uid2        NA    
     ## Mult(., day, leg, dir).intersection_uid3        NA    
@@ -762,7 +754,7 @@ plot(mult1, which = 1)
 
 The sinusoidal pattern seems to have reduced. Let's break up the model into two separate components.
 
-$Vol = (Intersection*Day) + (Leg*Dir)$
+*V**o**l* = (*I**n**t**e**r**s**e**c**t**i**o**n* \* *D**a**y*)+(*L**e**g* \* *D**i**r*)
 
 ``` r
 mult2 = gnm( totaladjusted_vol ~ Mult(intersection_uid, day) + Mult(leg, dir), data = data)
@@ -794,62 +786,62 @@ summary(mult2)
     ## 
     ## Deviance Residuals: 
     ##     Min       1Q   Median       3Q      Max  
-    ## -6873.0  -1914.6   -321.4   1659.5   9188.4  
+    ## -6900.7  -1943.7   -351.6   1633.4   9160.8  
     ## 
     ## Coefficients:
     ##                                   Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)                     -1.232e+05  3.449e+00  -35728   <2e-16 ***
-    ## Mult(., day).intersection_uid1   1.999e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid2   2.247e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid3   2.056e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid4   2.275e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid5   1.960e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid6   2.185e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid7   1.433e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid8   1.775e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid9   1.386e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid10  1.839e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid11  1.254e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid12  1.986e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid13  1.255e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid14  1.341e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid15  1.858e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid16  1.528e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid17  1.539e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid18  1.443e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid19  1.217e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid20  1.584e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid21  1.070e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid22  1.743e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid23  1.817e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid24  1.558e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid25  1.685e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid26  1.699e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid27  2.098e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid28  1.898e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid29  2.256e+04         NA      NA       NA    
-    ## Mult(., day).intersection_uid31  1.770e+04         NA      NA       NA    
-    ## Mult(intersection_uid, .).day1   7.175e-01         NA      NA       NA    
-    ## Mult(intersection_uid, .).day2   7.289e-01         NA      NA       NA    
-    ## Mult(intersection_uid, .).day3   7.536e-01         NA      NA       NA    
-    ## Mult(intersection_uid, .).day4   7.579e-01         NA      NA       NA    
-    ## Mult(intersection_uid, .).day5   7.835e-01         NA      NA       NA    
-    ## Mult(., dir).legE                3.073e+03         NA      NA       NA    
-    ## Mult(., dir).legN               -1.852e+04         NA      NA       NA    
-    ## Mult(., dir).legS               -1.856e+04         NA      NA       NA    
-    ## Mult(., dir).legW                3.073e+03         NA      NA       NA    
-    ## Mult(leg, .).dirEB               3.868e+01         NA      NA       NA    
-    ## Mult(leg, .).dirNB              -6.497e+00         NA      NA       NA    
-    ## Mult(leg, .).dirSB              -6.466e+00         NA      NA       NA    
-    ## Mult(leg, .).dirWB               3.863e+01         NA      NA       NA    
+    ## (Intercept)                     -3.832e+04  7.803e+01  -491.1   <2e-16 ***
+    ## Mult(., day).intersection_uid1  -3.123e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid2  -3.511e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid3  -3.212e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid4  -3.554e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid5  -3.061e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid6  -3.414e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid7  -2.238e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid8  -2.773e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid9  -2.165e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid10 -2.872e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid11 -1.959e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid12 -3.102e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid13 -1.960e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid14 -2.094e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid15 -2.903e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid16 -2.387e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid17 -2.404e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid18 -2.254e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid19 -1.901e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid20 -2.474e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid21 -1.670e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid22 -2.723e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid23 -2.839e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid24 -2.434e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid25 -2.633e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid26 -2.655e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid27 -3.278e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid28 -2.966e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid29 -3.525e+04         NA      NA       NA    
+    ## Mult(., day).intersection_uid31 -2.766e+04         NA      NA       NA    
+    ## Mult(intersection_uid, .).day1  -4.589e-01         NA      NA       NA    
+    ## Mult(intersection_uid, .).day2  -4.663e-01         NA      NA       NA    
+    ## Mult(intersection_uid, .).day3  -4.820e-01         NA      NA       NA    
+    ## Mult(intersection_uid, .).day4  -4.848e-01         NA      NA       NA    
+    ## Mult(intersection_uid, .).day5  -5.012e-01         NA      NA       NA    
+    ## Mult(., dir).legE                3.312e+03         NA      NA       NA    
+    ## Mult(., dir).legN                2.186e+04         NA      NA       NA    
+    ## Mult(., dir).legS                2.203e+04         NA      NA       NA    
+    ## Mult(., dir).legW                3.310e+03         NA      NA       NA    
+    ## Mult(leg, .).dirEB               1.027e+01         NA      NA       NA    
+    ## Mult(leg, .).dirNB               1.622e+00         NA      NA       NA    
+    ## Mult(leg, .).dirSB               1.596e+00         NA      NA       NA    
+    ## Mult(leg, .).dirWB               1.022e+01         NA      NA       NA    
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## (Dispersion parameter for gaussian family taken to be 7418694)
+    ## (Dispersion parameter for gaussian family taken to be 7419477)
     ## 
     ## Std. Error is NA where coefficient has been constrained or is unidentified
     ## 
-    ## Residual deviance: 1.1595e+10 on 1563 degrees of freedom
+    ## Residual deviance: 1.1597e+10 on 1563 degrees of freedom
     ## AIC: 29969
     ## 
     ## Number of iterations: 500
@@ -870,7 +862,8 @@ mult3 = gnm( totaladjusted_vol ~ Mult(intersection_uid, leg) + dir + day, data =
     ## Running start-up iterations..
     ## Running main iterations....................................................
     ## ...........................................................................
-    ## ...................................................................
+    ## ...........................................................................
+    ## .......................................
     ## Done
 
 ``` r
@@ -889,40 +882,40 @@ summary(mult3)
     ## Coefficients:
     ##                                   Estimate Std. Error t value Pr(>|t|)    
     ## (Intercept)                      7.311e+03  3.773e+02  19.380  < 2e-16 ***
-    ## Mult(., leg).intersection_uid1   1.822e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid2   2.467e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid3   7.455e+03         NA      NA       NA    
-    ## Mult(., leg).intersection_uid4   2.138e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid5   2.335e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid6   3.912e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid7  -5.053e+03         NA      NA       NA    
-    ## Mult(., leg).intersection_uid8   1.423e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid9  -1.381e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid10  1.506e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid11 -2.138e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid12  2.722e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid13 -1.944e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid14 -1.693e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid15  2.274e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid16 -1.282e+03         NA      NA       NA    
-    ## Mult(., leg).intersection_uid17  1.447e+02         NA      NA       NA    
-    ## Mult(., leg).intersection_uid18 -4.110e+03         NA      NA       NA    
-    ## Mult(., leg).intersection_uid19 -1.636e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid20  9.864e+03         NA      NA       NA    
-    ## Mult(., leg).intersection_uid21 -2.249e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid22  1.046e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid23  1.514e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid24  2.166e+03         NA      NA       NA    
-    ## Mult(., leg).intersection_uid25  1.210e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid26  1.293e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid27  2.140e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid28  6.129e+03         NA      NA       NA    
-    ## Mult(., leg).intersection_uid29  1.925e+04         NA      NA       NA    
-    ## Mult(., leg).intersection_uid31  2.951e+03         NA      NA       NA    
-    ## Mult(intersection_uid, .).legE   7.060e-02         NA      NA       NA    
-    ## Mult(intersection_uid, .).legN   1.940e-01         NA      NA       NA    
-    ## Mult(intersection_uid, .).legS   2.252e-01         NA      NA       NA    
-    ## Mult(intersection_uid, .).legW   4.837e-02         NA      NA       NA    
+    ## Mult(., leg).intersection_uid1   1.648e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid2   2.230e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid3   6.740e+03         NA      NA       NA    
+    ## Mult(., leg).intersection_uid4   1.933e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid5   2.111e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid6   3.537e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid7  -4.569e+03         NA      NA       NA    
+    ## Mult(., leg).intersection_uid8   1.286e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid9  -1.249e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid10  1.362e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid11 -1.933e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid12  2.461e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid13 -1.758e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid14 -1.530e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid15  2.056e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid16 -1.159e+03         NA      NA       NA    
+    ## Mult(., leg).intersection_uid17  1.308e+02         NA      NA       NA    
+    ## Mult(., leg).intersection_uid18 -3.716e+03         NA      NA       NA    
+    ## Mult(., leg).intersection_uid19 -1.479e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid20  8.918e+03         NA      NA       NA    
+    ## Mult(., leg).intersection_uid21 -2.033e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid22  9.455e+03         NA      NA       NA    
+    ## Mult(., leg).intersection_uid23  1.369e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid24  1.959e+03         NA      NA       NA    
+    ## Mult(., leg).intersection_uid25  1.094e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid26  1.169e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid27  1.935e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid28  5.541e+03         NA      NA       NA    
+    ## Mult(., leg).intersection_uid29  1.741e+04         NA      NA       NA    
+    ## Mult(., leg).intersection_uid31  2.668e+03         NA      NA       NA    
+    ## Mult(intersection_uid, .).legE   7.809e-02         NA      NA       NA    
+    ## Mult(intersection_uid, .).legN   2.145e-01         NA      NA       NA    
+    ## Mult(intersection_uid, .).legS   2.491e-01         NA      NA       NA    
+    ## Mult(intersection_uid, .).legW   5.350e-02         NA      NA       NA    
     ## dirNB                            7.576e+02  8.325e+02   0.910 0.362957    
     ## dirSB                            2.047e+02  8.324e+02   0.246 0.805805    
     ## dirWB                           -1.377e+02  1.974e+02  -0.698 0.485533    
@@ -940,7 +933,7 @@ summary(mult3)
     ## Residual deviance: 1.1011e+10 on 1563 degrees of freedom
     ## AIC: 29886
     ## 
-    ## Number of iterations: 194
+    ## Number of iterations: 241
 
 ``` r
 plot(mult3, which = 1)
@@ -951,27 +944,13 @@ plot(mult3, which = 1)
 <p>
 This model isn't any better either. If we were to choose a multiplicative model, we should choose `mult1` due to the lowest AIC.
 <p>
+Conclusion
+----------
 
+Some sound starting points to modelling traffic volumes would be `ml2` and `mult1`, whos formulas are respectively as follows:
 
-## Conclusion
+*V**o**l* = (*l**e**g*|*i**n**t**e**r**s**e**c**t**i**o**n*)+*d**i**r* + *l**e**g* + *d**a**y* + *e**r**r**o**r*
 
+*V**o**l* = *I**n**t**e**r**s**e**c**t**i**o**n* \* *D**a**y* \* *L**e**g* \* *D**i**r*
 
-Some sound starting points to modelling traffic volumes would be `ml2` and `mult1`, whos formulas are respectively as follows: 
-
-
-
-
-$Vol = (leg|intersection) + dir + leg + day + error$
-
-
-
-
-
-$Vol = Intersection*Day*Leg*Dir$
-
-
-
-
-These are not conclusive results, just solid starting points to approach traffic volumes. The data is quite noisy and sparse, and more data points are definitely needed to accurately predict volume baselines. 1600 data points is too few to build a reliable model. Hoewever, multiplicative and multilevel approaches are great stepping stones. 
-
-
+These are not conclusive results, just solid starting points to approach traffic volumes. The data is quite noisy and sparse, and more data points are definitely needed to accurately predict volume baselines. 1600 data points is too few to build a reliable model. Hoewever, multiplicative and multilevel approaches are great stepping stones.
