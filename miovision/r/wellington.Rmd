@@ -1,0 +1,77 @@
+---
+title: "Wellington St - Miovision Analysis"
+author: "Aakash Harpalani"
+date: "Tuesday, January 23, 2018"
+output: github_document
+---
+
+### Setup
+
+Loading libraries:
+```{r, message=FALSE, warning=FALSE}
+library(RPostgreSQL)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+```
+
+Establishing connections and credentials:
+```{r}
+drv <- dbDriver("PostgreSQL")
+source("connect/connect.R")
+```
+
+### Analysis
+
+Retrieve 15-min count data:
+```{r}
+
+strSQL <-
+  paste0("SELECT * FROM aharpal.wellington_vol INNER JOIN miovision.intersections USING (intersection_uid)")
+data <- dbGetQuery(con, strSQL)
+```
+
+Modify/Add Fields
+```{r}
+data$time_bin <- as.POSIXct(data$time_bin, format = "%H:%M:%S")
+data$leg <- factor(data$leg, levels = c("W","E"), labels = c("West Leg","East Leg"))
+
+lims <- as.POSIXct(c("6","9","12","15","18","21"),format="%H")
+
+
+base_text <- data %>%
+  filter(time_bin == max(data$time_bin)) %>%
+  select(leg, intersection_name, baseline_vol)
+
+pilot_text <- data %>%
+  filter(time_bin == max(data$time_bin)) %>%
+  select(leg, intersection_name, pilot_vol)
+```
+
+Plot all direction/leg combinations (Adelaide and Bathurst):
+```{r, fig.width= 10, fig.height = 10}
+daily_plot <- ggplot(data = data, aes(x=time_bin, y=total_volume)) +
+          annotate("rect",xmin=as.POSIXlt("08",format = "%H"), xmax=as.POSIXlt("09",format="%H"),ymin = 0, ymax=Inf, alpha = 0.15) +
+          annotate("rect",xmin=as.POSIXlt("17",format = "%H"), xmax=as.POSIXlt("18",format="%H"),ymin = 0, ymax=Inf, alpha = 0.15) +
+          annotate("text",x=as.POSIXlt("08:30",format = "%H:%M"), y = 10, label = "AM Peak", color = "darkgray", size = 3.5) +
+          annotate("text",x=as.POSIXlt("17:30",format = "%H:%M"), y = 10, label = "PM Peak", color = "darkgray", size = 3.5) +
+  geom_text(data = pilot_text,mapping = aes(x=as.POSIXlt("21:50",format = "%H:%M"), y=pilot_vol, label = "Pilot"), color = "#8E44AD", size = 5, hjust = 0, fontface = 2) +
+  geom_text(data = base_text,mapping = aes(x=as.POSIXlt("21:50",format = "%H:%M"), y=baseline_vol, label = "Baseline"), color = "#A6ACAF", size = 5, hjust = 0, fontface = 2) +
+          geom_line(aes(y = baseline_vol), colour = "#A6ACAF", size = 2) +
+          geom_line(aes(y = pilot_vol), colour = "#8E44AD", size = 2) +
+          facet_grid(intersection_name ~ leg) +
+          theme_light() + 
+          scale_x_datetime(breaks = lims, minor_breaks = lims, date_labels = "%H", limits = as.POSIXct(c("05:30","22:30"),format ="%H:%M")) +
+          scale_y_continuous(breaks = c(0,100,200,300), minor_breaks = c(0,100,200,300)) +
+          theme(legend.position = "bottom", 
+                axis.text = element_text(size = 14), 
+                axis.title = element_text(size = 14, face = "bold"),
+                strip.text.x = element_text(size = 16),
+                strip.text.y = element_text(size = 16),
+                plot.title = element_text(size = 18, face = "bold"),
+                plot.subtitle = element_text(size = 16)
+                ) +
+          labs(y = "15 Minute Volume", x = "Time of Day", title = "Wellington/Front Westbound Traffic", subtitle = "15 Minute Vehicular Weekday Volumes")
+ggsave(filename = "wellington_tod.png", plot = daily_plot, width = 25, height = 13, units = "in")
+
+```
