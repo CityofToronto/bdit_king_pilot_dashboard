@@ -1,0 +1,113 @@
+---
+title: "Wellington St - Miovision Analysis"
+author: "Aakash Harpalani"
+date: "Tuesday, January 23, 2018"
+output: github_document
+---
+
+### Setup
+
+Loading libraries:
+```{r, message=FALSE, warning=FALSE}
+library(RPostgreSQL)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+```
+
+Establishing connections and credentials:
+```{r}
+drv <- dbDriver("PostgreSQL")
+source("connect/connect.R")
+```
+
+### Analysis
+
+Retrieve Daily Summary data:
+```{r}
+
+strSQL <-
+  paste0("SELECT * FROM miovision.bike_screenline_daily_summaries")
+data <- dbGetQuery(con, strSQL)
+```
+
+Modify/Add Fields
+```{r}
+data$category <- factor(ifelse(month(data$dt)==12,1,0))
+data$dt <- as.character(data$dt)
+data$dir <- factor(data$dir, levels = c("WB","EB"), labels = c("Westbound", "Eastbound"))
+
+colour_scale <- c("#A6ACAF","#8E44AD")
+```
+
+Daily Screenlines Plot:
+```{r, fig.width= 10, fig.height = 10}
+daily_plot <- ggplot(data = data, aes(x=dt, y=daily_volume)) +
+          geom_bar(stat = 'identity', aes(fill=category)) +
+          geom_text(mapping = aes(y=daily_volume-25, label = format(round(daily_volume,-1),big.mark = ",", scientific = FALSE)), color = "white", size = 5, hjust = 1, fontface = 2) +
+          facet_grid(street_cross ~ dir, scales = "free_y", space = "free_y", switch = "y") +
+          theme_light() + 
+          scale_y_continuous(breaks = seq(0,3000,500), minor_breaks = seq(0,3000,500), labels=function(x) format(x, big.mark = ",", scientific = FALSE)) +
+          theme(legend.position = "bottom", 
+                axis.text = element_text(size = 14), 
+                axis.title = element_text(size = 14, face = "bold"),
+                strip.text.x = element_text(size = 16),
+                strip.text.y = element_text(size = 16),
+                plot.title = element_text(size = 18, face = "bold"),
+                plot.subtitle = element_text(size = 16),
+                strip.background = element_rect(fill="#595959")
+                ) +
+          labs(y = "Total 14 Hour Volume", x = "Date", title = "Downtown East-West Bicycle Traffic", subtitle = "14 Hour (6 a.m. - 8 p.m.) Screenline Volumes, Queen to Front") +
+  scale_x_discrete(limits = rev(levels(dt))) +
+  scale_fill_manual(values = colour_scale) +
+  guides(fill=FALSE) +
+  coord_flip() 
+  
+ggsave(filename = "daily_screenlines.png", plot = daily_plot, width = 20, height = 10, units = "in")
+
+```
+
+Retrieve Proportions Data:
+```{r}
+
+strSQL <-
+  paste0("SELECT * FROM miovision.bike_screenline_proportions")
+data <- dbGetQuery(con, strSQL)
+```
+
+Modify/Add Fields
+```{r}
+data$dir <- factor(data$dir, levels = c("WB","EB"), labels = c("Westbound", "Eastbound"))
+data$street_main <- factor(data$street_main, levels = c("Front","King","Adelaide","Richmond","Queen"))
+
+colour_scale <- c("#A6ACAF","#8E44AD")
+```
+
+Daily Screenlines Plot:
+```{r, fig.width= 10, fig.height = 10}
+prop_plot <- ggplot(data = data, aes(x=street_main, y=proportion)) +
+          geom_bar(stat = 'identity', width = 0.8, aes(fill=category, alpha = ifelse(street_main=="King","King","Other")), position = position_dodge(0.8)) +
+          geom_text(mapping = aes(y=ifelse(proportion>0.05,proportion-0.005,proportion+0.005), label = scales::percent(round(proportion,2)), group = category, colour = ifelse(proportion>0.05,"big","small"), hjust = ifelse(proportion > 0.05,1,0)), size = 5, fontface = 2, position = position_dodge(0.8)) +
+          facet_grid(street_cross ~ dir, switch = "y") +
+          theme_light() + 
+          scale_y_continuous(breaks = seq(0.0,0.8,0.2), minor_breaks = seq(0.0,.08,0.2), labels = scales::percent) +
+          theme(legend.position = "bottom", 
+                axis.text = element_text(size = 14), 
+                axis.title = element_text(size = 14, face = "bold"),
+                strip.text.x = element_text(size = 16),
+                strip.text.y = element_text(size = 16),
+                plot.title = element_text(size = 18, face = "bold"),
+                plot.subtitle = element_text(size = 16),
+                strip.background = element_rect(fill="#595959"),
+                panel.grid.major.y = element_blank()
+                ) +
+          labs(y = "Proportion of Volume", x = "Street", title = "Downtown East-West Bicycle Traffic", subtitle = "Proportion of 14-hour Screenline Volumes, Baseline vs. Pilot") +
+  scale_fill_manual(values = colour_scale) +
+  scale_colour_manual(values = c("white","#595959")) +
+  scale_alpha_manual(values = c(1,0.5)) +
+  guides(fill=FALSE, colour = FALSE, alpha = FALSE) +
+  coord_flip() 
+  
+ggsave(filename = "proportions.png", plot = prop_plot, width = 20, height = 10, units = "in")
+
+```
