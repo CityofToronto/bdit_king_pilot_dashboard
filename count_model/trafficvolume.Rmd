@@ -48,14 +48,14 @@ The objective of this model is to predict baseline average traffic volume values
 ### Running an SQL query to extract necessary data
 
 <p>
-Data is grabbed via an `.SQL` file containing a query. The file is `final.sql`. The query essentially joins multiple subqueries on different attributes. The query was made with 6 very simple parts:
+Data is grabbed via an `.SQL` file containing a query. The file is `final.sql`. The query essentially joins multiple subqueries on different attributes. The query was made in 6 simple steps:
 
 * `dt` and `intersection_uid` are queried from the `miovision.volumes_15min` table
 * `intersection_uid`, `leg`, `dir` are queried and joined on `intersection_uid` from the previous query
 * A time bin attribute is generated for each `intersection_uid`, `dt`, `leg`, `dir` combination
 * Data is added to the above query by joining data on the `time`, `intersection_uid`, `dt`, `leg`, `dir` combinations- resulting in a sparse data query
-* Date is added in missing time bin according to averages of historic data
-* Data is aggregated (summed) over 24 hours. Intersection 30 is excluded due to the incorrect directions on November 8th. 
+* Date is added in the missing time bin according to averages of historic data
+* Data is aggregated (summed) over 24 hours. Intersection 30 is excluded due to the switched directions on November 8th. 
 
 Refer to the `final.sql` document for further details. 
 <p>
@@ -65,7 +65,7 @@ Refer to the `final.sql` document for further details.
 We import relevant modules and extract the data from `final.sql` using the `RPostgreSQL` package. The data is read from `readlines()`, and the data is assigned to the variable `data`. 
 
 
-A new column, `day`, is added, containing the integer value corresponding to day of week. We factor the day and intersection as they are integer values. 
+A new column, `day`, is added, containing the integer value corresponding to day of week. We factor the day and intersection as they are integer values. A preview of the first 25 rows of the dataframe is seen below. 
 
 ```{r}
 # Import Relevant Packages
@@ -82,6 +82,7 @@ data <- dbGetQuery(con, strSQL)
 data$day <- as.POSIXlt(data$dt)$wday
 data$day <- factor(data$day)
 data$intersection_uid <- factor(data$intersection_uid)
+head(data, 25)
 ```
 
 
@@ -150,7 +151,7 @@ boxplot(data$totaladjusted_vol ~ data$dt, xlab = 'Date', ylab = 'Volume')
 
 <p>From the above, it can be clearly seen that for leg and direction, North/South and NB/SB are greater than East/West and EB/WB. Moreover, for day, it seems as the week progresses, the traffic increases, indicating a clear linear trend.<p>
 
-<p>Now consider date and intersection. The variation seems absolutely random, i.e. the difference in traffic volumes do not indicate any clear pattern. This gives us reason to believe that a multilevel component may be at play. Ignoring date, let us consider a multilevel model with `intersection_uid` being the multilevel component, i.e. the intercept for the intersection changes in addition containing a random error component.<p>
+<p>Now consider date and intersection. The variation seems absolutely random, i.e. the difference in traffic volumes do not indicate any clear pattern. This gives us reason to believe that a multilevel component may be at play. Ignoring date, let us consider a multilevel model with `intersection_uid` being the multilevel component, i.e. the intercept for the intersection changes in addition to containing a normally distributed random error component.<p>
 
 $Vol = intersection_{i} + direction +  leg + day  + error$
 
@@ -193,7 +194,7 @@ anova(ml1, ml2)
 
 From the above, it is clear that the second model is significantly better. This difference is statistically significant.
 
-<p> Instead of including a `leg:dir` interaction component, what if we account for their interaction through a change slope multilevel componnent? 
+<p> Instead of including a `leg:dir` interaction component, what if we account for their interaction through a changing slope multilevel componnent? 
 
 $Vol = (leg|intersection) + (dir|leg) + dir + leg + day + error$
 
@@ -226,7 +227,7 @@ anova(ml2, ml3)
 <p>We consider a multiplicative approach to the model. This way variables will have more of an impact on the model, i.e. a scaling effect.<p>
 
 
-We consider a simple multiplicative model in which we multiply all elements. 
+We consider a simple multiplicative model in which we multiply all explanatory variables. 
 
 
 $Vol = Intersection*Day*Leg*Dir$
