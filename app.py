@@ -36,7 +36,7 @@ else:
 
 DATA = pandasql.read_sql('''
                          SELECT street, direction, dt AS date, day_type, category, period, round(tt,1) tt, 
-                         rank() OVER (PARTITION BY street, direction, day_type, period ORDER BY dt DESC) AS CASE WHEN dt = first_value(dt) OVER (PARTITION BY direction, day_type, period ORDER BY dt DESC)
+                         CASE WHEN dt = first_value(dt) OVER (PARTITION BY direction, day_type, period ORDER BY dt DESC)
                          THEN 1 ELSE 0 END AS most_recent,
                          week_number, month_number 
                          FROM king_pilot.dash_daily
