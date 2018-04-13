@@ -47,18 +47,25 @@ CREATE OR REPLACE VIEW king_pilot.dash_daily_cars_only AS
           ORDER BY z.corridor_id, z.direction, x.period_id, x.day_type, x.dt) f;
 GRANT SELECT ON TABLE king_pilot.dash_daily_cars_only TO bdit_humans;
 
-CREATE OR REPLACE VIEW king_pilot.baselines_cars_only AS
+-- View: king_pilot.baselines_cars_only
 
-SELECT 	A.bt_id, 
-	B.day_type,
-	A.time_bin,
-	AVG(A.tt) AS tt,
-	SUM(A.obs) AS obs
+-- DROP VIEW king_pilot.baselines_cars_only;
 
-FROM king_pilot.tt_30min A
-INNER JOIN king_pilot.date_baseline B USING (bt_id,dt)
-GROUP BY A.bt_id, B.day_type, A.time_bin;
+CREATE OR REPLACE VIEW king_pilot.baselines_cars_only AS 
+ SELECT a.bt_id,
+    b.day_type,
+    a.time_bin,
+    avg(a.tt)::numeric AS tt,
+    sum(a.obs) AS obs
+   FROM king_pilot.tt_30min_cars_only a
+     JOIN king_pilot.date_baseline b USING (bt_id, dt)
+  GROUP BY a.bt_id, b.day_type, a.time_bin;
+
+ALTER TABLE king_pilot.baselines_cars_only
+  OWNER TO rdumas;
+GRANT ALL ON TABLE king_pilot.baselines_cars_only TO rdumas;
 GRANT SELECT ON TABLE king_pilot.baselines_cars_only TO bdit_humans;
+
 
 CREATE OR REPLACE VIEW king_pilot.dash_baseline_cars_only AS 
  SELECT z.street_name AS street,
