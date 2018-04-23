@@ -15,9 +15,9 @@ Every month, summary tables of travel times need to be populated for each day ty
 <br>
 
 5. For each table generated, copy the values and paste them into the King Pilot Dashboard email template. 
+<br>
 
-
-## Snowflags 
+### Snowflags 
 
 In addition to summaries being generated, a dataframe with flagged with snow/rain days is updated everymonth. For time periods with snow/rain a 1 is placed, and 0 is placed otherwise. After snow/rain time periods and days are identified, follow these steps to update this dataframe:
 
