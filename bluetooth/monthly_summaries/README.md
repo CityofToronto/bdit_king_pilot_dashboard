@@ -15,3 +15,19 @@ Every month, summary tables of travel times need to be populated for each day ty
 <br>
 
 5. For each table generated, copy the values and paste them into the King Pilot Dashboard email template. 
+
+
+## Snowflags 
+
+In addition to summaries being generated, a dataframe with flagged with snow/rain days is updated everymonth. For time periods with snow/rain a 1 is placed, and 0 is placed otherwise. After snow/rain time periods and days are identified, follow these steps to update this dataframe:
+
+1. Open the `snowflags.ipynb`. 
+<br>
+
+2. You will see a cell containing several lists of dictionaries assigned to month variables. The keys of these dictionaries are datetime objects of days with snow/rain, and the values correspond to a list of specific time periods where it snowed/rained on these days. 
+<br>
+
+3. Each month, create a new variable with the appropriate keys and values as described above.
+<br>
+
+4. Run the notebook. An updated dataframe will be at the bottom of the notebook. 
