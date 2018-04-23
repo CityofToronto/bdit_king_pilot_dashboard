@@ -1,4 +1,4 @@
-# Monthly Bluetooth Summaries 
+# How to Generate Monthly Bluetooth Summaries 
 
 Every month, summary tables of travel times need to be populated for each day type and period combination. These summaries can be automatically generated through the functions in the `monthlysummary.ipynb` file. Follow these steps in order to generate monthly summaries when required.
 
@@ -17,7 +17,7 @@ Every month, summary tables of travel times need to be populated for each day ty
 5. For each table generated, copy the values and paste them into the King Pilot Dashboard email template. 
 <br>
 
-# Snowflags 
+# How to Update the `Snowflags` dataframe
 
 In addition to summaries being generated, a dataframe with flagged with snow/rain days is updated every month. For time periods with snow/rain a 1 is placed in an additional column, and 0 is placed otherwise. After snow/rain time periods and days are identified, follow these steps to update this dataframe:
 
@@ -33,7 +33,7 @@ In addition to summaries being generated, a dataframe with flagged with snow/rai
 4. Run the notebook. An updated dataframe will be at the bottom of the notebook. 
 <br>
 
-### December Snow Analysis 
+# December Snow Analysis 
 
 December 2018 had quite a bit of snow. As a result, a statistical analysis was conducted for the month of December, in an effort to investigate the impact of snow on travel times. Here are some significant high level results of that analysis: 
 
