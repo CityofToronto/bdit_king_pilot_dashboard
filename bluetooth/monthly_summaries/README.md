@@ -11,7 +11,10 @@ Every month, summary tables of travel times need to be populated for each day ty
 3. Now run all cells in the notebook.
 <br>
 
-4. Proceed to the bottom of the notebook. you will see two dropdown menus, `Day Type` and `Period`, and a `Generate` button. For each combination of day time and period, click `Generate`. 
+4. Proceed to the bottom of the notebook. you will see two dropdown menus, `Day Type` and `Period`, and a `Generate` button. For each combination of day time and period, click `Generate`. A table like the one below will be generated
+
+![png](bluetooth/monthly_summaries/images/screenshot.png) 
+
 <br>
 
 5. For each table generated, copy the values and paste them into the King Pilot Dashboard email template. 
