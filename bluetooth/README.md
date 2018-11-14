@@ -20,7 +20,7 @@ The following plots were used to determine which dates and observations to use i
 
 With the level of aggregation decided, scatter plots of the 30-minute data were created for each segment and divided into weekly subplots. The plots were all checked to ensure the data was contiguous and sane.
 
-Meanwhile, in the [baseline lookover notebook](baseline lookover.ipynb), each segment's 24-hour baseline was plotted with quintile bands for the segment's 30 minute aggregated data over 24 hours. These plots were used to identify outliers that had an impact on the baselines. Outliers that shifted the baseline beyond the 20-80 percentile band were noted for further investigation.
+Meanwhile, in the [baseline lookover notebook](baseline%20lookover.ipynb), each segment's 24-hour baseline was plotted with quintile bands for the segment's 30 minute aggregated data over 24 hours. These plots were used to identify outliers that had an impact on the baselines. Outliers that shifted the baseline beyond the 20-80 percentile band were noted for further investigation.
 
 The third type of plot was put together to analyze the impact of removing a date from a given baseline. This plot showed the new baseline overlaid on the old baseline to demonstrate the effect of removing the outlier. It was determined that removing dates with outliers from the baseline could have an impact on the quality of the data. 
 
