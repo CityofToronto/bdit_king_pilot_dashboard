@@ -22,7 +22,7 @@ BEGIN
 	INNER JOIN king_pilot.bt_segments USING (analysis_id)
 	WHERE rs.outlier_level = 0 AND device_class = 1 
 		AND NOT (bt_id = 33 AND measured_timestamp::date = '2017-09-19' AND measured_timestamp::time >= '19:00')
-	GROUP BY rs.analysis_id, datetime_bin
+	GROUP BY bt_id, rs.analysis_id, datetime_bin
 	)
 
 	INSERT INTO king_pilot.tt_30min (bt_id, dt, time_bin, tt, obs)
