@@ -21,7 +21,7 @@ BEGIN
 	JOIN bluetooth.class_of_device USING (cod)
 	INNER JOIN king_pilot.bt_segments USING (analysis_id)
 	WHERE rs.outlier_level = 0 AND device_class = 1 
-		AND NOT (bt_id = 33 AND datetime_bin::date = '2017-09-19' AND datetime_bin::time >= '19:00')
+		AND NOT (bt_id = 33 AND measured_timestamp::date = '2017-09-19' AND measured_timestamp::time >= '19:00')
 	GROUP BY rs.analysis_id, datetime_bin
 	)
 
