@@ -1,5 +1,5 @@
 # King St. Pilot Internal Dashboard
-Dashboard for King St Pilot for internal management. This dashboard displays average travel times by timeperiod for streets parallel to King over the length of the pilot area.
+Dashboard for King St Pilot for internal management. This dashboard displays average travel times by timeperiod for streets in the pilot area.
 
 ## App Organization
 
@@ -63,6 +63,11 @@ else:
     dbset = CONFIG['DBSETTINGS']
     con = connect(**dbset)
 ```
+
+#### From Open Data
+The relevant datasets from Open Data are:
+- [Detailed Travel Times](https://portal0.cf.opendata.inter.sandbox-toronto.ca/dataset/king-st-transit-pilot-detailed-bluetooth-travel-time/): five-minute aggregated travel time data by segment.
+- [Bluetooth Travel Time Segments](https://portal0.cf.opendata.inter.sandbox-toronto.ca/dataset/king-st-transit-pilot-bluetooth-travel-time-segments/): the geography which also contains definitions of corridors (and direction)
 
 ## Deployment 
 The app is currently deployed on Heroku by detecting updates to this branch and automatically rebuilding the app.
